@@ -1,0 +1,51 @@
+#usda 1.0
+(
+    metersPerUnit = 0.001
+    upAxis = "Z"
+)
+
+def "World"
+{
+    def PhysicsScene "PhysicsScene"
+    {
+        vector3f physics:gravityDirection = (0, 0, -1)
+        float physics:gravityMagnitude = 9810
+    }
+
+    over "Track" (
+        prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI", "MaterialBindingAPI"]
+    )
+    {
+        rel material:binding:physics = </World/Materials/TrackPhysicsMtl>
+        uniform token physics:approximation = "none"
+    }
+
+    def "Materials"
+    {
+        def Material "TrackPhysicsMtl" (
+            prepend apiSchemas = ["PhysicsMaterialAPI"]
+        )
+        {
+            float physics:dynamicFriction = 0.3
+            float physics:restitution = 0.3
+            float physics:staticFriction = 0.4
+        }
+
+        def Material "MarblePhysicsMtl" (
+            prepend apiSchemas = ["PhysicsMaterialAPI"]
+        )
+        {
+            float physics:dynamicFriction = 0.35
+            float physics:restitution = 0.6
+            float physics:staticFriction = 0.5
+        }
+    }
+
+    over "Marble" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        rel material:binding:physics = </World/Materials/MarblePhysicsMtl>
+    }
+}
+

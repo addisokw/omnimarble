@@ -1,0 +1,26 @@
+#usda 1.0
+(
+    metersPerUnit = 0.001
+    upAxis = "Z"
+)
+
+def Xform "World"
+{
+    def Xform "Marble" (
+        prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+    )
+    {
+        float physics:density = 0.0078
+        double3 xformOp:translate = (0.3135483910184388, 10, 10.87860631942749)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+
+        def Sphere "Geom" (
+            prepend apiSchemas = ["PhysicsCollisionAPI"]
+        )
+        {
+            float3[] extent = [(-5, -5, -5), (5, 5, 5)]
+            double radius = 5
+        }
+    }
+}
+

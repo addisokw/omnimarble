@@ -1,0 +1,23 @@
+#usda 1.0
+(
+    metersPerUnit = 0.001
+    upAxis = "Z"
+)
+
+over "World"
+{
+    over "Coil"
+    {
+        custom float coilLauncher:inductance = 150
+        custom float coilLauncher:innerRadius = 12
+        custom float coilLauncher:length = 30
+        custom float coilLauncher:maxCurrent = 10
+        custom int coilLauncher:numTurns = 30
+        custom float coilLauncher:outerRadius = 18
+        custom float coilLauncher:pulseWidth = 5
+        custom float coilLauncher:resistance = 1.2
+        custom float coilLauncher:supplyVoltage = 24
+        custom float coilLauncher:wireDiameter = 0.8
+    }
+}
+

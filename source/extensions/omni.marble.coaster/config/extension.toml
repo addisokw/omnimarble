@@ -1,0 +1,37 @@
+[package]
+version = "1.0.0"
+title = "Marble Coaster Physics Controller"
+description = "Loads the marble coaster USD scene, injects electromagnetic forces, and controls PhysX simulation"
+category = "Simulation"
+keywords = ["physics", "marble", "coaster", "electromagnetic", "coil"]
+authors = ["OmniMarble"]
+
+[dependencies]
+"omni.physx" = {}
+"omni.usd" = {}
+"omni.ui" = {}
+"omni.kit.commands" = {}
+"omni.timeline" = {}
+
+[[python.module]]
+name = "omni.marble.coaster"
+path = "."
+
+[settings]
+# Default coil parameters (can be overridden at runtime)
+exts."omni.marble.coaster".coil.innerRadius = 8.0
+exts."omni.marble.coaster".coil.outerRadius = 14.0
+exts."omni.marble.coaster".coil.length = 30.0
+exts."omni.marble.coaster".coil.numTurns = 30
+exts."omni.marble.coaster".coil.maxCurrent = 10.0
+exts."omni.marble.coaster".coil.pulseWidth = 5.0
+exts."omni.marble.coaster".coil.resistance = 1.2
+exts."omni.marble.coaster".coil.inductance = 150.0
+exts."omni.marble.coaster".coil.supplyVoltage = 24.0
+exts."omni.marble.coaster".marble.radius = 5.0
+exts."omni.marble.coaster".marble.chiEff = 3.0
+
+[[test]]
+dependencies = [
+    "omni.kit.test",
+]

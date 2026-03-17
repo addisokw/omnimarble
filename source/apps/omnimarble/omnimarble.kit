@@ -1,0 +1,83 @@
+[package]
+title = "OmniMarble - Magnetic Coil Marble Coaster"
+version = "1.0.0"
+description = "Digital twin of a magnetic coil-launched marble roller coaster with PhysX simulation"
+keywords = ["app"]
+
+[dependencies]
+# Core Kit + Window
+"omni.kit.mainwindow" = {}
+
+# Viewport
+"omni.hydra.rtx" = {}
+"omni.hydra.usdrt_delegate" = {}
+"omni.kit.viewport.window" = {}
+"omni.kit.manipulator.camera" = {}
+"omni.kit.manipulator.prim" = {}
+"omni.kit.manipulator.selection" = {}
+"omni.kit.viewport.legacy_gizmos" = {}
+"omni.kit.viewport.menubar.camera" = {}
+"omni.kit.viewport.menubar.display" = {}
+"omni.kit.viewport.menubar.render" = {}
+"omni.kit.viewport.menubar.settings" = {}
+"omni.kit.viewport.ready" = {}
+
+# USD
+"omni.usd" = {}
+"omni.kit.stage_template.core" = {}
+"omni.kit.property.bundle" = {}
+"omni.kit.window.stage" = {}
+
+# Menus
+"omni.kit.menu.file" = {}
+"omni.kit.menu.edit" = {}
+"omni.kit.menu.create" = {}
+"omni.kit.menu.common" = { order = 1000 }
+
+# Windows
+"omni.kit.window.console" = {}
+"omni.kit.window.property" = {}
+"omni.kit.window.toolbar" = {}
+"omni.kit.window.status_bar" = {}
+
+# Physics - pulls in omni.physx and all PhysX dependencies
+"omni.physx.stageupdate" = {}
+
+# Material support
+"omni.kit.material.library" = {}
+
+# Renderer setup
+"omni.activity.profiler" = {}
+"omni.activity.pump" = {}
+"omni.rtx.settings.core" = {}
+
+# Our custom extension
+"omni.marble.coaster" = {}
+
+[settings]
+# Renderer
+renderer.asyncInit = true
+renderer.gpuEnumeration.glInterop.enabled = false
+rtx.ecoMode.enabled = true
+rtx.hydra.mdlMaterialWarmup = true
+
+# Physics defaults
+persistent.physics.updateToUsd = true
+persistent.physics.useFastCache = true
+
+[settings.app]
+content.emptyStageOnStart = false
+window.title = "OmniMarble"
+renderer.skipWhileMinimized = true
+font.file = "${fonts}/OpenSans-SemiBold.ttf"
+font.size = 16
+
+[settings.app.viewport.defaults]
+fillViewport = true
+tickRate = 60
+
+[settings.app.exts]
+folders.'++' = [
+    "${app}/../exts",
+    "${app}/../extscache/",
+]

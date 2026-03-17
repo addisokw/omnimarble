@@ -1,0 +1,14 @@
+#usda 1.0
+(
+    metersPerUnit = 0.001
+    subLayers = [
+        @./visual_config.usda@,
+        @./physics_config.usda@,
+        @./coil_properties.usda@,
+        @./coil_geometry.usda@,
+        @./marble_actor.usda@,
+        @./track_geometry.usda@
+    ]
+    upAxis = "Z"
+)
+

@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+
+# UV
+.python-version
+
+# IDE
+.vscode/
+.idea/
+
+# NVIDIA/Kit build artifacts
+_build/
+_repo/
+
+# Model checkpoints (large files)
+models/pinn_checkpoint/*.pt
+models/pinn_checkpoint/*.onnx
+
+# Generated data (large numpy files)
+data/pinn_*.npy
+
+# Results (regenerable)
+results/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude
+.claude/

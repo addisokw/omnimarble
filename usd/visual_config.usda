@@ -1,0 +1,137 @@
+#usda 1.0
+(
+    metersPerUnit = 0.001
+    upAxis = "Z"
+)
+
+def "World"
+{
+    def "Lights"
+    {
+        def DomeLight "DomeLight"
+        {
+            color3f inputs:color = (0.9, 0.93, 1)
+            float inputs:intensity = 500
+        }
+
+        def DistantLight "KeyLight"
+        {
+            float inputs:angle = 1
+            color3f inputs:color = (1, 0.98, 0.95)
+            float inputs:intensity = 3000
+            float3 xformOp:rotateXYZ = (-45, 30, 0)
+            uniform token[] xformOpOrder = ["xformOp:rotateXYZ"]
+        }
+
+        def DistantLight "FillLight"
+        {
+            float inputs:angle = 2
+            color3f inputs:color = (0.7, 0.8, 1)
+            float inputs:intensity = 1000
+            float3 xformOp:rotateXYZ = (-30, -120, 0)
+            uniform token[] xformOpOrder = ["xformOp:rotateXYZ"]
+        }
+    }
+
+    def "Materials"
+    {
+        def Material "TrackDisplayMtl"
+        {
+            token outputs:surface.connect = </World/Materials/TrackDisplayMtl/Shader.outputs:surface>
+
+            def Shader "Shader"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.5, 0.5, 0.55)
+                float inputs:metallic = 0.7
+                float inputs:roughness = 0.3
+                token outputs:surface
+            }
+        }
+
+        def Material "MarbleDisplayMtl"
+        {
+            token outputs:surface.connect = </World/Materials/MarbleDisplayMtl/Shader.outputs:surface>
+
+            def Shader "Shader"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.8, 0.2, 0.15)
+                float inputs:metallic = 0.9
+                float inputs:roughness = 0.15
+                token outputs:surface
+            }
+        }
+
+        def Material "CoilDisplayMtl"
+        {
+            token outputs:surface.connect = </World/Materials/CoilDisplayMtl/Shader.outputs:surface>
+
+            def Shader "Shader"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.72, 0.45, 0.2)
+                float inputs:metallic = 0.95
+                float inputs:roughness = 0.25
+                token outputs:surface
+            }
+        }
+
+        def Material "GroundMtl"
+        {
+            token outputs:surface.connect = </World/Materials/GroundMtl/Shader.outputs:surface>
+
+            def Shader "Shader"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.25, 0.25, 0.28)
+                float inputs:metallic = 0
+                float inputs:roughness = 0.8
+                token outputs:surface
+            }
+        }
+    }
+
+    over "Track" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        rel material:binding = </World/Materials/TrackDisplayMtl>
+    }
+
+    over "Marble"
+    {
+        over "Geom" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </World/Materials/MarbleDisplayMtl>
+        }
+    }
+
+    over "Coil"
+    {
+        over "Geom" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </World/Materials/CoilDisplayMtl>
+        }
+    }
+
+    def Mesh "GroundPlane" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        float3[] extent = [(-500, -500, 0), (500, 500, 0)]
+        int[] faceVertexCounts = [4]
+        int[] faceVertexIndices = [0, 1, 2, 3]
+        rel material:binding = </World/Materials/GroundMtl>
+        normal3f[] normals = [(0, 0, 1), (0, 0, 1), (0, 0, 1), (0, 0, 1)] (
+            interpolation = "vertex"
+        )
+        point3f[] points = [(-500, -500, 0), (500, -500, 0), (500, 500, 0), (-500, 500, 0)]
+        uniform token subdivisionScheme = "none"
+    }
+}
+
