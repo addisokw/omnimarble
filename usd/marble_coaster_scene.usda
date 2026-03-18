@@ -2,13 +2,247 @@
 (
     metersPerUnit = 0.001
     subLayers = [
-        @./visual_config.usda@,
-        @./physics_config.usda@,
-        @./coil_properties.usda@,
-        @./coil_geometry.usda@,
+        @./track_geometry.usda@,
         @./marble_actor.usda@,
-        @./track_geometry.usda@
+        @./coil_geometry.usda@,
+        @./coil_properties.usda@,
+        @./visual_config.usda@
     ]
     upAxis = "Z"
 )
+
+def Xform "World"
+{
+    def PhysicsScene "PhysicsScene"
+    {
+        vector3f physics:gravityDirection = (0, 0, -1)
+        float physics:gravityMagnitude = 9810
+    }
+
+    over "Track"
+    {
+        over "MainTrack" (
+            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            uniform token physics:approximation = "meshSimplification"
+        }
+    }
+
+    def "PhysicsMaterial" (
+        prepend apiSchemas = ["PhysicsMaterialAPI"]
+    )
+    {
+        float physics:dynamicFriction = 0.2
+        float physics:restitution = 0.5
+        float physics:staticFriction = 0.3
+    }
+
+    def Xform "Sensors"
+    {
+        def Xform "VelIn_1"
+        {
+            double3 xformOp:translate = (0.3254519261775389, -0.5764977037906647, 5)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def Cylinder "Emitter"
+            {
+                uniform token axis = "X"
+                double height = 3
+                color3f[] primvars:displayColor = [(0.2, 0.2, 0.2)]
+                double radius = 2
+                double3 xformOp:translate = (13.5, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate"]
+            }
+
+            def Cylinder "Receiver"
+            {
+                uniform token axis = "X"
+                double height = 3
+                color3f[] primvars:displayColor = [(0.2, 0.2, 0.2)]
+                double radius = 2
+                double3 xformOp:translate = (-13.5, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate"]
+            }
+
+            def Cylinder "Beam"
+            {
+                uniform token axis = "X"
+                double height = 24
+                color3f[] primvars:displayColor = [(0.2, 0.4, 1)]
+                double radius = 0.3
+            }
+        }
+
+        def Xform "VelIn_2"
+        {
+            double3 xformOp:translate = (0.3254519261775389, 19.423502296209335, 5)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def Cylinder "Emitter"
+            {
+                uniform token axis = "X"
+                double height = 3
+                color3f[] primvars:displayColor = [(0.2, 0.2, 0.2)]
+                double radius = 2
+                double3 xformOp:translate = (13.5, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate"]
+            }
+
+            def Cylinder "Receiver"
+            {
+                uniform token axis = "X"
+                double height = 3
+                color3f[] primvars:displayColor = [(0.2, 0.2, 0.2)]
+                double radius = 2
+                double3 xformOp:translate = (-13.5, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate"]
+            }
+
+            def Cylinder "Beam"
+            {
+                uniform token axis = "X"
+                double height = 24
+                color3f[] primvars:displayColor = [(0.2, 0.4, 1)]
+                double radius = 0.3
+            }
+        }
+
+        def Xform "Entry"
+        {
+            double3 xformOp:translate = (0.3254519261775389, 39.423502296209335, 5)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def Cylinder "Emitter"
+            {
+                uniform token axis = "X"
+                double height = 3
+                color3f[] primvars:displayColor = [(0.2, 0.2, 0.2)]
+                double radius = 2
+                double3 xformOp:translate = (13.5, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate"]
+            }
+
+            def Cylinder "Receiver"
+            {
+                uniform token axis = "X"
+                double height = 3
+                color3f[] primvars:displayColor = [(0.2, 0.2, 0.2)]
+                double radius = 2
+                double3 xformOp:translate = (-13.5, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate"]
+            }
+
+            def Cylinder "Beam"
+            {
+                uniform token axis = "X"
+                double height = 24
+                color3f[] primvars:displayColor = [(0, 1, 0)]
+                double radius = 0.3
+            }
+        }
+
+        def Xform "Cutoff"
+        {
+            double3 xformOp:translate = (0.3254519261775389, 64.42350229620934, 5)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def Cylinder "Emitter"
+            {
+                uniform token axis = "X"
+                double height = 3
+                color3f[] primvars:displayColor = [(0.2, 0.2, 0.2)]
+                double radius = 2
+                double3 xformOp:translate = (13.5, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate"]
+            }
+
+            def Cylinder "Receiver"
+            {
+                uniform token axis = "X"
+                double height = 3
+                color3f[] primvars:displayColor = [(0.2, 0.2, 0.2)]
+                double radius = 2
+                double3 xformOp:translate = (-13.5, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate"]
+            }
+
+            def Cylinder "Beam"
+            {
+                uniform token axis = "X"
+                double height = 24
+                color3f[] primvars:displayColor = [(1, 0, 0)]
+                double radius = 0.3
+            }
+        }
+
+        def Xform "VelOut_1"
+        {
+            double3 xformOp:translate = (0.3254519261775389, 119.42350229620934, 5)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def Cylinder "Emitter"
+            {
+                uniform token axis = "X"
+                double height = 3
+                color3f[] primvars:displayColor = [(0.2, 0.2, 0.2)]
+                double radius = 2
+                double3 xformOp:translate = (13.5, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate"]
+            }
+
+            def Cylinder "Receiver"
+            {
+                uniform token axis = "X"
+                double height = 3
+                color3f[] primvars:displayColor = [(0.2, 0.2, 0.2)]
+                double radius = 2
+                double3 xformOp:translate = (-13.5, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate"]
+            }
+
+            def Cylinder "Beam"
+            {
+                uniform token axis = "X"
+                double height = 24
+                color3f[] primvars:displayColor = [(0, 1, 1)]
+                double radius = 0.3
+            }
+        }
+
+        def Xform "VelOut_2"
+        {
+            double3 xformOp:translate = (0.3254519261775389, 179.42350229620934, 5)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def Cylinder "Emitter"
+            {
+                uniform token axis = "X"
+                double height = 3
+                color3f[] primvars:displayColor = [(0.2, 0.2, 0.2)]
+                double radius = 2
+                double3 xformOp:translate = (13.5, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate"]
+            }
+
+            def Cylinder "Receiver"
+            {
+                uniform token axis = "X"
+                double height = 3
+                color3f[] primvars:displayColor = [(0.2, 0.2, 0.2)]
+                double radius = 2
+                double3 xformOp:translate = (-13.5, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate"]
+            }
+
+            def Cylinder "Beam"
+            {
+                uniform token axis = "X"
+                double height = 24
+                color3f[] primvars:displayColor = [(0, 1, 1)]
+                double radius = 0.3
+            }
+        }
+    }
+}
 

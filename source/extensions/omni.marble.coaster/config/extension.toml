@@ -1,9 +1,9 @@
 [package]
-version = "1.0.0"
+version = "2.1.0"
 title = "Marble Coaster Physics Controller"
-description = "Loads the marble coaster USD scene, injects electromagnetic forces, and controls PhysX simulation"
+description = "Loads the marble coaster USD scene, injects electromagnetic forces via RLC capacitor discharge, and controls PhysX simulation"
 category = "Simulation"
-keywords = ["physics", "marble", "coaster", "electromagnetic", "coil"]
+keywords = ["physics", "marble", "coaster", "electromagnetic", "coil", "coilgun", "RLC"]
 authors = ["OmniMarble"]
 
 [dependencies]
@@ -12,24 +12,43 @@ authors = ["OmniMarble"]
 "omni.ui" = {}
 "omni.kit.commands" = {}
 "omni.timeline" = {}
+"omni.kit.pipapi" = {}
 
 [[python.module]]
 name = "omni.marble.coaster"
 path = "."
 
 [settings]
-# Default coil parameters (can be overridden at runtime)
-exts."omni.marble.coaster".coil.innerRadius = 8.0
-exts."omni.marble.coaster".coil.outerRadius = 14.0
+# Coil geometry
+exts."omni.marble.coaster".coil.innerRadius = 12.0
+exts."omni.marble.coaster".coil.outerRadius = 18.0
 exts."omni.marble.coaster".coil.length = 30.0
 exts."omni.marble.coaster".coil.numTurns = 30
-exts."omni.marble.coaster".coil.maxCurrent = 10.0
-exts."omni.marble.coaster".coil.pulseWidth = 5.0
-exts."omni.marble.coaster".coil.resistance = 1.2
-exts."omni.marble.coaster".coil.inductance = 150.0
-exts."omni.marble.coaster".coil.supplyVoltage = 24.0
+exts."omni.marble.coaster".coil.wireDiameter = 0.8
+exts."omni.marble.coaster".coil.insulationThickness = 0.035
+# RLC circuit (must match config/coil_params.json)
+exts."omni.marble.coaster".coil.capacitance = 470.0
+exts."omni.marble.coaster".coil.chargeVoltage = 50.0
+exts."omni.marble.coaster".coil.esr = 0.01
+exts."omni.marble.coaster".coil.wiringResistance = 0.02
+exts."omni.marble.coaster".coil.switchType = "MOSFET"
+exts."omni.marble.coaster".coil.hasFlybackDiode = true
+# IR break-beam gate positions (mm along coil axis, relative to coil center)
+# Negative = approach side, positive = exit/launch side
+# Marble travels from negative z_along toward positive z_along
+exts."omni.marble.coaster".gates.velIn1 = -60.0
+exts."omni.marble.coaster".gates.velIn2 = -40.0
+exts."omni.marble.coaster".gates.entry = -20.0
+exts."omni.marble.coaster".gates.cutoff = 5.0
+exts."omni.marble.coaster".gates.velOut1 = 60.0
+exts."omni.marble.coaster".gates.velOut2 = 120.0
+# Marble
 exts."omni.marble.coaster".marble.radius = 5.0
 exts."omni.marble.coaster".marble.chiEff = 3.0
+exts."omni.marble.coaster".marble.saturationT = 1.8
+exts."omni.marble.coaster".marble.conductivity = 6000000.0
+# Environment
+exts."omni.marble.coaster".environment.ambientTemperature = 20.0
 
 [[test]]
 dependencies = [

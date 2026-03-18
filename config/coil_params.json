@@ -4,11 +4,36 @@
   "length_mm": 30.0,
   "num_turns": 30,
   "wire_diameter_mm": 0.8,
-  "position_mm": [0, 30, 0],
-  "axis": [0, 1, 0],
-  "max_current_A": 10.0,
-  "pulse_width_ms": 5.0,
-  "resistance_ohm": 1.2,
-  "inductance_uH": 150.0,
-  "supply_voltage_V": 24.0
+  "insulation_thickness_mm": 0.035,
+  "position_mm": [
+    0.3254519261775389,
+    59.423502296209335,
+    5.0
+  ],
+  "axis": [
+    0,
+    1,
+    0
+  ],
+  "sensor_entry_offset_mm": -20.0,
+  "sensor_cutoff_offset_mm": 5.0,
+  "capacitance_uF": 470.0,
+  "charge_voltage_V": 50.0,
+  "esr_ohm": 0.01,
+  "wiring_resistance_ohm": 0.02,
+  "has_flyback_diode": true,
+  "switch_type": "MOSFET",
+  "ambient_temperature_C": 20.0,
+  "marble_saturation_T": 1.8,
+  "marble_conductivity_S_per_m": 6000000.0,
+  "resistance_ohm": 0.08020574999999999,
+  "inductance_uH": 12.406075768931705,
+  "gate_positions": {
+    "vel_in_1": -60.0,
+    "vel_in_2": -40.0,
+    "entry": -20.0,
+    "cutoff": 5.0,
+    "vel_out_1": 60.0,
+    "vel_out_2": 120.0
+  }
 }

@@ -10,8 +10,8 @@ def Xform "World"
         prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
     )
     {
-        float physics:density = 0.0078
-        double3 xformOp:translate = (0.3135483910184388, 10, 10.87860631942749)
+        float physics:mass = 0.0040840707
+        double3 xformOp:translate = (0.3135483910184388, -20, 12)
         uniform token[] xformOpOrder = ["xformOp:translate"]
 
         def Sphere "Geom" (

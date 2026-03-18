@@ -114,7 +114,7 @@ class HybridEMForceComputer:
     4. Pass force to Warp kernel for integration
     """
 
-    def __init__(self, pinn_model=None, coil_params=None, marble_radius=5.0, chi_eff=100.0):
+    def __init__(self, pinn_model=None, coil_params=None, marble_radius=5.0, chi_eff=3.0):
         self.pinn_model = pinn_model
         self.coil_params = coil_params or {}
         self.marble_radius = marble_radius

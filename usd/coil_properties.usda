@@ -8,16 +8,19 @@ over "World"
 {
     over "Coil"
     {
-        custom float coilLauncher:inductance = 150
+        custom float coilLauncher:capacitance = 470
+        custom float coilLauncher:chargeVoltage = 50
+        custom float coilLauncher:esr = 0.01
+        custom float coilLauncher:inductance = 12.4060755
         custom float coilLauncher:innerRadius = 12
         custom float coilLauncher:length = 30
-        custom float coilLauncher:maxCurrent = 10
+        custom float coilLauncher:marbleConductivity = 6000000
+        custom float coilLauncher:marbleSaturation = 1.8
         custom int coilLauncher:numTurns = 30
         custom float coilLauncher:outerRadius = 18
-        custom float coilLauncher:pulseWidth = 5
-        custom float coilLauncher:resistance = 1.2
-        custom float coilLauncher:supplyVoltage = 24
+        custom float coilLauncher:resistance = 0.08020575
         custom float coilLauncher:wireDiameter = 0.8
+        custom float coilLauncher:wiringResistance = 0.02
     }
 }
 

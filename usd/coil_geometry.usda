@@ -9,7 +9,7 @@ def Xform "World"
     def Xform "Coil"
     {
         float3 xformOp:rotateXYZ = (0, 0, 90)
-        double3 xformOp:translate = (0, 30, 0)
+        double3 xformOp:translate = (0.3254519261775389, 59.423502296209335, 5)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ"]
 
         def Mesh "Geom" (

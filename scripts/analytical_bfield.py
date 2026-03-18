@@ -131,7 +131,7 @@ def solenoid_field_gradient(
 
 def ferromagnetic_force(
     r: float, z: float, marble_radius: float, coil_params: dict,
-    chi_eff: float = 100.0,
+    chi_eff: float = 3.0,
 ) -> tuple[float, float]:
     """Compute force on a ferromagnetic sphere in the B-field.
 
@@ -142,7 +142,7 @@ def ferromagnetic_force(
         z: axial position (mm)
         marble_radius: sphere radius (mm)
         coil_params: coil parameters
-        chi_eff: effective susceptibility (dimensionless, ~100 for soft steel)
+        chi_eff: effective susceptibility (dimensionless, ~3 for steel bearing, demagnetization-corrected)
 
     Returns:
         (F_r, F_z) in mN
