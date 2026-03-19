@@ -172,7 +172,20 @@ def main():
 
         Br, Bz = solenoid_field_batch(all_pts[:, 0], all_pts[:, 1], config)
 
+        # Mask out near-singular points where alpha_sq ≈ 0 (point on a
+        # current loop: r ≈ R_mean AND z ≈ loop position). These produce
+        # extreme field values that destabilize training and inflate L1 max.
+        L_cfg = config["length_mm"]
+        z_loops = np.linspace(-L_cfg / 2, L_cfg / 2, config["num_turns"])
+        singular = np.zeros(len(all_pts), dtype=bool)
+        for z_loop in z_loops:
+            dr = np.abs(all_pts[:, 0] - R_mean)
+            dz = np.abs(all_pts[:, 1] - z_loop)
+            singular |= (dr < 0.5) & (dz < 0.5)
+
         for i in range(points_per_config):
+            if singular[i] or not np.isfinite(Br[i]) or not np.isfinite(Bz[i]):
+                continue
             all_inputs[idx] = [
                 all_pts[i, 0], all_pts[i, 1],
                 config["current_A"], config["num_turns"],
