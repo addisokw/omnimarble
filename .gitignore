@@ -15,8 +15,8 @@ __pycache__/
 _build/
 _repo/
 
-# Model checkpoints (large files)
-models/pinn_checkpoint/*.pt
+# Model checkpoints (candidates are regenerable intermediates)
+models/pinn_checkpoint/candidates/
 models/pinn_checkpoint/*.onnx
 
 # Generated data (large numpy files)

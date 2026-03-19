@@ -139,7 +139,26 @@ uv run python scripts/analytical_bfield.py
 
 Generates reference plots in `results/plots/`.
 
-### 5. Run in NVIDIA Kit (Omniverse)
+### 5. Coil Design Optimizer
+
+#### Web UI (Gradio)
+
+```bash
+uv run python scripts/coil_optimizer_app.py
+```
+
+Opens a browser UI for interactive multi-objective coil design optimization.
+Features: constraint sliders, target-boost mode, Pareto plot, coupled ODE reranking.
+
+#### CLI
+
+```bash
+uv run python scripts/optimize_coil_design.py
+```
+
+Headless optimization — prints top designs to console with Pareto plot saved to `results/`.
+
+### 6. Run in NVIDIA Kit (Omniverse)
 
 #### First-time setup
 
@@ -191,8 +210,19 @@ config/
 scripts/
   analytical_bfield.py          # Biot-Savart B-field (elliptic integrals) -- ground truth
   generate_training_data.py     # PINN training data from analytical solution (1M+ samples)
+  generate_training_data_designspace.py  # Design-space variant training data
+  generate_training_data_fieldaccuracy.py # Field-accuracy variant training data
   train_pinn.py                 # PhysicsNeMo PINN training with physics losses
+  train_pinn_designspace.py     # Design-space PINN training variant
+  train_pinn_fieldaccuracy.py   # Field-accuracy PINN training variant
   evaluate_pinn.py              # 5-level PINN validation suite
+  evaluate_candidates.py        # Multi-checkpoint Pareto comparison
+  v7_optimization_diagnostic.py # PINN ranking stability diagnostic
+  physical_accuracy_audit.py    # Physics consistency validation
+  validate_physics.py           # Physics validation utilities
+  coil_optimizer_core.py        # Shared optimization engine (screening + coupled reranking)
+  coil_optimizer_app.py         # Gradio web UI for coil design optimizer
+  optimize_coil_design.py       # CLI coil design optimizer
   warp_bfield_solver.py         # PINN-based solver for headless simulation
   rlc_circuit.py                # RLC circuit utilities (saturation, eddy braking)
   remote_train.sh               # Remote GPU training via SSH
@@ -200,6 +230,12 @@ scripts/
   em_force_injection.py         # Standalone EM force simulation
   simulation_loop.py            # Full orchestration loop
   optimize_launch.py            # Differentiable parameter optimization
+  create_marble.py              # Marble actor creation
+  compose_scene.py              # Scene composition from USD layers
+  convert_stl_to_usd.py         # STL → USD conversion
+  add_visuals.py                # Visual enhancement
+  setup_launch_scene.py         # Launch scene setup
+  run_physics_test.py           # Physics test runner
 
 source/                         # NVIDIA Kit extension
   apps/omnimarble/
@@ -211,7 +247,10 @@ source/                         # NVIDIA Kit extension
 
 models/
   pinn_checkpoint/
-    pinn_best.pt                # Trained PINN checkpoint (current_normalized=True)
+    pinn_best.pt                # Primary PINN checkpoint (current_normalized=True)
+    pinn_best_step100000.pt     # Intermediate checkpoint (100k steps)
+    pinn_designspace.pt         # Design-space variant
+    pinn_fieldaccuracy.pt       # Field-accuracy variant
 
 usd/                            # USD scene layers
   marble_coaster_scene.usda     # Composed scene (references all layers)
@@ -219,6 +258,9 @@ usd/                            # USD scene layers
   coil_geometry.usda            # Coil mesh
   coil_properties.usda          # Coil electrical properties
   track_geometry.usda           # Track collision mesh
+  marble_trajectory.usda        # Trajectory reference
+  physics_config.usda           # PhysX configuration
+  visual_config.usda            # Visual settings
 
 results/
   pinn_validation_report.json   # Validation metrics (machine-readable)
