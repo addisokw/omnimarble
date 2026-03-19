@@ -128,9 +128,7 @@ def simulate_1d_launch(coil_params, drive_params, field_fn, dt=1e-5, t_max=0.005
                 v_arr.append(v)
                 F_arr.append(0.0)
                 I_arr.append(0.0)
-                z += v * dt * 1e-3  # mm/s * s -> mm... wait, v is in mm/s, dt in s
-                # Actually z in mm, v in mm/s, so dz = v * dt (but dt is in seconds)
-                # v is mm/s, dt is s, so dz = v * dt is in mm. Correct.
+                # v is mm/s, dt is s, so dz = v * dt is in mm
                 z += v * dt
                 if z > 80:
                     break
@@ -201,41 +199,38 @@ def make_pinn_field_fn(model, current_normalized, device):
 # Candidate generation
 # ---------------------------------------------------------------------------
 
-def generate_candidates(n=50):
-    """Generate (geometry, drive) candidate pairs spanning the design space."""
+def generate_candidates(n=60):
+    """Generate (geometry, drive) candidate pairs spanning the design space.
+
+    Mix of structured grid (small, to anchor known regimes) and random
+    candidates (majority, to exercise the full parameter space including
+    varied capacitance and resistance regimes).
+    """
     rng = np.random.default_rng(777)
 
     candidates = []
 
-    # Grid sweep
-    Ns = [10, 20, 30, 50, 80]
-    R_means = [8, 12, 15, 20]
-    Ls = [15, 30, 45]
-    voltages = [50, 150, 300]
-    caps = [470]
-
-    # Structured grid (subset)
+    # Small structured grid: 18 candidates anchoring key regimes
     for N_val in [15, 30, 50]:
         for R_val in [10, 15]:
-            for L_val in [20, 30, 45]:
-                for V0 in [50, 150, 300]:
-                    candidates.append({
-                        "id": len(candidates),
-                        "N": N_val,
-                        "R_mean": R_val,
-                        "L": L_val,
-                        "V0": V0,
-                        "C_uF": 470,
-                    })
+            for V0 in [50, 200, 400]:
+                candidates.append({
+                    "id": len(candidates),
+                    "N": N_val,
+                    "R_mean": R_val,
+                    "L": 30.0,
+                    "V0": V0,
+                    "C_uF": 470,
+                })
 
-    # Random candidates to fill
+    # Random candidates: varied geometry, voltage, capacitance
     while len(candidates) < n:
         candidates.append({
             "id": len(candidates),
-            "N": int(rng.choice([10, 20, 30, 40, 50, 60, 80])),
-            "R_mean": float(rng.choice([8, 10, 12, 15, 18, 20])),
-            "L": float(rng.choice([15, 20, 25, 30, 40, 50, 60])),
-            "V0": float(rng.choice([30, 50, 100, 150, 200, 300, 400])),
+            "N": int(rng.choice([10, 15, 20, 30, 40, 50, 60, 80])),
+            "R_mean": float(rng.uniform(8, 20)),
+            "L": float(rng.uniform(15, 60)),
+            "V0": float(rng.uniform(30, 400)),
             "C_uF": float(rng.choice([100, 220, 470, 1000])),
         })
 
