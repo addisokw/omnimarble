@@ -168,6 +168,105 @@ def ferromagnetic_force(
     return float(F_r), float(F_z)
 
 
+def solenoid_field_batch(r_arr, z_arr, coil_params):
+    """Vectorized B-field computation for arrays of (r, z) points.
+
+    ~100x faster than calling solenoid_field() in a Python loop.
+    Computes all N_turns loop contributions for all points simultaneously
+    using numpy broadcasting.
+
+    Args:
+        r_arr: (M,) array of radial positions (mm)
+        z_arr: (M,) array of axial positions (mm)
+        coil_params: dict with coil parameters
+
+    Returns:
+        (Br, Bz) arrays of shape (M,) in Tesla
+    """
+    N = coil_params["num_turns"]
+    L = coil_params["length_mm"]
+    R = (coil_params["inner_radius_mm"] + coil_params["outer_radius_mm"]) / 2
+    I = coil_params.get("current_A", coil_params.get("max_current_A", 10.0))
+
+    r = np.abs(np.asarray(r_arr, dtype=np.float64))  # (M,)
+    z = np.asarray(z_arr, dtype=np.float64)            # (M,)
+    z_loops = np.linspace(-L / 2, L / 2, N)           # (N,)
+
+    # dz[i, j] = z[i] - z_loops[j], shape (M, N)
+    dz = z[:, None] - z_loops[None, :]
+
+    # Broadcast r to (M, N)
+    r_2d = r[:, None] * np.ones(N)[None, :]
+
+    # Elliptic integral parameters
+    alpha_sq = R**2 + r_2d**2 + dz**2 - 2 * R * r_2d  # (M, N)
+    beta_sq = R**2 + r_2d**2 + dz**2 + 2 * R * r_2d   # (M, N)
+    beta_sq = np.maximum(beta_sq, 1e-30)
+
+    m = 1.0 - alpha_sq / beta_sq
+    m = np.clip(m, 0, 1 - 1e-12)
+
+    K = ellipk(m)
+    E = ellipe(m)
+
+    beta = np.sqrt(beta_sq)
+    alpha_sq_safe = np.where(np.abs(alpha_sq) < 1e-30, 1e-30, alpha_sq)
+    prefactor = MU_0_MM * I / (2 * math.pi)
+
+    # Bz from each loop
+    Bz_loops = prefactor / beta * (K + (R**2 - r_2d**2 - dz**2) / alpha_sq_safe * E)
+
+    # Br from each loop (handle r=0 case)
+    r_safe = np.where(r_2d < 1e-10, 1e-10, r_2d)
+    Br_loops = prefactor * dz / (r_safe * beta) * (-K + (R**2 + r_2d**2 + dz**2) / alpha_sq_safe * E)
+
+    # On-axis: Br=0, Bz uses simplified formula
+    on_axis = r_2d < 1e-10
+    Bz_on_axis = MU_0_MM * I * R**2 / (2 * (R**2 + dz**2) ** 1.5)
+    Bz_loops = np.where(on_axis, Bz_on_axis, Bz_loops)
+    Br_loops = np.where(on_axis, 0.0, Br_loops)
+
+    # Sum over loops
+    Br_total = Br_loops.sum(axis=1)  # (M,)
+    Bz_total = Bz_loops.sum(axis=1)  # (M,)
+
+    return Br_total.astype(np.float64), Bz_total.astype(np.float64)
+
+
+def solenoid_field_gradient_batch(r_arr, z_arr, coil_params, dr=0.1, dz_step=0.1):
+    """Vectorized B-field gradient computation via central finite differences.
+
+    Returns:
+        (dBr_dr, dBr_dz, dBz_dr, dBz_dz) arrays of shape (M,)
+    """
+    r = np.asarray(r_arr, dtype=np.float64)
+    z = np.asarray(z_arr, dtype=np.float64)
+
+    # dBz/dz
+    _, Bz_zp = solenoid_field_batch(r, z + dz_step, coil_params)
+    _, Bz_zm = solenoid_field_batch(r, z - dz_step, coil_params)
+    dBz_dz = (Bz_zp - Bz_zm) / (2 * dz_step)
+
+    # dBz/dr
+    _, Bz_rp = solenoid_field_batch(r + dr, z, coil_params)
+    _, Bz_rm = solenoid_field_batch(np.maximum(r - dr, 0), z, coil_params)
+    # Use one-sided diff near r=0
+    denom_r = np.where(r > dr, 2 * dr, r + dr)
+    dBz_dr = (Bz_rp - Bz_rm) / denom_r
+
+    # dBr/dr
+    Br_rp, _ = solenoid_field_batch(r + dr, z, coil_params)
+    Br_rm, _ = solenoid_field_batch(np.maximum(r - dr, 0), z, coil_params)
+    dBr_dr = (Br_rp - Br_rm) / denom_r
+
+    # dBr/dz
+    Br_zp, _ = solenoid_field_batch(r, z + dz_step, coil_params)
+    Br_zm, _ = solenoid_field_batch(r, z - dz_step, coil_params)
+    dBr_dz = (Br_zp - Br_zm) / (2 * dz_step)
+
+    return dBr_dr, dBr_dz, dBz_dr, dBz_dz
+
+
 def validate_and_plot(coil_params: dict):
     """Generate validation plots for the B-field computation."""
     PLOTS_DIR.mkdir(parents=True, exist_ok=True)
