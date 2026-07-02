@@ -24,23 +24,17 @@ from scipy.stats import pearsonr
 from analytical_bfield import MU_0_MM, ferromagnetic_force, solenoid_field, solenoid_field_gradient
 from evaluate_pinn import (
     compute_error_stats,
-    load_pinn_model,
     make_coil_params,
     pinn_predict_field,
     pinn_predict_field_with_grad,
 )
-from train_pinn import BFieldPINN
+from pinn_loader import load_model_from_checkpoint
 
 
 def evaluate_checkpoint(ckpt_path, config, device):
     """Run compact validation on a single checkpoint. Returns metrics dict."""
-    # Load
-    checkpoint = torch.load(str(ckpt_path), map_location=device, weights_only=False)
-    model = BFieldPINN().to(device)
-    model.load_state_dict(checkpoint["model_state_dict"])
-    model.eval()
-    cn = bool(model.current_normalized.item())
-    step = checkpoint.get("step", "?")
+    model, cn, metadata = load_model_from_checkpoint(ckpt_path, device)
+    step = metadata["step"]
 
     N = config["num_turns"]
     R_mean = (config["inner_radius_mm"] + config["outer_radius_mm"]) / 2
@@ -155,14 +149,22 @@ def evaluate_checkpoint(ckpt_path, config, device):
 
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Multi-checkpoint Pareto comparison")
+    parser.add_argument("--candidates-dir", type=Path, default=CANDIDATES_DIR,
+                        help="Directory of pinn_best_step*.pt periodic checkpoints")
+    parser.add_argument("--final", type=Path, default=MODEL_DIR / "pinn_best.pt",
+                        help="Promoted/final checkpoint to include in the sweep")
+    args = parser.parse_args()
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     config = json.loads(CONFIG_PATH.read_text())
 
     # Collect all candidates
-    candidates = sorted(CANDIDATES_DIR.glob("pinn_best_step*.pt"),
+    candidates = sorted(args.candidates_dir.glob("pinn_best_step*.pt"),
                          key=lambda p: int(p.stem.split("step")[1]))
-    # Also include the promoted best
-    candidates.append(MODEL_DIR / "pinn_best.pt")
+    # Also include the promoted/final checkpoint
+    candidates.append(args.final)
 
     print(f"Evaluating {len(candidates)} checkpoints...\n")
 

@@ -112,72 +112,42 @@ class OptimizationResult:
 # ============================================================
 
 def load_pinn_designspace(device):
-    """Load the v7 designspace PINN checkpoint with validation checks."""
-    import torch
-    from train_pinn import BFieldPINN
+    """Load the production PINN checkpoint (pinn_best.pt) with validation checks.
 
-    ckpt_path = ROOT / "models" / "pinn_checkpoint" / "pinn_designspace.pt"
-    if not ckpt_path.exists():
-        raise FileNotFoundError(f"Checkpoint not found: {ckpt_path}")
+    Name kept for backward compatibility — the separate "designspace"
+    checkpoint was byte-identical to pinn_best.pt and has been retired.
+    """
+    from pinn_loader import load_pinn
 
-    checkpoint = torch.load(str(ckpt_path), map_location=device, weights_only=False)
-    model = BFieldPINN().to(device)
-    model.load_state_dict(checkpoint["model_state_dict"])
-    model.eval()
-
-    # Validate: current_normalized must be True
-    current_normalized = bool(model.current_normalized.item())
-    if not current_normalized:
-        raise RuntimeError("pinn_designspace.pt does not have current_normalized=True")
-
-    # Validate: step >= 200000 if present
-    step = checkpoint.get("step", None)
-    if step is not None:
-        if step < 200000:
-            raise RuntimeError(f"checkpoint step={step} < 200000 (not fully trained)")
-
-    return model, device
+    field = load_pinn(
+        ckpt_path=ROOT / "models" / "pinn_checkpoint" / "pinn_best.pt",
+        device=device,
+        min_step=200000,
+        require_current_normalized=True,
+    )
+    return field, device
 
 
 # ============================================================
 # PINN field profile (batch precompute)
 # ============================================================
 
-def precompute_field_profile(model, device, N, R_mean, L):
+def precompute_field_profile(field, device, N, R_mean, L):
     """Precompute Bz and dBz/dz along the axis at I=1A.
+
+    Args:
+        field: pinn_loader.PINNField (handles legacy and derived-B models)
 
     Returns z_arr, Bz_per_A, dBz_dz_per_A as numpy arrays.
     Since B ~ I for a current-normalized PINN, force ~ I^2.
     """
-    import torch
-
     z_arr = np.linspace(-Z_FIELD_RANGE_MM, Z_FIELD_RANGE_MM, N_FIELD_POINTS).astype(np.float32)
     r_arr = np.full(N_FIELD_POINTS, 0.1, dtype=np.float32)  # near axis
-    I_norm = 1.0  # current-normalized
 
-    n = len(z_arr)
-    inputs = np.column_stack([
-        r_arr, z_arr,
-        np.full(n, I_norm, dtype=np.float32),
-        np.full(n, float(N), dtype=np.float32),
-        np.full(n, float(R_mean), dtype=np.float32),
-        np.full(n, float(L), dtype=np.float32),
-    ]).astype(np.float32)
-
-    inp_t = torch.tensor(inputs, device=device, requires_grad=True)
-    out = model(inp_t)
-    B_z = out[:, 2]  # Bz component
-
-    # Autograd for dBz/dz
-    grad_Bz = torch.autograd.grad(
-        B_z, inp_t, grad_outputs=torch.ones_like(B_z),
-        create_graph=False, retain_graph=False,
-    )[0]
-
-    # Scale by I (current_normalized=True means output is B/I)
-    Bz_per_A = B_z.detach().cpu().numpy() * I_norm  # already at I=1
-    dBz_dz_per_A = grad_Bz[:, 1].detach().cpu().numpy() * I_norm
-
+    # At I=1 the B/I normalization makes the result per-amp directly
+    _, Bz_per_A, _, _, _, dBz_dz_per_A = field.predict_field_with_grad(
+        r_arr, z_arr, 1.0, float(N), float(R_mean), float(L),
+    )
     return z_arr, Bz_per_A, dBz_dz_per_A
 
 

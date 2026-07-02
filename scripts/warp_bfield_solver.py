@@ -10,53 +10,14 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from physicsnemo.models.mlp import FullyConnected as NeMoFC
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
+from pinn_loader import DEFAULT_CHECKPOINT as PINN_CHECKPOINT, load_pinn
 from rlc_circuit import eddy_braking_force, saturated_force
 
 MU_0_MM = 4 * math.pi * 1e-4  # T*mm/A
-PINN_CHECKPOINT = ROOT / "models" / "pinn_checkpoint" / "pinn_best.pt"
-
-
-def _load_pinn(device: torch.device) -> torch.nn.Module:
-    """Load trained PINN checkpoint. Fails if missing."""
-    backbone = NeMoFC(
-        in_features=6,
-        layer_size=256,
-        out_features=3,
-        num_layers=6,
-        activation_fn="silu",
-        skip_connections=True,
-    )
-
-    class PINNWrapper(torch.nn.Module):
-        def __init__(self, bb):
-            super().__init__()
-            self.backbone = bb
-            self.register_buffer("input_mean", torch.zeros(6))
-            self.register_buffer("input_std", torch.ones(6))
-            self.register_buffer("output_scale", torch.ones(3))
-            self.register_buffer("current_normalized", torch.tensor(False))
-
-        def forward(self, x):
-            x_norm = (x - self.input_mean) / (self.input_std + 1e-8)
-            return self.backbone(x_norm) * self.output_scale
-
-    wrapper = PINNWrapper(backbone)
-    checkpoint = torch.load(str(PINN_CHECKPOINT), map_location=device, weights_only=False)
-    if "model_state_dict" in checkpoint:
-        wrapper.load_state_dict(checkpoint["model_state_dict"])
-    else:
-        wrapper.load_state_dict(checkpoint)
-    wrapper.to(device)
-    wrapper.eval()
-
-    # Cache the flag for fast access
-    wrapper._current_normalized = bool(wrapper.current_normalized.item())
-    return wrapper
 
 
 class WarpBFieldSolver:
@@ -86,10 +47,11 @@ class WarpBFieldSolver:
                         coil_params.get("outer_radius_mm", 18.0)) / 2.0
         self._length = float(coil_params.get("length_mm", 30.0))
 
-        # Load PINN
+        # Load PINN via the shared loader (handles legacy and derived-B checkpoints)
         self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self._model = _load_pinn(self._device)
-        print(f"  [WarpBFieldSolver] PINN loaded on {self._device}")
+        self._field = load_pinn(device=self._device)
+        print(f"  [WarpBFieldSolver] PINN loaded on {self._device} "
+              f"(step={self._field.metadata['step']}, derived_b={self._field.derived_b})")
 
     def _to_cylindrical(self, marble_pos: np.ndarray) -> tuple:
         """Convert position to (r, z) in coil-local cylindrical coords."""
@@ -104,43 +66,23 @@ class WarpBFieldSolver:
 
     def _pinn_field(self, r: float, z: float, current_A: float) -> tuple:
         """PINN forward pass returning (B_r, B_z)."""
-        inp = torch.tensor(
-            [[r, z, current_A, self._num_turns, self._R_mean, self._length]],
-            dtype=torch.float32, device=self._device,
+        Br, Bz = self._field.predict_field(
+            [r], [z], current_A, self._num_turns, self._R_mean, self._length,
         )
-        with torch.no_grad():
-            out = self._model(inp)
-        # If model outputs B/I, multiply by I to get actual B
-        scale = current_A if self._model._current_normalized else 1.0
-        return float(out[0, 1]) * scale, float(out[0, 2]) * scale
+        return float(Br[0]), float(Bz[0])
 
     def _pinn_field_with_grad(self, r: float, z: float, current_A: float) -> tuple:
         """PINN forward pass with autograd for gradients.
 
         Returns (B_r, B_z, dBr_dr, dBr_dz, dBz_dr, dBz_dz).
         """
-        inp = torch.tensor(
-            [[r, z, current_A, self._num_turns, self._R_mean, self._length]],
-            dtype=torch.float32, device=self._device, requires_grad=True,
+        return self._field.predict_point_with_grad(
+            r, z, current_A, self._num_turns, self._R_mean, self._length,
         )
-        out = self._model(inp)
-        B_r = out[0, 1]
-        B_z = out[0, 2]
 
-        grad_Br = torch.autograd.grad(
-            B_r, inp, create_graph=False, retain_graph=True,
-        )[0][0]
-        grad_Bz = torch.autograd.grad(
-            B_z, inp, create_graph=False, retain_graph=False,
-        )[0][0]
-
-        # If model outputs B/I, scale everything by I
-        scale = current_A if self._model._current_normalized else 1.0
-        return (
-            B_r.detach().item() * scale, B_z.detach().item() * scale,
-            grad_Br[0].item() * scale, grad_Br[1].item() * scale,
-            grad_Bz[0].item() * scale, grad_Bz[1].item() * scale,
-        )
+    def field_with_grad(self, r: float, z: float, current_A: float) -> tuple:
+        """Public field + gradients accessor (same tuple as _pinn_field_with_grad)."""
+        return self._pinn_field_with_grad(r, z, current_A)
 
     def solve(self, current_A: float, marble_pos: np.ndarray) -> tuple:
         """Solve for B-field at marble position.
@@ -149,12 +91,8 @@ class WarpBFieldSolver:
             (B_at_marble, dBdz_at_marble) — B magnitude (T) and axial gradient (T/mm)
         """
         r, z = self._to_cylindrical(marble_pos)
-        Br, Bz = self._pinn_field(r, z, current_A)
+        Br, Bz, _, _, _, dBz_dz = self._pinn_field_with_grad(r, z, current_A)
         B_mag = math.sqrt(Br ** 2 + Bz ** 2)
-
-        # Get dBz/dz from autograd
-        _, _, _, _, _, dBz_dz = self._pinn_field_with_grad(r, z, current_A)
-
         return B_mag, dBz_dz
 
     def get_force(self, current_A: float, marble_pos: np.ndarray,

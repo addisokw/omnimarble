@@ -83,7 +83,7 @@ def build_rlc_from_config(params: dict) -> dict:
     R_total_dc = R_dc + R_esr + R_wiring
 
     L_H = L_uH * 1e-6
-    C = params.get("capacitance_uF", 1000.0) * 1e-6
+    C = params.get("capacitance_uF", 470.0) * 1e-6
     omega_0 = 1.0 / math.sqrt(L_H * C)
     alpha = R_total_dc / (2 * L_H)
     zeta = alpha / omega_0
@@ -94,8 +94,8 @@ def build_rlc_from_config(params: dict) -> dict:
     R_total_ac = ac_info["R_ac_ohm"] + R_esr + R_wiring
 
     rlc_input = {
-        "capacitance_uF": params.get("capacitance_uF", 1000.0),
-        "charge_voltage_V": params.get("charge_voltage_V", 400.0),
+        "capacitance_uF": params.get("capacitance_uF", 470.0),
+        "charge_voltage_V": params.get("charge_voltage_V", 50.0),
         "inductance_uH": L_uH,
         "total_resistance_ohm": R_total_ac,
     }

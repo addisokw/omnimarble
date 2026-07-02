@@ -502,12 +502,19 @@ def phase2_heatmaps(model, current_normalized, device, ranking_results):
 # ---------------------------------------------------------------------------
 
 def main():
+    import argparse
+    from pathlib import Path as _Path
+    parser = argparse.ArgumentParser(description="PINN optimization-ranking diagnostic")
+    parser.add_argument("--ckpt", type=_Path, default=None,
+                        help="Checkpoint to test (default: models/pinn_checkpoint/pinn_best.pt)")
+    args = parser.parse_args()
+
     print("=" * 60)
-    print("  V7 PINN OPTIMIZATION DIAGNOSTIC")
+    print("  PINN OPTIMIZATION DIAGNOSTIC")
     print("=" * 60)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model, cn, meta = load_pinn_model(device)
+    model, cn, meta = load_pinn_model(device, ckpt_path=args.ckpt)
     print(f"Loaded: step={meta['step']}, current_normalized={cn}")
 
     # Phase 1

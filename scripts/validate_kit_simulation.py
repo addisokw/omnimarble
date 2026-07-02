@@ -1,10 +1,20 @@
-"""Headless simulation that replicates the Kit extension's exact physics.
+"""Headless simulation mirroring the Kit extension's physics chain.
 
-Phase 2: Uses RLC capacitor discharge, multi-gate IR sensors, saturation,
-eddy currents, and thermal model. Loads the starter-slope track and matches
+Uses RLC capacitor discharge, multi-gate IR sensors, saturation, eddy
+currents, and thermal model. Loads the starter-slope track and matches
 the Kit extension's marble start position from config.
+
+Field modes (--field):
+  pinn (default): PINN inference + autograd gradients + full (B.grad)B
+      force — the same field/force path the Kit extension uses.
+  analytical: closed-form Biot-Savart with finite-difference dBz/dz —
+      a PINN-independent cross-check, NOT what Kit runs.
+
+Collision handling here is a simple sphere-mesh bounce, not PhysX — exit
+velocities are comparable to Kit but not identical.
 """
 
+import argparse
 import json
 import math
 import sys
@@ -103,7 +113,7 @@ def build_rlc_from_config(params: dict) -> dict:
     R_total_dc = R_dc + R_esr + R_wiring
 
     L_H = L_uH * 1e-6
-    C = params.get("capacitance_uF", 1000.0) * 1e-6
+    C = params.get("capacitance_uF", 470.0) * 1e-6
     omega_0 = 1.0 / math.sqrt(L_H * C)
     alpha = R_total_dc / (2 * L_H)
     zeta = alpha / omega_0
@@ -114,8 +124,8 @@ def build_rlc_from_config(params: dict) -> dict:
     R_total_ac = ac_info["R_ac_ohm"] + R_esr + R_wiring
 
     rlc = compute_rlc_params({
-        "capacitance_uF": params.get("capacitance_uF", 1000.0),
-        "charge_voltage_V": params.get("charge_voltage_V", 400.0),
+        "capacitance_uF": params.get("capacitance_uF", 470.0),
+        "charge_voltage_V": params.get("charge_voltage_V", 50.0),
         "inductance_uH": L_uH,
         "total_resistance_ohm": R_total_ac,
     })
@@ -127,8 +137,24 @@ def build_rlc_from_config(params: dict) -> dict:
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--field", choices=["pinn", "analytical"], default="pinn",
+                        help="B-field source: pinn matches the Kit extension path "
+                             "(default); analytical is a PINN-independent cross-check")
+    parser.add_argument("--voltage", type=float, default=None,
+                        help="Override charge voltage (V), e.g. 300 for a launch-demo run")
+    args = parser.parse_args()
+
     params = json.loads(CONFIG_PATH.read_text())
+    if args.voltage is not None:
+        params["charge_voltage_V"] = args.voltage
     rlc = build_rlc_from_config(params)
+
+    solver = None
+    if args.field == "pinn":
+        # Requires torch + physicsnemo + the trained checkpoint
+        from warp_bfield_solver import WarpBFieldSolver
+        solver = WarpBFieldSolver(params, chi_eff=3.0)
 
     chi_eff = 3.0
     marble_radius = MARBLE_RADIUS
@@ -148,10 +174,10 @@ def main():
     gates = params.get("gate_positions", {
         "vel_in_1": -60.0, "vel_in_2": -40.0,
         "entry": -20.0, "cutoff": 5.0,
-        "vel_out_1": 20.0, "vel_out_2": 40.0,
+        "vel_out_1": 60.0, "vel_out_2": 120.0,
     })
 
-    print(f"=== Headless Kit Simulation Validation (RLC Phase 2) ===")
+    print(f"=== Headless Kit Simulation Validation (field={args.field}) ===")
     print(f"Track: {TRACK_STL.name}")
     print(f"Marble: {marble_mass_g:.2f}g, chi_eff={chi_eff}, B_sat={B_sat}T")
     print(f"RLC: {rlc['regime']}, zeta={rlc['zeta']:.4f}, I_peak={rlc['peak_current_A']:.0f}A")
@@ -304,14 +330,30 @@ def main():
             V_cap = circuit_state["Q_cap"] / rlc["capacitance_F"]
 
             if abs(current) > 1e-8:
-                params_now = params.copy()
-                params_now["current_A"] = current
-                _, Bz = solenoid_field(r, z_along, params_now)
-                _, Bz_p = solenoid_field(r, z_along + 0.1, params_now)
-                _, Bz_m = solenoid_field(r, z_along - 0.1, params_now)
-                dBz_dz = (Bz_p - Bz_m) / 0.2
+                if solver is not None:
+                    # PINN path: same field + full (B.grad)B force as the
+                    # Kit extension's PINNForceComputer
+                    Br, Bz, dBr_dr, dBr_dz, dBz_dr, dBz_dz = solver.field_with_grad(
+                        r, z_along, current,
+                    )
+                    B_internal = (1 + chi_eff / 3) * abs(Bz)
+                    if B_internal < B_sat:
+                        prefactor = chi_eff * V_marble / MU_0_MM
+                        F_z_mN = prefactor * (Br * dBz_dr + Bz * dBz_dz)
+                    else:
+                        M_sat = B_sat / MU_0_MM
+                        F_z_mN = M_sat * V_marble * dBz_dz * MU_0_MM
+                else:
+                    # Analytical cross-check: axial force from Bz * dBz/dz
+                    # (finite difference), with saturation
+                    params_now = params.copy()
+                    params_now["current_A"] = current
+                    _, Bz = solenoid_field(r, z_along, params_now)
+                    _, Bz_p = solenoid_field(r, z_along + 0.1, params_now)
+                    _, Bz_m = solenoid_field(r, z_along - 0.1, params_now)
+                    dBz_dz = (Bz_p - Bz_m) / 0.2
 
-                F_z_mN = saturated_force(Bz, dBz_dz, marble_params)
+                    F_z_mN = saturated_force(Bz, dBz_dz, marble_params)
 
                 B_now = abs(Bz)
                 dBdt = (B_now - prev_B) / dt if dt > 0 else 0
@@ -447,7 +489,9 @@ def main():
     axes[2, 2].set_ylabel("Energy (J)")
     axes[2, 2].set_title("Energy breakdown")
 
-    plt.suptitle(f"Kit Simulation Validation — {TRACK_STL.name} (chi={chi_eff}, {marble_mass_g:.1f}g)", fontsize=14)
+    plt.suptitle(f"Kit Simulation Validation — {TRACK_STL.name} "
+                 f"(field={args.field}, chi={chi_eff}, {marble_mass_g:.1f}g, "
+                 f"{rlc['charge_voltage_V']:.0f}V)", fontsize=14)
     plt.tight_layout()
     plt.savefig(PLOTS_DIR / "kit_validation.png", dpi=150)
     plt.close()

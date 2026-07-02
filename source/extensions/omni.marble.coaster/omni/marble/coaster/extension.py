@@ -8,6 +8,7 @@ omni.kit.pipapi.  They are imported lazily in on_startup(), not at module level.
 
 import json
 import math
+import sys
 from pathlib import Path
 
 import carb
@@ -23,24 +24,49 @@ import omni.usd
 from omni.physx.scripts.utils import get_physx_simulation_interface
 from pxr import Gf, PhysicsSchemaTools, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics, UsdUtils
 
+from .coil_physics import (
+    COPPER_SPECIFIC_HEAT,
+    COPPER_TEMP_COEFF,
+    MU_0_MM,
+    CoilPhysics,
+    gate_crossed,
+)
+
 # Late-bound after pipapi install in on_startup()
 torch = None
-NeMoFC = None
+pinn_loader = None
 
-OMNIMARBLE_PROJECT = Path(r"C:\Users\kaddi\Documents\Projects\omnimarble")
+
+def _find_project_root() -> Path:
+    """Walk up from this file to the omnimarble project root.
+
+    The extension lives at <root>/source/extensions/.../coaster/extension.py;
+    the root is identified by config/coil_params.json so the extension works
+    from any checkout location.
+    """
+    for parent in Path(__file__).resolve().parents:
+        if (parent / "config" / "coil_params.json").exists():
+            return parent
+    raise RuntimeError(
+        "omnimarble project root not found above extension "
+        "(expected config/coil_params.json in an ancestor directory)"
+    )
+
+
+OMNIMARBLE_PROJECT = _find_project_root()
+SCRIPTS_DIR = OMNIMARBLE_PROJECT / "scripts"
 USD_DIR = OMNIMARBLE_PROJECT / "usd"
 SCENE_PATH = USD_DIR / "marble_coaster_scene.usda"
 PINN_CHECKPOINT = OMNIMARBLE_PROJECT / "models" / "pinn_checkpoint" / "pinn_best.pt"
 
-MU_0_MM = 4 * math.pi * 1e-4  # T*mm/A
-COPPER_TEMP_COEFF = 0.00393  # /C
-COPPER_SPECIFIC_HEAT = 0.385  # J/(g*C)
-COPPER_RESISTIVITY_OHM_MM = 1.72e-5  # ohm*mm
-COPPER_DENSITY_G_MM3 = 8.96e-3
 
+class CoilParams(CoilPhysics):
+    """Coil parameters read from config/coil_params.json, overridable via extension settings.
 
-class CoilParams:
-    """Coil parameters read from config/coil_params.json, overridable via extension settings."""
+    All physics (derived geometry, winding, inductance, RLC regime) lives in
+    the pure-Python CoilPhysics base class; this subclass only handles the
+    JSON/carb-settings resolution and Kit logging.
+    """
 
     def __init__(self):
         settings = carb.settings.get_settings()
@@ -68,37 +94,14 @@ class CoilParams:
                 return val
             return default
 
-        # Geometry
-        self.inner_radius = _get("coil/innerRadius", "inner_radius_mm", 12.0)
-        self.outer_radius = _get("coil/outerRadius", "outer_radius_mm", 18.0)
-        self.length = _get("coil/length", "length_mm", 30.0)
-        self.num_turns = int(_get("coil/numTurns", "num_turns", 30))
-        self.wire_diameter = _get("coil/wireDiameter", "wire_diameter_mm", 0.8)
-        self.insulation_thickness = _get("coil/insulationThickness", "insulation_thickness_mm", 0.035)
-
-        # RLC circuit
-        self.capacitance_uF = _get("coil/capacitance", "capacitance_uF", 470.0)
-        self.charge_voltage = _get("coil/chargeVoltage", "charge_voltage_V", 50.0)
-        self.esr = _get("coil/esr", "esr_ohm", 0.01)
-        self.wiring_resistance = _get("coil/wiringResistance", "wiring_resistance_ohm", 0.02)
-        self.switch_type = settings.get_as_string(f"{base}/coil/switchType") or cfg.get("switch_type", "MOSFET")
-        self.has_flyback_diode = settings.get_as_bool(f"{base}/coil/hasFlybackDiode")
-        if self.has_flyback_diode is None:
-            self.has_flyback_diode = cfg.get("has_flyback_diode", True)
-
-        # Marble
-        self.marble_radius = _get("marble/radius", "marble_radius_mm", 5.0)
-        self.chi_eff = _get("marble/chiEff", "marble_chi_eff", 3.0)
-        self.B_sat = _get("marble/saturationT", "marble_saturation_T", 1.8)
-        self.conductivity = _get("marble/conductivity", "marble_conductivity_S_per_m", 6e6)
-
-        # Environment
-        self.ambient_temp = _get("environment/ambientTemperature", "ambient_temperature_C", 20.0)
+        switch_type = settings.get_as_string(f"{base}/coil/switchType") or cfg.get("switch_type", "MOSFET")
+        has_flyback_diode = settings.get_as_bool(f"{base}/coil/hasFlybackDiode")
+        if has_flyback_diode is None:
+            has_flyback_diode = cfg.get("has_flyback_diode", True)
 
         # IR break-beam gate positions along coil axis, relative to coil center (mm).
         json_gates = cfg.get("gate_positions", {})
-
-        self.gates = {
+        gates = {
             "vel_in_1":  json_gates.get("vel_in_1",  settings.get_as_float(f"{base}/gates/velIn1") or -60.0),
             "vel_in_2":  json_gates.get("vel_in_2",  settings.get_as_float(f"{base}/gates/velIn2") or -40.0),
             "entry":     json_gates.get("entry",      settings.get_as_float(f"{base}/gates/entry") or -20.0),
@@ -106,74 +109,29 @@ class CoilParams:
             "vel_out_1": json_gates.get("vel_out_1",  settings.get_as_float(f"{base}/gates/velOut1") or 60.0),
             "vel_out_2": json_gates.get("vel_out_2",  settings.get_as_float(f"{base}/gates/velOut2") or 120.0),
         }
+
+        super().__init__(
+            inner_radius=_get("coil/innerRadius", "inner_radius_mm", 12.0),
+            outer_radius=_get("coil/outerRadius", "outer_radius_mm", 18.0),
+            length=_get("coil/length", "length_mm", 30.0),
+            num_turns=int(_get("coil/numTurns", "num_turns", 30)),
+            wire_diameter=_get("coil/wireDiameter", "wire_diameter_mm", 0.8),
+            insulation_thickness=_get("coil/insulationThickness", "insulation_thickness_mm", 0.035),
+            capacitance_uF=_get("coil/capacitance", "capacitance_uF", 470.0),
+            charge_voltage=_get("coil/chargeVoltage", "charge_voltage_V", 50.0),
+            esr=_get("coil/esr", "esr_ohm", 0.01),
+            wiring_resistance=_get("coil/wiringResistance", "wiring_resistance_ohm", 0.02),
+            switch_type=switch_type,
+            has_flyback_diode=has_flyback_diode,
+            marble_radius=_get("marble/radius", "marble_radius_mm", 5.0),
+            chi_eff=_get("marble/chiEff", "marble_chi_eff", 3.0),
+            B_sat=_get("marble/saturationT", "marble_saturation_T", 1.8),
+            conductivity=_get("marble/conductivity", "marble_conductivity_S_per_m", 6e6),
+            ambient_temp=_get("environment/ambientTemperature", "ambient_temperature_C", 20.0),
+            gates=gates,
+        )
+
         carb.log_info(f"[CoilParams] Gates: {self.gates}")
-        self.sensor_entry_offset = self.gates["entry"]
-        self.sensor_cutoff_offset = self.gates["cutoff"]
-
-        # Derived geometry
-        self.R_mean = (self.inner_radius + self.outer_radius) / 2
-        self.V_marble = (4 / 3) * math.pi * self.marble_radius ** 3
-        self.marble_mass_kg = self.V_marble * 7.8e-3 * 1e-3
-
-        # Winding geometry
-        wire_pitch = self.wire_diameter + 2 * self.insulation_thickness
-        self.turns_per_layer = max(1, int(self.length / wire_pitch))
-        self.num_layers = math.ceil(self.num_turns / self.turns_per_layer)
-        winding_depth = self.num_layers * wire_pitch
-        self.mean_radius = self.inner_radius + winding_depth / 2
-
-        # Wire length and resistance
-        wire_length = 0.0
-        turns_remaining = self.num_turns
-        for layer in range(self.num_layers):
-            r_layer = self.inner_radius + (layer + 0.5) * wire_pitch
-            n_this = min(self.turns_per_layer, turns_remaining)
-            wire_length += n_this * 2 * math.pi * r_layer
-            turns_remaining -= n_this
-        self.wire_length_mm = wire_length
-        wire_cross = math.pi * (self.wire_diameter / 2) ** 2
-        self.wire_mass_g = wire_cross * wire_length * COPPER_DENSITY_G_MM3
-        self.R_dc = COPPER_RESISTIVITY_OHM_MM * wire_length / wire_cross
-
-        # Inductance (Wheeler's multilayer)
-        a_in = self.mean_radius / 25.4
-        l_in = self.length / 25.4
-        c_in = winding_depth / 25.4
-        denom = 6 * a_in + 9 * l_in + 10 * c_in
-        self.inductance_uH = 0.8 * a_in ** 2 * self.num_turns ** 2 / denom if denom > 0 else 0
-        self.inductance_H = self.inductance_uH * 1e-6
-
-        # Total resistance
-        self.R_total = self.R_dc + self.esr + self.wiring_resistance
-
-        # RLC parameters
-        C = self.capacitance_uF * 1e-6
-        L = self.inductance_H
-        self.alpha = self.R_total / (2 * L) if L > 0 else 0
-        self.omega_0 = 1.0 / math.sqrt(L * C) if L > 0 and C > 0 else 0
-        self.zeta = self.alpha / self.omega_0 if self.omega_0 > 0 else 999
-
-        if self.zeta < 1.0:
-            self.omega_d = math.sqrt(self.omega_0 ** 2 - self.alpha ** 2)
-            self.regime = "underdamped"
-            self.peak_current = (self.charge_voltage / (self.omega_d * L)) if L > 0 else 0
-            self.t_peak = math.atan2(self.omega_d, self.alpha) / self.omega_d
-            self.t_zero_crossing = math.pi / self.omega_d
-        elif abs(self.zeta - 1.0) < 0.01:
-            self.omega_d = 0
-            self.regime = "critically_damped"
-            self.peak_current = (self.charge_voltage / L) / (self.alpha * math.e) if L > 0 else 0
-            self.t_peak = 1.0 / self.alpha if self.alpha > 0 else 0
-            self.t_zero_crossing = 5.0 / self.alpha if self.alpha > 0 else 0
-        else:
-            self.omega_d = 0
-            self.regime = "overdamped"
-            self.peak_current = 0
-            self.t_peak = 0
-            self.t_zero_crossing = 5.0 / self.alpha if self.alpha > 0 else 0
-
-        self.stored_energy = 0.5 * C * self.charge_voltage ** 2
-
         carb.log_info(f"[CoilParams] RLC: {self.regime}, zeta={self.zeta:.4f}, "
                       f"I_peak={self.peak_current:.1f}A, E={self.stored_energy:.1f}J")
 
@@ -207,59 +165,31 @@ class PINNForceComputer:
             getattr(pinn_model, 'current_normalized', torch.tensor(False)).item()
         )
 
-    def _pinn_field(self, r: float, z: float, current: float) -> tuple:
-        """Single PINN forward pass returning (B_r, B_z).
-
-        Input features: (r, z, I, N, R_mean, L)
-        Output: (A_phi, B_r, B_z)
-        """
-        p = self.params
-        inp = torch.tensor(
-            [[r, z, current, float(p.num_turns), p.R_mean, p.length]],
-            dtype=torch.float32, device=self.device,
-        )
-        with torch.no_grad():
-            out = self.model(inp)
-        # If model outputs B/I, multiply by I to get actual B
-        scale = current if self._current_normalized else 1.0
-        return float(out[0, 1]) * scale, float(out[0, 2]) * scale
-
     def _pinn_field_with_grad(self, r: float, z: float, current: float) -> tuple:
-        """PINN forward pass with autograd for dBz/dz and dBr/dr.
+        """PINN forward pass with autograd gradients via the shared loader.
 
         Returns (B_r, B_z, dBr_dr, dBr_dz, dBz_dr, dBz_dz).
         """
         p = self.params
-        inp = torch.tensor(
-            [[r, z, current, float(p.num_turns), p.R_mean, p.length]],
-            dtype=torch.float32, device=self.device, requires_grad=True,
-        )
-        out = self.model(inp)
-        B_r = out[0, 1]
-        B_z = out[0, 2]
-
-        # Gradients of B_r w.r.t. input (r=0, z=1)
-        grad_Br = torch.autograd.grad(
-            B_r, inp, create_graph=False, retain_graph=True,
-        )[0][0]
-        grad_Bz = torch.autograd.grad(
-            B_z, inp, create_graph=False, retain_graph=False,
-        )[0][0]
-
-        # If model outputs B/I, scale everything by I
-        scale = current if self._current_normalized else 1.0
-        return (
-            B_r.detach().item() * scale, B_z.detach().item() * scale,
-            grad_Br[0].item() * scale, grad_Br[1].item() * scale,  # dBr/dr, dBr/dz
-            grad_Bz[0].item() * scale, grad_Bz[1].item() * scale,  # dBz/dr, dBz/dz
+        return pinn_loader.predict_point_with_grad(
+            self.model, r, z, current, float(p.num_turns), p.R_mean, p.length,
+            self._current_normalized, self.device,
         )
 
     def compute_force(self, r: float, z: float, current: float,
-                      dBdt: float = 0.0, vel_axial: float = 0.0) -> tuple:
-        """Compute (F_r, F_z) in mN using PINN B-field with saturation and eddy currents."""
+                      prev_B: float = 0.0, dt: float = 0.0,
+                      vel_axial: float = 0.0) -> tuple:
+        """Compute (F_r, F_z, Bz) in (mN, mN, T) from a single PINN graph build.
+
+        dB/dt for eddy braking is computed here from the fresh Bz and the
+        caller's previous |B| (backward difference), so the whole step needs
+        exactly one PINN evaluation. Returning Bz also lets the per-step loop
+        log the field without a second forward pass.
+        """
         p = self.params
 
         Br, Bz, dBr_dr, dBr_dz, dBz_dr, dBz_dz = self._pinn_field_with_grad(r, z, current)
+        dBdt = (abs(Bz) - prev_B) / dt if dt > 0 else 0.0
 
         # Saturation check
         B_internal = (1 + p.chi_eff / 3) * abs(Bz)
@@ -284,12 +214,7 @@ class PINNForceComputer:
             else:
                 F_z -= F_eddy_mN
 
-        return float(F_r), float(F_z)
-
-    def get_Bz(self, r: float, z: float, current: float) -> float:
-        """Return axial B-field component for logging."""
-        _, Bz = self._pinn_field(r, z, current)
-        return Bz
+        return float(F_r), float(F_z), float(Bz)
 
 
 class MarbleCoasterExtension(omni.ext.IExt):
@@ -342,10 +267,12 @@ class MarbleCoasterExtension(omni.ext.IExt):
         """Install torch and physicsnemo into Kit Python via omni.kit.pipapi.
 
         Packages are cached after the first install — subsequent launches skip
-        the download.  We bind the module-level ``torch`` and ``NeMoFC``
+        the download.  We bind the module-level ``torch`` and ``pinn_loader``
         sentinels so the rest of the extension can use them normally.
+        pinn_loader imports torch/physicsnemo at module level, so it MUST be
+        imported only after pipapi has installed them.
         """
-        global torch, NeMoFC
+        global torch, pinn_loader
 
         carb.log_warn("[PINN] Installing torch (first launch may take a few minutes)…")
         omni.kit.pipapi.install(
@@ -358,46 +285,26 @@ class MarbleCoasterExtension(omni.ext.IExt):
         omni.kit.pipapi.install("nvidia-physicsnemo", module="physicsnemo")
 
         import torch as _torch
-        from physicsnemo.models.mlp import FullyConnected as _NeMoFC
-
         torch = _torch
-        NeMoFC = _NeMoFC
+
+        # Shared loader from the project's scripts directory (single source
+        # of truth for checkpoint I/O across Kit and headless pipelines)
+        if str(SCRIPTS_DIR) not in sys.path:
+            sys.path.insert(0, str(SCRIPTS_DIR))
+        import pinn_loader as _pinn_loader
+        pinn_loader = _pinn_loader
+
         carb.log_warn(f"[PINN] torch {torch.__version__} (CUDA {torch.version.cuda}), physicsnemo ready")
 
     def _load_pinn(self) -> "torch.nn.Module":
-        """Load the trained PINN checkpoint. Fails if checkpoint is missing."""
-        model = NeMoFC(
-            in_features=6,
-            layer_size=256,
-            out_features=3,
-            num_layers=6,
-            activation_fn="silu",
-            skip_connections=True,
+        """Load the trained PINN checkpoint via the shared loader."""
+        model, current_normalized, metadata = pinn_loader.load_model_from_checkpoint(
+            PINN_CHECKPOINT, self._pinn_device,
         )
-
-        # Wrap with input normalization buffers matching BFieldPINN from train_pinn.py
-        class PINNWrapper(torch.nn.Module):
-            def __init__(self, backbone):
-                super().__init__()
-                self.backbone = backbone
-                self.register_buffer("input_mean", torch.zeros(6))
-                self.register_buffer("input_std", torch.ones(6))
-                self.register_buffer("output_scale", torch.ones(3))
-                self.register_buffer("current_normalized", torch.tensor(False))
-
-            def forward(self, x):
-                x_norm = (x - self.input_mean) / (self.input_std + 1e-8)
-                return self.backbone(x_norm) * self.output_scale
-
-        wrapper = PINNWrapper(model)
-        checkpoint = torch.load(str(PINN_CHECKPOINT), map_location=self._pinn_device, weights_only=False)
-        if "model_state_dict" in checkpoint:
-            wrapper.load_state_dict(checkpoint["model_state_dict"])
-        else:
-            wrapper.load_state_dict(checkpoint)
-        wrapper.to(self._pinn_device)
-        wrapper.eval()
-        return wrapper
+        carb.log_warn(f"[PINN] Checkpoint step={metadata['step']}, "
+                      f"current_normalized={current_normalized}, "
+                      f"derived_b={metadata['derived_b']}")
+        return model
 
     def _init_gate_state(self):
         """Initialize / reset all IR gate tracking state."""
@@ -563,17 +470,9 @@ class MarbleCoasterExtension(omni.ext.IExt):
         self._params.num_turns = int(self._turns_field.model.get_value_as_int())
         self._params.chi_eff = self._chi_field.model.get_value_as_float()
 
-        # Recompute RLC with the UI-overridden values
-        C = self._params.capacitance_uF * 1e-6
-        L = self._params.inductance_H
-        self._params.alpha = self._params.R_total / (2 * L) if L > 0 else 0
-        self._params.omega_0 = 1.0 / math.sqrt(L * C) if L > 0 and C > 0 else 0
-        self._params.zeta = self._params.alpha / self._params.omega_0 if self._params.omega_0 > 0 else 999
-        if self._params.zeta < 1.0:
-            self._params.omega_d = math.sqrt(self._params.omega_0 ** 2 - self._params.alpha ** 2)
-            self._params.regime = "underdamped"
-            self._params.peak_current = self._params.charge_voltage / (self._params.omega_d * L) if L > 0 else 0
-        self._params.stored_energy = 0.5 * C * self._params.charge_voltage ** 2
+        # Full recompute so overrides propagate consistently (e.g. num_turns
+        # changes inductance, which changes the RLC regime and peak current)
+        self._params.recompute_derived()
 
         self._em = PINNForceComputer(self._params, self._pinn_model, self._pinn_device)
 
@@ -668,28 +567,8 @@ class MarbleCoasterExtension(omni.ext.IExt):
         self._physx_sub = None
 
     def _rlc_current(self, t_since_trigger):
-        """Compute RLC discharge current (pure Python)."""
-        p = self._params
-        if t_since_trigger < 0:
-            return 0.0
-
-        if p.regime == "underdamped":
-            I = (p.charge_voltage / (p.omega_d * p.inductance_H)) * \
-                math.exp(-p.alpha * t_since_trigger) * \
-                math.sin(p.omega_d * t_since_trigger)
-        elif p.regime == "critically_damped":
-            I = (p.charge_voltage / p.inductance_H) * \
-                t_since_trigger * math.exp(-p.alpha * t_since_trigger)
-        else:
-            s1 = -p.alpha + math.sqrt(p.alpha ** 2 - p.omega_0 ** 2)
-            s2 = -p.alpha - math.sqrt(p.alpha ** 2 - p.omega_0 ** 2)
-            if abs(s1 - s2) > 1e-12:
-                I = (p.charge_voltage / (p.inductance_H * (s1 - s2))) * \
-                    (math.exp(s1 * t_since_trigger) - math.exp(s2 * t_since_trigger))
-            else:
-                I = 0.0
-
-        return max(I, 0.0) if p.has_flyback_diode else I
+        """Compute RLC discharge current (delegates to CoilPhysics)."""
+        return self._params.rlc_current(t_since_trigger)
 
     def _coupled_rlc_step(self, dt, z_along, vel_axial):
         """Step the coupled electromechanical RLC ODE with sub-stepping."""
@@ -797,9 +676,7 @@ class MarbleCoasterExtension(omni.ext.IExt):
             for gate_name, gate_pos in p.gates.items():
                 if self._gate_triggered.get(gate_name):
                     continue
-                crossed = (prev_z < gate_pos and z_along >= gate_pos) or \
-                          (prev_z > gate_pos and z_along <= gate_pos)
-                if crossed:
+                if gate_crossed(prev_z, z_along, gate_pos):
                     self._gate_triggered[gate_name] = True
                     self._gate_times[gate_name] = self._sim_time
                     carb.log_warn(f"[IR] Gate '{gate_name}' crossed at z_along={z_along:.1f}mm "
@@ -876,13 +753,12 @@ class MarbleCoasterExtension(omni.ext.IExt):
         if abs(current) < 1e-6:
             return
 
-        # Compute EM force via PINN B-field
-        Bz = self._em.get_Bz(r, z_along, current)
-        B_now = abs(Bz)
-        dBdt = (B_now - self._prev_B) / dt if dt > 0 else 0
-        self._prev_B = B_now
-
-        F_r, F_z_mN = self._em.compute_force(r, z_along, current, dBdt=dBdt, vel_axial=vel_axial)
+        # Compute EM force via PINN B-field (single graph build per step;
+        # dB/dt for eddy braking computed inside from prev_B)
+        F_r, F_z_mN, Bz = self._em.compute_force(
+            r, z_along, current, prev_B=self._prev_B, dt=dt, vel_axial=vel_axial,
+        )
+        self._prev_B = abs(Bz)
 
         # Apply force via PhysX-native API (mN -> force in stage units)
         # PhysX in Kit: stage units = mm, mass in kg, force in mN gives correct acceleration

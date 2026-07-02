@@ -38,112 +38,47 @@ except ImportError:
     raise SystemExit(1)
 
 from analytical_bfield import MU_0_MM, ferromagnetic_force, solenoid_field, solenoid_field_gradient
-from train_pinn import BFieldPINN
+import pinn_loader
 
 # ---------------------------------------------------------------------------
-# Infrastructure
+# Infrastructure — thin wrappers over pinn_loader (kept for the public
+# signatures that evaluate_candidates.py and v7_optimization_diagnostic.py
+# import; all model-version handling lives in pinn_loader)
 # ---------------------------------------------------------------------------
 
 
-def load_pinn_model(device):
+def load_pinn_model(device, ckpt_path=None):
     """Load trained PINN model.
 
     Returns:
         (model, current_normalized, metadata)
     """
-    ckpt_path = MODEL_DIR / "pinn_best.pt"
-    checkpoint = torch.load(str(ckpt_path), map_location=device, weights_only=False)
-
-    model = BFieldPINN().to(device)
-    model.load_state_dict(checkpoint["model_state_dict"])
-    model.eval()
-
-    current_normalized = bool(model.current_normalized.item())
-    metadata = {
-        "step": checkpoint.get("step", "?"),
-        "loss": checkpoint.get("loss", "?"),
-        "backend": checkpoint.get("backend", "?"),
-        "current_normalized": current_normalized,
-    }
+    if ckpt_path is None:
+        ckpt_path = MODEL_DIR / "pinn_best.pt"
+    model, current_normalized, metadata = pinn_loader.load_model_from_checkpoint(
+        ckpt_path, device,
+    )
     print(f"Loaded PINN: step={metadata['step']}, loss={metadata['loss']:.2e}, "
-          f"current_normalized={current_normalized}")
+          f"current_normalized={current_normalized}, derived_b={metadata['derived_b']}")
     return model, current_normalized, metadata
 
 
 def pinn_predict_field(model, r, z, I, N, R_mean, L, current_normalized, device):
-    """Batch PINN inference returning (Br, Bz) arrays.
-
-    Args:
-        r, z: 1-D numpy arrays of spatial positions (mm)
-        I, N, R_mean, L: scalar coil parameters
-        current_normalized: if True, multiply output by I
-        device: torch device
-
-    Returns:
-        (Br, Bz) as numpy arrays in Tesla
-    """
-    n = len(r)
-    inputs = np.column_stack([
-        r, z,
-        np.full(n, I, dtype=np.float32),
-        np.full(n, N, dtype=np.float32),
-        np.full(n, R_mean, dtype=np.float32),
-        np.full(n, L, dtype=np.float32),
-    ]).astype(np.float32)
-
-    with torch.no_grad():
-        out = model(torch.tensor(inputs, device=device)).cpu().numpy()
-
-    scale = I if current_normalized else 1.0
-    Br = out[:, 1] * scale
-    Bz = out[:, 2] * scale
-    return Br, Bz
+    """Batch PINN inference returning (Br, Bz) arrays in Tesla."""
+    return pinn_loader.predict_field(
+        model, r, z, I, N, R_mean, L, current_normalized, device,
+    )
 
 
 def pinn_predict_field_with_grad(model, r, z, I, N, R_mean, L, current_normalized, device):
-    """PINN forward pass with autograd gradients, matching extension.py pattern.
-
-    Args:
-        r, z: 1-D numpy arrays
-        I, N, R_mean, L: scalar coil parameters
+    """PINN forward pass with autograd gradients.
 
     Returns:
         (Br, Bz, dBr_dr, dBr_dz, dBz_dr, dBz_dz) as numpy arrays
     """
-    n = len(r)
-    inputs = np.column_stack([
-        r, z,
-        np.full(n, I, dtype=np.float32),
-        np.full(n, N, dtype=np.float32),
-        np.full(n, R_mean, dtype=np.float32),
-        np.full(n, L, dtype=np.float32),
-    ]).astype(np.float32)
-
-    inp_t = torch.tensor(inputs, device=device, requires_grad=True)
-    out = model(inp_t)
-    B_r = out[:, 1]
-    B_z = out[:, 2]
-
-    # Compute gradients one component at a time (matching extension.py)
-    grad_Br = torch.autograd.grad(
-        B_r, inp_t, grad_outputs=torch.ones_like(B_r),
-        create_graph=False, retain_graph=True,
-    )[0]
-    grad_Bz = torch.autograd.grad(
-        B_z, inp_t, grad_outputs=torch.ones_like(B_z),
-        create_graph=False, retain_graph=False,
-    )[0]
-
-    scale = I if current_normalized else 1.0
-
-    Br_np = B_r.detach().cpu().numpy() * scale
-    Bz_np = B_z.detach().cpu().numpy() * scale
-    dBr_dr = grad_Br[:, 0].detach().cpu().numpy() * scale
-    dBr_dz = grad_Br[:, 1].detach().cpu().numpy() * scale
-    dBz_dr = grad_Bz[:, 0].detach().cpu().numpy() * scale
-    dBz_dz = grad_Bz[:, 1].detach().cpu().numpy() * scale
-
-    return Br_np, Bz_np, dBr_dr, dBr_dz, dBz_dr, dBz_dz
+    return pinn_loader.predict_field_with_grad(
+        model, r, z, I, N, R_mean, L, current_normalized, device,
+    )
 
 
 def compute_error_stats(pred, exact, name):
@@ -821,6 +756,12 @@ def generate_audit_report(all_results, metadata, config):
 
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="PINN 5-level validation suite")
+    parser.add_argument("--ckpt", type=Path, default=None,
+                        help="Checkpoint to validate (default: models/pinn_checkpoint/pinn_best.pt)")
+    args = parser.parse_args()
+
     print("=" * 60)
     print("  PINN VALIDATION SUITE")
     print("=" * 60)
@@ -828,7 +769,10 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
 
-    model, current_normalized, metadata = load_pinn_model(device)
+    model, current_normalized, metadata = load_pinn_model(device, ckpt_path=args.ckpt)
+    if metadata.get("derived_b"):
+        print("Model derives B from A_phi: div(B)=0 and axial symmetry are "
+              "exact by construction; Level 5 runs as a structural sanity check.")
     config = json.loads(CONFIG_PATH.read_text())
 
     PLOTS_DIR.mkdir(parents=True, exist_ok=True)
