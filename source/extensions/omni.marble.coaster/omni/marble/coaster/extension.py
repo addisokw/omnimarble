@@ -6,9 +6,11 @@ torch and physicsnemo are installed into Kit's Python at startup via
 omni.kit.pipapi.  They are imported lazily in on_startup(), not at module level.
 """
 
+import csv
 import json
 import math
 import sys
+import time
 from pathlib import Path
 
 import carb
@@ -58,6 +60,14 @@ SCRIPTS_DIR = OMNIMARBLE_PROJECT / "scripts"
 USD_DIR = OMNIMARBLE_PROJECT / "usd"
 SCENE_PATH = USD_DIR / "marble_coaster_scene.usda"
 PINN_CHECKPOINT = OMNIMARBLE_PROJECT / "models" / "pinn_checkpoint" / "pinn_best.pt"
+TRAJECTORY_DIR = OMNIMARBLE_PROJECT / "results" / "trajectories"
+
+TRAJ_COLUMNS = (
+    "t_s", "x_mm", "y_mm", "z_mm", "z_along_mm", "r_mm",
+    "vx_mm_s", "vy_mm_s", "vz_mm_s", "vel_axial_mm_s",
+    "current_A", "V_cap_V", "F_z_mN", "F_r_mN", "Bz_T",
+    "wire_temp_C", "triggered", "pulse_cut",
+)
 
 
 class CoilParams(CoilPhysics):
@@ -257,6 +267,9 @@ class MarbleCoasterExtension(omni.ext.IExt):
         # IR gate state
         self._init_gate_state()
 
+        # Trajectory recording (one row per physics step, written on stop)
+        self._traj_rows = []
+
         # PhysX callback
         self._physx_sub = None
 
@@ -301,6 +314,7 @@ class MarbleCoasterExtension(omni.ext.IExt):
         model, current_normalized, metadata = pinn_loader.load_model_from_checkpoint(
             PINN_CHECKPOINT, self._pinn_device,
         )
+        self._pinn_metadata = metadata
         carb.log_warn(f"[PINN] Checkpoint step={metadata['step']}, "
                       f"current_normalized={current_normalized}, "
                       f"derived_b={metadata['derived_b']}")
@@ -322,6 +336,7 @@ class MarbleCoasterExtension(omni.ext.IExt):
     def on_shutdown(self):
         carb.log_info("[omni.marble.coaster] Shutting down")
         self._unsubscribe_physics()
+        self._write_trajectory()  # safety flush if a run was never stopped
         if self._window:
             self._window.destroy()
             self._window = None
@@ -498,6 +513,7 @@ class MarbleCoasterExtension(omni.ext.IExt):
         self._pulse_cut = False
         self._pulse_cut_time = 0.0
         self._log_counter = 0
+        self._traj_rows = []
 
         # Reset circuit state
         p = self._params
@@ -520,11 +536,73 @@ class MarbleCoasterExtension(omni.ext.IExt):
         self._status_label.text = "Simulation running (PhysX-native + PINN)..."
 
     def _stop_simulation(self):
-        """Stop simulation."""
+        """Stop simulation and write the trajectory CSV."""
         timeline = omni.timeline.get_timeline_interface()
         timeline.stop()
         self._unsubscribe_physics()
-        self._status_label.text = "Simulation stopped"
+        traj_path = self._write_trajectory()
+        if traj_path is not None:
+            self._status_label.text = f"Simulation stopped — trajectory: {traj_path.name}"
+        else:
+            self._status_label.text = "Simulation stopped"
+
+    def _write_trajectory(self):
+        """Write recorded per-step rows to results/trajectories/kit_launch_*.csv.
+
+        Metadata (run parameters, checkpoint, gate times, boost) goes into
+        '# key=value' header lines before the CSV column row. Returns the
+        written path, or None if there was nothing to write.
+        """
+        rows = getattr(self, "_traj_rows", None)
+        if not rows:
+            return None
+
+        p = self._params
+        TRAJECTORY_DIR.mkdir(parents=True, exist_ok=True)
+        stamp = time.strftime("%Y%m%d_%H%M%S")
+        path = TRAJECTORY_DIR / (
+            f"kit_launch_{p.charge_voltage:.0f}V_{p.capacitance_uF:.0f}uF_{stamp}.csv"
+        )
+
+        meta = {
+            "source": "omni.marble.coaster Kit extension (PhysX + PINN)",
+            "charge_voltage_V": p.charge_voltage,
+            "capacitance_uF": p.capacitance_uF,
+            "num_turns": p.num_turns,
+            "chi_eff": p.chi_eff,
+            "inductance_uH": round(p.inductance_uH, 4),
+            "R_total_ohm": round(p.R_total, 5),
+            "stored_energy_J": round(p.stored_energy, 4),
+            "rlc_regime": p.regime,
+            "pinn_checkpoint": PINN_CHECKPOINT.name,
+            "pinn_step": self._pinn_metadata.get("step", "?"),
+            "pinn_derived_b": self._pinn_metadata.get("derived_b", "?"),
+            "approach_velocity_mm_s": (
+                round(self._approach_velocity, 2) if self._approach_velocity else ""
+            ),
+            "exit_velocity_mm_s": (
+                round(self._exit_velocity, 2) if self._exit_velocity else ""
+            ),
+            "boost_ratio": (
+                round(self._exit_velocity / self._approach_velocity, 3)
+                if self._exit_velocity and self._approach_velocity else ""
+            ),
+        }
+        for gate_name, gate_time in self._gate_times.items():
+            meta[f"gate_{gate_name}_t_s"] = (
+                round(gate_time, 6) if gate_time is not None else ""
+            )
+
+        with open(path, "w", newline="", encoding="utf-8") as f:
+            for key, value in meta.items():
+                f.write(f"# {key}={value}\n")
+            writer = csv.writer(f)
+            writer.writerow(TRAJ_COLUMNS)
+            writer.writerows(rows)
+
+        self._traj_rows = []
+        carb.log_warn(f"[TRAJ] Wrote {len(rows)} steps to {path}")
+        return path
 
     def _reset_marble(self):
         """Reset marble to initial position."""
@@ -707,109 +785,125 @@ class MarbleCoasterExtension(omni.ext.IExt):
             carb.log_warn(f"[EM] COIL FIRED at z_along={z_along:.1f}mm "
                           f"t={self._sim_time:.4f}s{vel_str}")
 
-        if not self._triggered:
-            return
-
-        # Cutoff gate: kill the pulse
-        if p.switch_type == "MOSFET" and not self._pulse_cut:
-            if self._gate_triggered.get("cutoff"):
-                self._pulse_cut = True
-                self._pulse_cut_time = self._sim_time
-                carb.log_warn(f"[EM] PULSE CUT at z_along={z_along:.1f}mm "
-                              f"t={self._sim_time:.4f}s")
-
-        # Compute gate-measured exit velocity from vel_out pair
-        t_o1 = self._gate_times.get("vel_out_1")
-        t_o2 = self._gate_times.get("vel_out_2")
-        if t_o1 is not None and t_o2 is not None and not getattr(self, '_gate_exit_measured', False):
-            dt_out = t_o2 - t_o1
-            if abs(dt_out) > 1e-6:
-                self._gate_exit_measured = True
-                dist_out = p.gates["vel_out_2"] - p.gates["vel_out_1"]
-                gate_exit_vel = dist_out / dt_out
-                carb.log_warn(f"[IR] EXIT VELOCITY (gate-measured): {gate_exit_vel:.1f} mm/s "
-                              f"= {gate_exit_vel/1000:.2f} m/s "
-                              f"(dt={dt_out*1000:.2f}ms over {dist_out:.0f}mm)")
-                if self._approach_velocity and self._approach_velocity > 0:
-                    boost = gate_exit_vel / self._approach_velocity
-                    carb.log_warn(f"[IR] Speed boost: {boost:.1f}x "
-                                  f"({self._approach_velocity:.0f} -> {gate_exit_vel:.0f} mm/s)")
-                self._exit_velocity = gate_exit_vel
-
-        # Compute current
+        # Kinematics shared by coasting and firing steps
         vel_axial = 0.0
         if cur_vel is not None:
             vel_axial = sum(cur_vel[i] * coil_axis_n[i] for i in range(3))
 
-        if not self._pulse_cut:
-            self._coupled_rlc_step(dt, z_along, vel_axial)
-            current = getattr(self, '_circuit_I_rms', abs(self._circuit_I))
-        else:
-            dt_cut = self._sim_time - self._pulse_cut_time
-            I_at_cut = self._rlc_current(self._pulse_cut_time - self._trigger_time)
-            current = I_at_cut * math.exp(-(p.R_total / p.inductance_H) * dt_cut)
-            self._circuit_I = current
-
-        if abs(current) < 1e-6:
-            return
-
-        # Compute EM force via PINN B-field (single graph build per step;
-        # dB/dt for eddy braking computed inside from prev_B)
-        F_r, F_z_mN, Bz = self._em.compute_force(
-            r, z_along, current, prev_B=self._prev_B, dt=dt, vel_axial=vel_axial,
-        )
-        self._prev_B = abs(Bz)
-
-        # Apply force via PhysX-native API (mN -> force in stage units)
-        # PhysX in Kit: stage units = mm, mass in kg, force in mN gives correct acceleration
-        F_x_mN = float(F_z_mN * coil_axis_n[0] + F_r * (radial_vec[0] / max(r, 1e-6)))
-        F_y_mN = float(F_z_mN * coil_axis_n[1] + F_r * (radial_vec[1] / max(r, 1e-6)))
-        F_z_world_mN = float(F_z_mN * coil_axis_n[2] + F_r * (radial_vec[2] / max(r, 1e-6)))
-
-        force_vec = carb._carb.Float3(F_x_mN, F_y_mN, F_z_world_mN)
-        pos_vec = carb._carb.Float3(marble_pos[0], marble_pos[1], marble_pos[2])
-        self._physx_sim.apply_force_at_pos(self._stage_id, self._marble_prim_id, force_vec, pos_vec)
-
-        # Compute dv for logging/exit velocity estimates only (informational)
-        force_N = F_z_mN * 1e-3
-        accel_ms2 = force_N / p.marble_mass_kg
-        dv_mm_s = accel_ms2 * 1000.0 * dt
-
-        # Compute exit velocity directly from impulse (gates can't catch sub-step motion)
-        if self._exit_velocity is None and abs(dv_mm_s) > 1.0:
-            v_approach = self._approach_velocity or 0.0
-            self._exit_velocity = v_approach + abs(dv_mm_s)
-            boost = self._exit_velocity / v_approach if v_approach > 0 else float('inf')
-            carb.log_warn(
-                f"[EM] LAUNCH: dv={dv_mm_s:.0f}mm/s, "
-                f"v_approach={v_approach:.0f} -> v_exit={self._exit_velocity:.0f}mm/s "
-                f"= {self._exit_velocity/1000:.2f}m/s (boost: {boost:.1f}x)"
-            )
-
-        # Wire temperature update
-        R_now = p.R_dc * (1 + COPPER_TEMP_COEFF * (self._wire_temp - 20.0))
-        R_total = R_now + p.esr + p.wiring_resistance
-        if p.wire_mass_g > 0:
-            self._wire_temp += current ** 2 * R_total * dt / (p.wire_mass_g * COPPER_SPECIFIC_HEAT)
-
-        # Capacitor voltage
+        # Defaults recorded on coasting steps (coil idle)
+        current = 0.0
+        F_r = 0.0
+        F_z_mN = 0.0
+        Bz = 0.0
         V_cap = self._circuit_Q_cap / (p.capacitance_uF * 1e-6)
 
-        # Update real-time display
-        if self._log_counter % 10 == 1:
-            v_in = f"{self._approach_velocity:.0f}" if self._approach_velocity else "--"
-            v_out = f"{self._exit_velocity:.0f}" if self._exit_velocity else "--"
-            self._realtime_label.text = (
-                f"I: {current:.1f}A | F: {F_z_mN:.0f}mN | "
-                f"V_cap: {V_cap:.0f}V | T: {self._wire_temp:.0f}C\n"
-                f"v_in: {v_in} | v_out: {v_out} mm/s"
-            )
+        if self._triggered:
+            # Cutoff gate: kill the pulse
+            if p.switch_type == "MOSFET" and not self._pulse_cut:
+                if self._gate_triggered.get("cutoff"):
+                    self._pulse_cut = True
+                    self._pulse_cut_time = self._sim_time
+                    carb.log_warn(f"[EM] PULSE CUT at z_along={z_along:.1f}mm "
+                                  f"t={self._sim_time:.4f}s")
 
-        # Log
-        if not self._pulse_cut or self._log_counter % 25 == 1:
-            carb.log_warn(
-                f"[EM] t={self._sim_time:.4f}s I={current:.1f}A "
-                f"Bz={Bz*1e3:.2f}mT F={F_z_mN:.1f}mN dv={dv_mm_s:.1f}mm/s "
-                f"V_cap={V_cap:.0f}V T={self._wire_temp:.1f}C "
-                f"z={z_along:.1f}mm"
+            # Compute gate-measured exit velocity from vel_out pair
+            t_o1 = self._gate_times.get("vel_out_1")
+            t_o2 = self._gate_times.get("vel_out_2")
+            if t_o1 is not None and t_o2 is not None and not getattr(self, '_gate_exit_measured', False):
+                dt_out = t_o2 - t_o1
+                if abs(dt_out) > 1e-6:
+                    self._gate_exit_measured = True
+                    dist_out = p.gates["vel_out_2"] - p.gates["vel_out_1"]
+                    gate_exit_vel = dist_out / dt_out
+                    carb.log_warn(f"[IR] EXIT VELOCITY (gate-measured): {gate_exit_vel:.1f} mm/s "
+                                  f"= {gate_exit_vel/1000:.2f} m/s "
+                                  f"(dt={dt_out*1000:.2f}ms over {dist_out:.0f}mm)")
+                    if self._approach_velocity and self._approach_velocity > 0:
+                        boost = gate_exit_vel / self._approach_velocity
+                        carb.log_warn(f"[IR] Speed boost: {boost:.1f}x "
+                                      f"({self._approach_velocity:.0f} -> {gate_exit_vel:.0f} mm/s)")
+                    self._exit_velocity = gate_exit_vel
+
+            # Compute current
+            if not self._pulse_cut:
+                self._coupled_rlc_step(dt, z_along, vel_axial)
+                current = getattr(self, '_circuit_I_rms', abs(self._circuit_I))
+            else:
+                dt_cut = self._sim_time - self._pulse_cut_time
+                I_at_cut = self._rlc_current(self._pulse_cut_time - self._trigger_time)
+                current = I_at_cut * math.exp(-(p.R_total / p.inductance_H) * dt_cut)
+                self._circuit_I = current
+
+            V_cap = self._circuit_Q_cap / (p.capacitance_uF * 1e-6)
+
+        if self._triggered and abs(current) >= 1e-6:
+            # Compute EM force via PINN B-field (single graph build per step;
+            # dB/dt for eddy braking computed inside from prev_B)
+            F_r, F_z_mN, Bz = self._em.compute_force(
+                r, z_along, current, prev_B=self._prev_B, dt=dt, vel_axial=vel_axial,
             )
+            self._prev_B = abs(Bz)
+
+            # Apply force via PhysX-native API (mN -> force in stage units)
+            # PhysX in Kit: stage units = mm, mass in kg, force in mN gives correct acceleration
+            F_x_mN = float(F_z_mN * coil_axis_n[0] + F_r * (radial_vec[0] / max(r, 1e-6)))
+            F_y_mN = float(F_z_mN * coil_axis_n[1] + F_r * (radial_vec[1] / max(r, 1e-6)))
+            F_z_world_mN = float(F_z_mN * coil_axis_n[2] + F_r * (radial_vec[2] / max(r, 1e-6)))
+
+            force_vec = carb._carb.Float3(F_x_mN, F_y_mN, F_z_world_mN)
+            pos_vec = carb._carb.Float3(marble_pos[0], marble_pos[1], marble_pos[2])
+            self._physx_sim.apply_force_at_pos(self._stage_id, self._marble_prim_id, force_vec, pos_vec)
+
+            # Compute dv for logging/exit velocity estimates only (informational)
+            force_N = F_z_mN * 1e-3
+            accel_ms2 = force_N / p.marble_mass_kg
+            dv_mm_s = accel_ms2 * 1000.0 * dt
+
+            # Compute exit velocity directly from impulse (gates can't catch sub-step motion)
+            if self._exit_velocity is None and abs(dv_mm_s) > 1.0:
+                v_approach = self._approach_velocity or 0.0
+                self._exit_velocity = v_approach + abs(dv_mm_s)
+                boost = self._exit_velocity / v_approach if v_approach > 0 else float('inf')
+                carb.log_warn(
+                    f"[EM] LAUNCH: dv={dv_mm_s:.0f}mm/s, "
+                    f"v_approach={v_approach:.0f} -> v_exit={self._exit_velocity:.0f}mm/s "
+                    f"= {self._exit_velocity/1000:.2f}m/s (boost: {boost:.1f}x)"
+                )
+
+            # Wire temperature update
+            R_now = p.R_dc * (1 + COPPER_TEMP_COEFF * (self._wire_temp - 20.0))
+            R_total = R_now + p.esr + p.wiring_resistance
+            if p.wire_mass_g > 0:
+                self._wire_temp += current ** 2 * R_total * dt / (p.wire_mass_g * COPPER_SPECIFIC_HEAT)
+
+            # Update real-time display
+            if self._log_counter % 10 == 1:
+                v_in = f"{self._approach_velocity:.0f}" if self._approach_velocity else "--"
+                v_out = f"{self._exit_velocity:.0f}" if self._exit_velocity else "--"
+                self._realtime_label.text = (
+                    f"I: {current:.1f}A | F: {F_z_mN:.0f}mN | "
+                    f"V_cap: {V_cap:.0f}V | T: {self._wire_temp:.0f}C\n"
+                    f"v_in: {v_in} | v_out: {v_out} mm/s"
+                )
+
+            # Log
+            if not self._pulse_cut or self._log_counter % 25 == 1:
+                carb.log_warn(
+                    f"[EM] t={self._sim_time:.4f}s I={current:.1f}A "
+                    f"Bz={Bz*1e3:.2f}mT F={F_z_mN:.1f}mN dv={dv_mm_s:.1f}mm/s "
+                    f"V_cap={V_cap:.0f}V T={self._wire_temp:.1f}C "
+                    f"z={z_along:.1f}mm"
+                )
+
+        # Record every physics step (coasting steps included) for CSV export
+        vx, vy, vz = (cur_vel[0], cur_vel[1], cur_vel[2]) if cur_vel is not None else (0.0, 0.0, 0.0)
+        self._traj_rows.append((
+            round(self._sim_time, 6),
+            round(marble_pos[0], 4), round(marble_pos[1], 4), round(marble_pos[2], 4),
+            round(z_along, 4), round(r, 4),
+            round(vx, 4), round(vy, 4), round(vz, 4), round(vel_axial, 4),
+            round(current, 4), round(V_cap, 4),
+            round(F_z_mN, 4), round(F_r, 4), round(Bz, 6),
+            round(self._wire_temp, 3),
+            int(self._triggered), int(self._pulse_cut),
+        ))
