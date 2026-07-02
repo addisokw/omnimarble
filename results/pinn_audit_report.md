@@ -1,6 +1,6 @@
 # PINN B-Field Model Audit Report
 
-Last updated: 2026-03-18
+Last updated: 2026-07-02
 
 ## 1. Executive Summary
 
@@ -9,17 +9,21 @@ B-field computation for a finite solenoid coilgun. It takes spatial position and
 coil design parameters as input and produces the magnetic vector potential and
 field components in a single forward pass.
 
-**Current status: dual-baseline deployment. `pinn_designspace.pt` (v7) is the primary
-production model. 4 of 5 levels pass (L2 criteria updated per audit). L5 div close
-to threshold (0.014 vs 0.01).**
+**Current status: v8 "physics-by-construction" model (step-250k checkpoint)
+deployed as the single production checkpoint `pinn_best.pt`. 4 of 5 levels
+pass; Level 5 passes fully for the first time (div(B) = 0 exact by
+architecture). The only remaining FAIL is the informational L1 max criterion
+(27.8%, improved from v7's 37.2%; concentrated at winding singularities the
+smooth network cannot represent). The v7-era dual-baseline strategy is
+retired — see Section 12.**
 
-| Check | v3 | v4 (field) | v5 (regressed) | v7 (designspace) |
-|-------|----|----|-----|------|
-| Level 1: Field accuracy | FAIL | **PASS** | FAIL | FAIL (max only) |
-| Level 2: Gradient accuracy | FAIL | FAIL | FAIL | **PASS** (P99 criteria) |
-| Level 3: Force accuracy | FAIL | **PASS** | **PASS** | **PASS** |
-| Level 4: Design space | FAIL | FAIL (75%) | FAIL (61%) | **PASS (100%)** |
-| Level 5: Physics consistency | FAIL (0/3) | FAIL (2/3) | FAIL (2/3) | FAIL (2/3, div=0.014) |
+| Check | v3 | v4 (field) | v5 (regressed) | v7 | **v8 (production)** |
+|-------|----|----|-----|------|------|
+| Level 1: Field accuracy | FAIL | **PASS** | FAIL | FAIL (max only) | FAIL (max only, 27.8%) |
+| Level 2: Gradient accuracy | FAIL | FAIL | FAIL | **PASS** (P99) | **PASS** (P99=3.05%) |
+| Level 3: Force accuracy | FAIL | **PASS** | **PASS** | **PASS** | **PASS** (2.7%/3.0%) |
+| Level 4: Design space | FAIL | FAIL (75%) | FAIL (61%) | **PASS (100%)** | **PASS (95.3%)** |
+| Level 5: Physics consistency | FAIL (0/3) | FAIL (2/3) | FAIL (2/3) | FAIL (2/3, div=0.014) | **PASS (3/3, div=0 exact)** |
 
 ## 2. Problem Statement
 
@@ -291,7 +295,7 @@ competes with other losses.
   model outputs B/I -- all inference code multiplies by I before computing force
 - **`warp_bfield_solver.py`**: Fixed to handle `current_normalized` buffer and I-scaling
 
-### v7 ("design-space"): Audit-driven retraining (current production model)
+### v7 ("design-space"): Audit-driven retraining (superseded by v8)
 - **Key changes**: Active failure mining (N=10/R=8 families), gentle gradient supervision
   (weight 0.03, clipped targets), data-loss checkpoint selection, periodic saves
 - **Data**: 1.42M samples (711 configs including failure-mined families)
@@ -300,9 +304,10 @@ competes with other losses.
 - **Best data loss**: 1.39e-08
 - **Hardware**: Remote RTX 5090
 - **Validation result**: L2+L3+L4 pass, L1 max and L5 div still fail (see Section 6.4)
-- **Deployed as**: `pinn_designspace.pt` (primary Kit model)
+- **Deployed as**: `pinn_designspace.pt` (2026-03; retired 2026-07 — was
+  byte-identical to `pinn_best.pt`, which is now the single production name)
 
-## 7. Checkpoint Comparison and Dual-Baseline Decision
+## 10. Checkpoint Comparison and Dual-Baseline Decision (v7 era, retired)
 
 ### Checkpoint sweep (v7 training run)
 
@@ -322,7 +327,15 @@ checkpoint could achieve v7's L4 coverage while preserving lower L1 max error:
 checkpoint achieves both v4-style L1 max (<20%) and v7-style L4 completeness (100%).
 This is a real tradeoff in the learned solution, not a checkpoint-selection issue.
 
-### Dual-baseline deployment decision
+### Dual-baseline deployment decision (RETIRED 2026-07-02)
+
+**Retirement note**: the strategy below never had a working second leg. The
+original v4 checkpoint was lost during the v5-v7 iteration cycle, and the
+recipe retrain produced L1 max = 47% — worse at pointwise field accuracy
+than the design-space model it was meant to back up. `pinn_fieldaccuracy.pt`
+and its training scripts were deleted (recoverable from git history), and
+v8 (Section 12) improved L1 max to 27.8% anyway, weakening the case for a
+separate field baseline. Preserved as written for the historical record:
 
 Two named baselines are maintained:
 
@@ -357,14 +370,120 @@ candidates for a **physics-by-construction** approach: deriving B_r and B_z from
 via autograd (B_r = -dA/dz, B_z = (1/r)d(rA)/dr) would guarantee div(B)=0 exactly.
 This is the recommended next structural improvement, not further loss weight tuning.
 
-## 10. Training Infrastructure
+**Done — implemented as v8, see Section 12.**
 
-- **Local machine**: Windows 11 (development, validation)
+## 11. Training Infrastructure
+
+- **Local machine**: Windows 11 (development, validation), RTX 5060 Ti
 - **Remote training**: Windows SSH to RTX 5090 (32GB VRAM) at 10.10.1.187
+  (ICMP firewalled — preflight with `ssh <host> "echo ok"`, not ping)
 - **Workflow**: `scripts/remote_train.sh` or manual SCP + SSH
 - **Data generation**: Vectorized batch computation (~50x faster than per-point loop)
 - **v4 training time**: ~15min for 200k steps at batch_size=131072 on RTX 5090
 - **v5 training time**: ~22min for 300k steps at batch_size=131072 on RTX 5090
+- **v8 training time**: ~4.7h for 300k steps at batch_size=131072 on RTX 5090
+  (the data loss backprops through an autograd derivative, so every step is a
+  double backward — ~13x the v7 step cost)
+
+## 12. v8: Physics by Construction (2026-07-02, production)
+
+### Architecture change
+
+The network head was reduced to a single scalar f(r, z, I, N, R_mean, L)
+with the ansatz **A_phi = r · f**. The field is derived inside forward()
+via autograd:
+
+    B_r = -dA/dz         = -r · df/dz
+    B_z = (1/r) d(rA)/dr = 2f + r · df/dr
+
+Consequences, exact by architecture (not by training):
+- div(B) = 0 (Level 5's div check is now structural)
+- curl consistency B = curl(A)
+- A_phi(0, z) = 0 and B_r(0, z) = 0 (the r·f parameterization removes the
+  1/r axis singularity — no l'Hopital special case needed)
+
+Losses removed as now-redundant: curl, div, on-axis boundary conditions,
+and analytical gradient supervision (third-order through the derived field).
+Remaining: data MSE on derived (Br/I, Bz/I), far-field decay (0.1),
+z-mirror symmetry (0.5), progressive ramp. Checkpoint selection by data
+loss with periodic saves, as in v7. Model/loader code:
+`scripts/pinn_loader.py` (BFieldPINNDerived; the loader transparently
+supports legacy and derived checkpoints via the `derived_b` flag).
+
+Force gradients are now SECOND derivatives of f (double backward). The Kit
+per-step cost was offset by merging the previous two PINN calls per physics
+step (get_Bz + compute_force) into one graph build.
+
+ONNX export was dropped (autograd inside forward is not traceable; nothing
+consumed it).
+
+### v8 training run
+
+- **Data**: regenerated 1.42M samples / 711 configs (v7 failure-mining recipe)
+- **Training**: 300k steps, batch 131072, RTX 5090, ~4.7h
+- **Best data loss**: 1.57e-08 (at step 250k)
+
+### Checkpoint sweep (v8)
+
+| Checkpoint | L1 mean | L1 p99 | L1 max | L2 p99 | L3 pk / r | L4 %<5 | L4 worst | L5 div |
+|-----------|---------|--------|--------|--------|-----------|--------|----------|--------|
+| step 50k  | 8.33% | 61.6% | 82.5% | 4.52% | 94.1% / 0.497 | 4.7% | 83.2% | 0.00000 |
+| step 100k | 5.29% | 28.1% | 72.6% | 4.16% | 36.9% / 0.926 | 6.2% | 66.6% | 0.00000 |
+| step 150k | 1.95% | 5.9% | 35.0% | 3.47% | 1.6% / 0.997 | 71.9% | 21.9% | 0.00000 |
+| step 200k | 1.35% | 4.8% | 29.0% | 3.17% | 1.7% / 0.996 | 87.5% | 9.4% | 0.00000 |
+| **step 250k** | **0.86%** | **2.8%** | **27.8%** | **3.05%** | **3.0% / 0.995** | **95.3%** | **7.75%** | **0.00000** |
+| final 300k | 0.77% | 2.9% | 28.0% | 3.04% | 4.2% / 0.994 | 92.2% | 9.0% | 0.00000 |
+
+div(B) is identically zero for every checkpoint — structural, as designed.
+The v7 L1-max-vs-L4 tradeoff persists (final 300k has better L1 mean but
+dips below the 95% L4 gate); **step 250k** is the only checkpoint passing
+every gate criterion and was promoted.
+
+### Adoption gate (all criteria met by step-250k)
+
+| Criterion | Required | v8 step-250k | v7 (previous) |
+|-----------|----------|--------------|----------------|
+| L3 force, both radii | peak<15%, r>0.95, zc<2mm | 2.7%/3.0%, 0.998/0.995, <0.4mm | 7.5%/6.0% |
+| L4 design space | >=95% under 5%, worst<20% | 95.3%, 7.75% | 100%, 4.8% |
+| L1 field | max <= 37.2% (no worse than v7), mean<5% | 27.8%, 0.86% | 37.2%, 0.50% |
+| L5 physics | all pass | div=0 exact, axial+z-sym pass | div FAIL (0.0138) |
+| Optimizer ranking | Spearman >= 0.99 | **1.000** (Kendall 0.992, max shift +/-1) | 0.9997 |
+
+Promoted 2026-07-02: `models/pinn_checkpoint/pinn_best.pt` = v8 step-250k
+(`model_version=8`, `derived_b=True`). v7 remains recoverable from git
+history (commit 9a0c15d's parent).
+
+### First Kit/PhysX launch artifact (300V)
+
+Run via the extension's scripted autorun
+(`--/exts/omni.marble.coaster/autorun=true --/exts/omni.marble.coaster/autorunVoltage=300`):
+
+- Approach velocity 208 mm/s (vel_in gate pair); coil fired at entry gate
+- 300V / 470uF = 21.1J stored, underdamped (zeta=0.339)
+- MOSFET pulse cut at the cutoff gate
+- **Gate-measured exit velocity 937.5 mm/s -> 4.5x boost** (README's
+  predicted ~4.5x at 300V)
+- Artifact: `results/trajectories/kit_launch_300V_470uF_20260702_174018.csv`
+  (528 steps at 500 Hz, with metadata headers) — the first trajectory from
+  the real Kit/PhysX/PINN path; all earlier committed trajectories came
+  from the headless numpy integrators.
+- Headless cross-check (`validate_kit_simulation.py --field pinn
+  --voltage 300`): 4.2x boost — ratios agree within ~7%. Absolute
+  velocities differ through the simpler sphere-bounce track collision
+  (approach 149 vs 208 mm/s). Note the two pipelines report I_peak
+  differently: the extension logs the undamped amplitude V/(omega_d*L)
+  (1963A at 300V) while rlc_circuit reports the true damped peak (1187A);
+  same circuit, different definitions (cross-checked in
+  tests/test_coil_physics.py).
+
+### Remaining known gaps
+
+1. L1 max error (27.8%) at winding singularities — fundamental to the
+   current-sheet analytical model vs a smooth network; informational.
+2. All validation is against the analytical model; no physical-hardware
+   validation exists yet (the sim-to-real loop of the original plan).
+3. `coil_physics.py` (Kit) and `rlc_circuit.py` (headless) duplicate RLC
+   physics — cross-checked by tests, unification is tracked tech debt.
 
 
 ---
@@ -566,6 +685,55 @@ This is the recommended next structural improvement, not further loss weight tun
 ---
 
 ### Validation run: 2026-07-02 17:33:29 (step=250000, loss=1.57e-08, 4/5 pass)
+
+| Check | Result |
+|-------|--------|
+| Level 1: Field accuracy | FAIL |
+| Level 2: Gradient accuracy | PASS |
+| Level 3: Force accuracy | PASS |
+| Level 4: Design space | PASS |
+| Level 5: Physics consistency | PASS |
+
+**Level 1: Field Accuracy**
+
+| Current | Bz mean err | Bz max err | Result |
+|---------|-------------|------------|--------|
+| I=1A | 0.92% | 28.04% | FAIL |
+| I=10A | 0.91% | 28.03% | FAIL |
+| I=100A | 0.86% | 27.85% | FAIL |
+| I=500A | 0.70% | 26.83% | FAIL |
+| I=1000A | 0.71% | 25.61% | FAIL |
+| I=3000A | 1.46% | 29.67% | FAIL |
+
+**Level 2: Gradient Accuracy** (I=318A)
+
+| Component | Mean err | P95 err | Max err |
+|-----------|----------|---------|---------|  
+| dBr_dr | 0.34% | 0.05% | 100.01% |
+| dBr_dz | 0.42% | 0.11% | 99.78% |
+| dBz_dr | 0.16% | 0.15% | 109.16% |
+| dBz_dz | 0.61% | 0.16% | 99.99% |
+
+**Level 3: Force Accuracy**
+
+| Position | Peak F err | Pearson r | Zero-cross err | Result |
+|----------|------------|-----------|----------------|--------|
+| r=0mm | 2.7% | 0.9981 | 0.33 mm | PASS |
+| r=5mm | 3.0% | 0.9945 | 0.39 mm | PASS |
+
+**Level 4: Design Space**
+- Configs under 5%: 95.3% (need 95%)
+- Worst: 7.75% (need <20%)
+
+**Level 5: Physics Consistency**
+- div_B: mean_normalized=0.000000 [PASS]
+- axial_symmetry: max_Br_over_Bz=0.002320 [PASS]
+- z_symmetry: max_asymmetry=0.017698 [PASS]
+
+
+---
+
+### Validation run: 2026-07-02 17:47:03 (step=250000, loss=1.57e-08, 4/5 pass)
 
 | Check | Result |
 |-------|--------|

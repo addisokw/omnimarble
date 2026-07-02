@@ -29,12 +29,13 @@ PhysX apply_force_at_pos() -- marble accelerates in Omniverse
 
 The analytical Biot-Savart computation (30 loop iterations x scipy elliptic integrals) is replaced by a Physics-Informed Neural Network for real-time inference:
 
-- **Architecture**: NVIDIA PhysicsNeMo FullyConnected, 6x256 hidden, SiLU, skip connections, 331k params
+- **Architecture (v8, "physics by construction")**: NVIDIA PhysicsNeMo FullyConnected, 6x256 hidden, SiLU, skip connections. The network outputs a single scalar f; the vector potential is A_phi = r*f and the field is derived inside forward() via autograd: B_r = -r*df/dz, B_z = 2f + r*df/dr. This makes div(B)=0, curl consistency, and the on-axis boundary conditions **exact identities of the architecture**, not trained approximations.
 - **Inputs**: (r, z, I, N, R_mean, L) -- spatial position + coil design parameters
-- **Outputs**: (A_phi, B_r, B_z)
+- **Outputs**: (A_phi, B_r, B_z) -- same column contract as earlier direct-B models; the shared loader (`scripts/pinn_loader.py`) handles both generations via the checkpoint's `derived_b` flag
 - **Key feature**: Model learns B/I (T/A), collapsing dynamic range across the full current range [0.5, 4000] A
-- **Training**: 1.02M samples from analytical Biot-Savart, physics losses (curl, div-free, boundary, symmetry)
+- **Training**: 1.42M samples from analytical Biot-Savart (711 configs incl. failure-mined families), losses: data + far-field decay + z-mirror symmetry
 - **Validation**: 5-level test suite -- field accuracy, gradient accuracy, force accuracy, design space coverage, physics consistency
+- **Force**: needs field gradients, which are second derivatives of f (double backward through the forward-pass graph)
 
 ### RLC Circuit
 
@@ -46,7 +47,7 @@ I(t) = (V0 / omega_d * L) * exp(-alpha * t) * sin(omega_d * t)
 
 With coupled electromechanical ODE (back-EMF from marble motion), RK4 sub-stepping at 10us resolution, and flyback diode clamping.
 
-Default circuit: 470uF capacitor, 50V charge, L=12.4uH, R=0.11 ohm -> peak current 327A, underdamped (zeta=0.34).
+Default circuit: 470uF capacitor, 50V charge, L=12.4uH, R_dc=0.080 ohm (config `resistance_ohm`) + 0.01 ESR + 0.02 wiring = R_total~=0.110 ohm -> underdamped (zeta=0.34). Peak current: 327A undamped amplitude V/(omega_d*L); ~198A true damped peak (the two pipelines historically reported different definitions -- see tests/test_coil_physics.py).
 
 ### Force Model
 
@@ -96,26 +97,34 @@ This installs torch (CUDA 12.8), nvidia-physicsnemo, scipy, matplotlib, numpy, a
 
 ### 2. Train the PINN (or use existing checkpoint)
 
-A trained checkpoint is included at `models/pinn_checkpoint/pinn_best.pt`. To retrain:
+A trained checkpoint is included at `models/pinn_checkpoint/pinn_best.pt`
+(v8 step-250k, `derived_b=True`). To retrain:
 
 ```bash
-# Generate training data from analytical Biot-Savart (~1M samples)
+# Generate training data from analytical Biot-Savart (~1.42M samples)
 uv run python scripts/generate_training_data.py
 
-# Train PINN (200k steps, ~30min on RTX 4090)
+# Train v8 PINN (300k steps, ~4.7h on RTX 5090 — the data loss backprops
+# through an autograd derivative, so every step is a double backward)
 uv run python scripts/train_pinn.py
+# Smoke test without touching the production checkpoint:
+uv run python scripts/train_pinn.py --steps 500 --batch-size 16384 --out-name pinn_smoke
 ```
 
 For remote GPU training (e.g., a more powerful machine on your network):
 ```bash
 # Edit REMOTE_HOST and REMOTE_USER in the script, then:
 bash scripts/remote_train.sh
+# Pulls the result as pinn_v8_candidate.pt + step checkpoints to
+# candidates/v8/ — promotion to pinn_best.pt is a manual decision after
+# the adoption-gate evaluation (see below).
 ```
 
 ### 3. Validate the PINN
 
 ```bash
-uv run python scripts/evaluate_pinn.py
+uv run python scripts/evaluate_pinn.py            # validates pinn_best.pt
+uv run python scripts/evaluate_pinn.py --ckpt <path>   # validate a candidate
 ```
 
 Runs a 5-level validation suite:
@@ -190,6 +199,33 @@ This launches Kit with the extension loaded directly from `source/extensions/` (
 3. Click **Start Simulation** -- marble rolls down the track, triggers IR gates, fires the coil
 4. Watch the console log for real-time telemetry (current, field, force, velocity)
 5. Adjust **Charge Voltage** and **Capacitance** in the UI panel, click **Update Parameters**
+6. Click **Stop Simulation** -- the run's trajectory is written to
+   `results/trajectories/kit_launch_<V>V_<C>uF_<timestamp>.csv`
+
+#### Scripted autorun (reproducible launch runs)
+
+The full sequence (load scene, configure PhysX, voltage override, start,
+stop after the exit gates fire, write CSV, quit) can be driven without
+clicking:
+
+```cmd
+omnimarble.kit.bat --/exts/omni.marble.coaster/autorun=true --/exts/omni.marble.coaster/autorunVoltage=300
+```
+
+Optional: `autorunMaxSimSeconds` (default 12), `autorunKeepOpen=true` to
+leave the app running after the CSV is written.
+
+#### Trajectory export
+
+Every physics step records time, position (world + coil-local z_along/r),
+velocities, coil current, capacitor voltage, PINN force and Bz, wire
+temperature, and trigger/cutoff flags. The CSV starts with `# key=value`
+metadata lines (run parameters, PINN checkpoint + step, gate times,
+approach/exit velocity, boost ratio).
+
+A committed reference artifact from the real Kit/PhysX/PINN path:
+`results/trajectories/kit_launch_300V_470uF_20260702_174018.csv` — 300V run,
+approach 208 mm/s, gate-measured exit 937.5 mm/s (**4.5x boost**).
 
 #### What happens during simulation
 
@@ -209,17 +245,15 @@ config/
 
 scripts/
   analytical_bfield.py          # Biot-Savart B-field (elliptic integrals) -- ground truth
-  generate_training_data.py     # PINN training data from analytical solution (1M+ samples)
-  generate_training_data_designspace.py  # Design-space variant training data
-  generate_training_data_fieldaccuracy.py # Field-accuracy variant training data
-  train_pinn.py                 # PhysicsNeMo PINN training with physics losses
-  train_pinn_designspace.py     # Design-space PINN training variant
-  train_pinn_fieldaccuracy.py   # Field-accuracy PINN training variant
-  evaluate_pinn.py              # 5-level PINN validation suite
+  generate_training_data.py     # PINN training data from analytical solution (1.42M samples)
+  pinn_loader.py                # Shared checkpoint loader + inference (legacy & derived-B)
+  train_pinn.py                 # v8 derived-B PINN training (PhysicsNeMo)
+  evaluate_pinn.py              # 5-level PINN validation suite (--ckpt for candidates)
   evaluate_candidates.py        # Multi-checkpoint Pareto comparison
-  v7_optimization_diagnostic.py # PINN ranking stability diagnostic
+  v7_optimization_diagnostic.py # PINN ranking stability diagnostic (--ckpt)
   physical_accuracy_audit.py    # Physics consistency validation
   validate_physics.py           # Physics validation utilities
+  validate_kit_simulation.py    # Headless mirror of Kit physics (--field pinn|analytical)
   coil_optimizer_core.py        # Shared optimization engine (screening + coupled reranking)
   coil_optimizer_app.py         # Gradio web UI for coil design optimizer
   optimize_coil_design.py       # CLI coil design optimizer
@@ -243,14 +277,19 @@ source/                         # NVIDIA Kit extension
   extensions/omni.marble.coaster/
     config/extension.toml       # Extension settings (overridable defaults)
     omni/marble/coaster/
-      extension.py              # Main extension: RLC + PINN + PhysX force + UI
+      extension.py              # Main extension: RLC + PINN + PhysX force + UI + autorun
+      coil_physics.py           # Pure-Python coil/RLC physics (unit-testable, no Kit deps)
+
+tests/                          # pytest suite (uv run pytest)
+  test_coil_physics.py          # Derived values vs config, RLC, gates, cross-checks
+  test_rlc_circuit.py           # Saturation/eddy/thermal helpers, mm/mN/T unit system
+  test_pinn_loader.py           # Loader version detection, derived-B structural guarantees
 
 models/
   pinn_checkpoint/
-    pinn_best.pt                # Primary PINN checkpoint (current_normalized=True)
-    pinn_best_step100000.pt     # Intermediate checkpoint (100k steps)
-    pinn_designspace.pt         # Design-space variant
-    pinn_fieldaccuracy.pt       # Field-accuracy variant
+    pinn_best.pt                # Production checkpoint: v8 step-250k, derived_b=True
+                                # (historical v3-v7 checkpoints live in git history;
+                                #  candidates/ holds gitignored periodic checkpoints)
 
 usd/                            # USD scene layers
   marble_coaster_scene.usda     # Composed scene (references all layers)
@@ -293,45 +332,54 @@ The Kit extension reads this JSON as the primary source of truth. UI fields in K
 
 ### Getting a stronger launch
 
-The default 50V/470uF circuit stores only 0.59J. For a visible marble launch:
-- **300V / 470uF**: 21J stored, ~4.5x velocity boost, I_peak=1963A
+The default 50V/470uF circuit stores only 0.59J — at 50V the EM force barely
+changes the trajectory versus a plain gravity roll. For a visible launch:
+- **300V / 470uF**: 21J stored — **demonstrated in Kit: 4.5x gate-measured
+  boost** (artifact: `results/trajectories/kit_launch_300V_470uF_20260702_174018.csv`)
 - To improve efficiency, increase coil inductance (more turns, tighter winding) so the discharge period (~5-20ms) matches the marble's transit time through the coil
 
 ## PINN Training Details
 
-### Architecture
+### Architecture (v8, physics by construction)
 - NVIDIA PhysicsNeMo FullyConnected backbone
-- 6 inputs: (r, z, I, N, R_mean, L)
-- 3 outputs: (A_phi, B_r, B_z)
+- 6 inputs: (r, z, I, N, R_mean, L); 1 raw output: scalar f
+- A_phi = r*f; B_r = -r*df/dz and B_z = 2f + r*df/dr derived via autograd
+  in forward() — div(B)=0, curl consistency, and on-axis BCs are exact
 - 6 hidden layers x 256 units, SiLU activation, skip connections
 - B/I normalization: model learns B/I (T/A), caller multiplies by I
+- Canonical model + loader: `scripts/pinn_loader.py` (`BFieldPINNDerived`)
 
-### Training data (v2)
-- 1.02M samples from analytical Biot-Savart
+### Training data
+- 1.42M samples from analytical Biot-Savart
 - 75k spatial point pool: 30k dense near coil + 20k boundary-enriched + 5k on-axis + 20k far-field
-- 511 parameter configs: 256 grid corners + 244 random + 11 default
+- 711 parameter configs: grid corners + random + failure-mined N=10/R=8 families
 - Per-config: 1500 general + 500 config-adaptive boundary points
 
-### Loss function
-- **Data loss**: MSE on B_r/I and B_z/I
-- **Curl consistency** (weight 1.0): B_r = -dA/dz, B_z = (1/r)d(rA)/dr
-- **Divergence-free** (weight 1.0): dBr/dr + Br/r + dBz/dz = 0
-- **Boundary conditions** (weight 0.1): A_phi=0, Br=0 at r=0; fields->0 far from coil
-- **Symmetry** (weight 0.5): Bz(r,z)=Bz(r,-z), Br(r,z)=-Br(r,-z), Br=0 on axis
-- **Gradient consistency** (weight 0.1): autograd vs finite-difference self-check
+### Loss function (v8)
+- **Data loss**: MSE on derived B_r/I and B_z/I (backprops through the
+  autograd derivative — the dominant per-step cost)
+- **Far-field decay** (weight 0.1): fields -> 0 far from coil
+- **z-mirror symmetry** (weight 0.5): Bz even, Br odd in z
 - Progressive ramp: physics weights scale from 0.1x to 1.0x over first 20k steps
+- Removed vs v7 (now exact by construction): curl, divergence-free, on-axis
+  boundary conditions; gradient supervision dropped (third-order, marginal)
+- Checkpoint selection by data loss + periodic saves for a post-hoc sweep
 
-### Current validation status (v4 checkpoint)
+### Current validation status (v8 step-250k, production — 2026-07-02)
 
 | Level | Check | Result |
 |-------|-------|--------|
-| 1 | Field accuracy (mean/max Bz error) | PASS (0.6% / 19%) |
-| 2 | Gradient accuracy (dBz/dz) | FAIL (max ~100% at singularities) |
-| 3 | Force accuracy (peak err, correlation, zero-crossing) | PASS |
-| 4 | Design space (64 configs under 5%) | FAIL (75%, need 95%) |
-| 5 | Physics consistency (div=0, symmetry) | FAIL (div 0.019 > 0.01) |
+| 1 | Field accuracy (mean/max Bz error) | FAIL max-only (mean 0.86%, max 27.8% at winding singularities; informational) |
+| 2 | Gradient accuracy (dBz/dz mean + P99) | PASS (P99 3.05%) |
+| 3 | Force accuracy (peak err, correlation, zero-crossing) | PASS (2.7% / 3.0%, r>0.994) |
+| 4 | Design space (64 configs under 5%) | PASS (95.3%, worst 7.75%) |
+| 5 | Physics consistency (div=0, symmetry) | PASS (div(B)=0 exact by construction) |
 
-See `results/pinn_audit_report.md` for the full audit trail including all training iterations.
+Optimizer-ranking diagnostic vs analytical reference: Spearman r=1.000,
+Kendall tau=0.992 over 60 candidates — safe for design optimization.
+
+See `results/pinn_audit_report.md` for the full audit trail including all
+training iterations (v1-v8) and the adoption-gate decision.
 
 ## License
 

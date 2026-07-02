@@ -5,10 +5,10 @@
     "backend": "physicsnemo",
     "current_normalized": true,
     "derived_b": true,
-    "path": "models\\pinn_checkpoint\\candidates\\v8\\pinn_best_step250000.pt"
+    "path": "C:\\Users\\kaddi\\Documents\\Projects\\omnimarble\\models\\pinn_checkpoint\\pinn_best.pt"
   },
   "device": "cuda",
-  "timestamp": "2026-07-02T17:33:29",
+  "timestamp": "2026-07-02T17:47:03",
   "Level 1: Field accuracy": {
     "passed": false,
     "data": {
