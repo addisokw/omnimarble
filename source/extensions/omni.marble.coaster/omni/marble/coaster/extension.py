@@ -17,6 +17,7 @@ import carb
 import carb._carb
 import carb.settings
 import omni.ext
+import omni.kit.app
 import omni.kit.commands
 import omni.kit.pipapi
 import omni.physx
@@ -275,6 +276,95 @@ class MarbleCoasterExtension(omni.ext.IExt):
 
         self._build_ui()
 
+        # Scripted autorun for reproducible launch-artifact runs:
+        #   omnimarble.kit.bat --/exts/omni.marble.coaster/autorun=true
+        #                      --/exts/omni.marble.coaster/autorunVoltage=300
+        # Drives load scene -> configure PhysX -> (voltage override) ->
+        # start -> stop after the exit gates fire (or a max sim time),
+        # then quits unless autorunKeepOpen=true.
+        settings = carb.settings.get_settings()
+        self._update_sub = None
+        if settings.get_as_bool("/exts/omni.marble.coaster/autorun"):
+            self._autorun_voltage = settings.get_as_float(
+                "/exts/omni.marble.coaster/autorunVoltage") or 0.0
+            self._autorun_max_sim_s = settings.get_as_float(
+                "/exts/omni.marble.coaster/autorunMaxSimSeconds") or 12.0
+            self._autorun_quit = settings.get_as_bool(
+                "/exts/omni.marble.coaster/autorunKeepOpen") is not True
+            self._autorun_state = "warmup"
+            self._autorun_frames = 0
+            self._autorun_settle_frames = 0
+            self._update_sub = (
+                omni.kit.app.get_app().get_update_event_stream()
+                .create_subscription_to_pop(self._on_autorun_update,
+                                            name="omni.marble.coaster autorun")
+            )
+            carb.log_warn(f"[AUTORUN] Enabled: V="
+                          f"{self._autorun_voltage or 'config default'}, "
+                          f"max sim time {self._autorun_max_sim_s}s")
+
+    def _on_autorun_update(self, _event):
+        try:
+            self._autorun_step()
+        except Exception as ex:
+            carb.log_error(f"[AUTORUN] Failed: {ex}")
+            self._autorun_state = "done"
+            self._update_sub = None
+            if self._autorun_quit:
+                    omni.kit.app.get_app().post_quit(1)
+
+    def _autorun_step(self):
+        self._autorun_frames += 1
+        state = self._autorun_state
+
+        if state == "warmup":
+            # Let the app finish initializing before touching the stage
+            if self._autorun_frames >= 60:
+                carb.log_warn("[AUTORUN] Loading scene")
+                self._load_scene()
+                self._autorun_state = "scene_loading"
+
+        elif state == "scene_loading":
+            stage = omni.usd.get_context().get_stage()
+            if stage and stage.GetPrimAtPath("/World/Marble"):
+                self._configure_physx()
+                if self._autorun_voltage > 0:
+                    self._params.charge_voltage = self._autorun_voltage
+                    self._params.recompute_derived()
+                    if getattr(self, "_voltage_field", None):
+                        self._voltage_field.model.set_value(self._autorun_voltage)
+                    self._em = PINNForceComputer(
+                        self._params, self._pinn_model, self._pinn_device)
+                    carb.log_warn(
+                        f"[AUTORUN] Voltage override: {self._autorun_voltage:.0f}V "
+                        f"(I_peak={self._params.peak_current:.0f}A, "
+                        f"E={self._params.stored_energy:.1f}J, "
+                        f"regime={self._params.regime})")
+                self._autorun_settle_frames = self._autorun_frames + 30
+                self._autorun_state = "settle"
+
+        elif state == "settle":
+            if self._autorun_frames >= self._autorun_settle_frames:
+                carb.log_warn("[AUTORUN] Starting simulation")
+                self._start_simulation()
+                self._autorun_state = "running"
+
+        elif state == "running":
+            done = self._sim_time >= self._autorun_max_sim_s
+            # Stop shortly after the last exit gate fires so the CSV
+            # captures the measured exit velocity plus some coast
+            t_out2 = self._gate_times.get("vel_out_2")
+            if t_out2 is not None and self._sim_time > t_out2 + 0.5:
+                done = True
+            if done:
+                carb.log_warn(f"[AUTORUN] Stopping at sim_time={self._sim_time:.2f}s")
+                self._stop_simulation()
+                self._autorun_state = "done"
+                self._update_sub = None
+                carb.log_warn("[AUTORUN] Complete")
+                if self._autorun_quit:
+                            omni.kit.app.get_app().post_quit(0)
+
     @staticmethod
     def _install_ml_deps():
         """Install torch and physicsnemo into Kit Python via omni.kit.pipapi.
@@ -335,6 +425,7 @@ class MarbleCoasterExtension(omni.ext.IExt):
 
     def on_shutdown(self):
         carb.log_info("[omni.marble.coaster] Shutting down")
+        self._update_sub = None
         self._unsubscribe_physics()
         self._write_trajectory()  # safety flush if a run was never stopped
         if self._window:
