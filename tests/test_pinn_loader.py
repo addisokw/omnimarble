@@ -207,18 +207,20 @@ def test_derived_state_dict_roundtrip(tmp_path, derived_model):
 
 
 @needs_checkpoint
-def test_legacy_div_b_is_not_structural(derived_model):
-    """Sanity contrast: the legacy model's div(B) residual is orders of
-    magnitude above the derived model's (which is why v8 exists)."""
-    model, cn, _ = load_model_from_checkpoint(CHECKPOINT, DEVICE)
+def test_production_div_b_sanity():
+    """The production checkpoint's div(B) residual matches its architecture:
+    ~exact for derived-B (v8+), a finite training residual for legacy."""
+    model, cn, meta = load_model_from_checkpoint(CHECKPOINT, DEVICE)
     r, z = _random_points(128, seed=1)
 
-    def norm_div(m, current_normalized):
-        Br, Bz, dBr_dr, _, _, dBz_dz = predict_field_with_grad(
-            m, r, z, 100.0, N, R_MEAN, L_COIL, current_normalized, DEVICE,
-        )
-        div = dBr_dr + Br / r + dBz_dz
-        scale = np.abs(dBr_dr) + np.abs(Br / r) + np.abs(dBz_dz) + 1e-12
-        return np.mean(np.abs(div) / scale)
+    Br, Bz, dBr_dr, _, _, dBz_dz = predict_field_with_grad(
+        model, r, z, 100.0, N, R_MEAN, L_COIL, cn, DEVICE,
+    )
+    div = dBr_dr + Br / r + dBz_dz
+    scale = np.abs(dBr_dr) + np.abs(Br / r) + np.abs(dBz_dz) + 1e-12
+    norm_div = np.mean(np.abs(div) / scale)
 
-    assert norm_div(model, cn) > 10 * norm_div(derived_model, False)
+    if meta["derived_b"]:
+        assert norm_div < 1e-4, "derived-B model must satisfy div(B)=0 structurally"
+    else:
+        assert norm_div > 1e-4, "legacy model has a finite div residual by nature"

@@ -512,3 +512,101 @@ This is the recommended next structural improvement, not further loss weight tun
 - div_B: mean_normalized=0.013843 [FAIL]
 - axial_symmetry: max_Br_over_Bz=0.003147 [PASS]
 - z_symmetry: max_asymmetry=0.005018 [PASS]
+
+
+---
+
+### Validation run: 2026-07-02 17:32:11 (step=300000, loss=2.80e-08, 3/5 pass)
+
+| Check | Result |
+|-------|--------|
+| Level 1: Field accuracy | FAIL |
+| Level 2: Gradient accuracy | PASS |
+| Level 3: Force accuracy | PASS |
+| Level 4: Design space | FAIL |
+| Level 5: Physics consistency | PASS |
+
+**Level 1: Field Accuracy**
+
+| Current | Bz mean err | Bz max err | Result |
+|---------|-------------|------------|--------|
+| I=1A | 0.82% | 28.30% | FAIL |
+| I=10A | 0.82% | 28.28% | FAIL |
+| I=100A | 0.77% | 28.04% | FAIL |
+| I=500A | 0.61% | 26.90% | FAIL |
+| I=1000A | 0.59% | 25.73% | FAIL |
+| I=3000A | 1.24% | 29.25% | FAIL |
+
+**Level 2: Gradient Accuracy** (I=318A)
+
+| Component | Mean err | P95 err | Max err |
+|-----------|----------|---------|---------|  
+| dBr_dr | 0.34% | 0.05% | 100.02% |
+| dBr_dz | 0.42% | 0.12% | 99.78% |
+| dBz_dr | 0.16% | 0.15% | 109.26% |
+| dBz_dz | 0.61% | 0.15% | 100.02% |
+
+**Level 3: Force Accuracy**
+
+| Position | Peak F err | Pearson r | Zero-cross err | Result |
+|----------|------------|-----------|----------------|--------|
+| r=0mm | 0.7% | 0.9981 | 0.19 mm | PASS |
+| r=5mm | 4.2% | 0.9943 | 0.33 mm | PASS |
+
+**Level 4: Design Space**
+- Configs under 5%: 92.2% (need 95%)
+- Worst: 8.99% (need <20%)
+
+**Level 5: Physics Consistency**
+- div_B: mean_normalized=0.000000 [PASS]
+- axial_symmetry: max_Br_over_Bz=0.002266 [PASS]
+- z_symmetry: max_asymmetry=0.012700 [PASS]
+
+
+---
+
+### Validation run: 2026-07-02 17:33:29 (step=250000, loss=1.57e-08, 4/5 pass)
+
+| Check | Result |
+|-------|--------|
+| Level 1: Field accuracy | FAIL |
+| Level 2: Gradient accuracy | PASS |
+| Level 3: Force accuracy | PASS |
+| Level 4: Design space | PASS |
+| Level 5: Physics consistency | PASS |
+
+**Level 1: Field Accuracy**
+
+| Current | Bz mean err | Bz max err | Result |
+|---------|-------------|------------|--------|
+| I=1A | 0.92% | 28.04% | FAIL |
+| I=10A | 0.91% | 28.03% | FAIL |
+| I=100A | 0.86% | 27.85% | FAIL |
+| I=500A | 0.70% | 26.83% | FAIL |
+| I=1000A | 0.71% | 25.61% | FAIL |
+| I=3000A | 1.46% | 29.67% | FAIL |
+
+**Level 2: Gradient Accuracy** (I=318A)
+
+| Component | Mean err | P95 err | Max err |
+|-----------|----------|---------|---------|  
+| dBr_dr | 0.34% | 0.05% | 100.01% |
+| dBr_dz | 0.42% | 0.11% | 99.78% |
+| dBz_dr | 0.16% | 0.15% | 109.16% |
+| dBz_dz | 0.61% | 0.16% | 99.99% |
+
+**Level 3: Force Accuracy**
+
+| Position | Peak F err | Pearson r | Zero-cross err | Result |
+|----------|------------|-----------|----------------|--------|
+| r=0mm | 2.7% | 0.9981 | 0.33 mm | PASS |
+| r=5mm | 3.0% | 0.9945 | 0.39 mm | PASS |
+
+**Level 4: Design Space**
+- Configs under 5%: 95.3% (need 95%)
+- Worst: 7.75% (need <20%)
+
+**Level 5: Physics Consistency**
+- div_B: mean_normalized=0.000000 [PASS]
+- axial_symmetry: max_Br_over_Bz=0.002320 [PASS]
+- z_symmetry: max_asymmetry=0.017698 [PASS]
