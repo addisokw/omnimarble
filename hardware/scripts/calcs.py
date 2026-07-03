@@ -130,12 +130,13 @@ def integrate_i2t(ts, Is):
     return total
 
 
-def bank_report(c_uF, v0=V_BANK_MAX):
+def bank_report(c_uF, v0=V_BANK_MAX, coil=None):
+    coil = coil or COIL
     rlc = compute_rlc_params({
         "capacitance_uF": c_uF,
         "charge_voltage_V": v0,
-        "inductance_uH": COIL["L_uH"],
-        "total_resistance_ohm": COIL["R_total_ohm"],
+        "inductance_uH": coil["L_uH"],
+        "total_resistance_ohm": coil["R_total_ohm"],
     })
     ts, Is = pulse_waveform(rlc)
     i2t = integrate_i2t(ts, Is)
@@ -194,6 +195,57 @@ def bank_report(c_uF, v0=V_BANK_MAX):
         "t_charge_s": t_charge, "tau_bleed_s": tau_bleed,
         "t_dump_s": t_dump_to_5v,
     }
+
+
+# ---------------------------------------------------------------------------
+# Coil safety envelope: which (L, R_total) coils are safe on this board?
+# Evaluated at the WORST configuration the board supports: full 11000uF
+# bank at the 55V operating ceiling. A coil is SAFE iff every pulse margin
+# that depends on the coil holds:
+#   I_pk <= 600A switch design point
+#   FET shared-conduction dTj < 50K
+#   blocking-diode I2t rating margin >= 10x
+#   pulse-pour adiabatic heating < 5K
+#   ADC full scale >= 1.25 x I_pk
+# ---------------------------------------------------------------------------
+
+ENVELOPE_JSON = HW_DIR / "coil-envelope.json"
+ENV_L_GRID_UH = [1, 2, 3, 4, 5, 6, 8, 10, 12.4, 16, 20, 30, 40]
+ENV_R_GRID_OHM = [0.02, 0.03, 0.05, 0.07, 0.09, 0.11, 0.15, 0.2, 0.3, 0.5]
+ENV_R_FLOOR_OHM = 0.03   # sanity floor: below this, wiring alone dominates
+
+
+def coil_is_safe(r):
+    return (r["i_pk"] <= DESIGN_I_PK_A
+            and r["dtj_shared"] < 50.0
+            and r["i2t_diode"] * 10 <= DIODE["i2t_a2s"]
+            and r["dT_pour"] < 5.0
+            and r["i_fullscale"] >= 1.25 * r["i_pk"])
+
+
+def coil_envelope():
+    """Sweep the L/R grid at worst bank; return (grid, rect_envelope)."""
+    worst_c = BANK_OPTIONS_UF[-1]
+    grid = {}
+    for L in ENV_L_GRID_UH:
+        for R in ENV_R_GRID_OHM:
+            rep = bank_report(worst_c, coil={"L_uH": L, "R_total_ohm": R})
+            grid[(L, R)] = (coil_is_safe(rep), rep["i_pk"])
+    # Conservative rectangle: smallest (L_min, R_min) grid corner such
+    # that EVERY grid point with L >= L_min and R >= R_min is safe.
+    rect = None
+    for L_min in ENV_L_GRID_UH:
+        for R_min in ENV_R_GRID_OHM:
+            if R_min < ENV_R_FLOOR_OHM:
+                continue
+            ok = all(safe for (L, R), (safe, _) in grid.items()
+                     if L >= L_min and R >= R_min)
+            if ok:
+                rect = (L_min, R_min)
+                break
+        if rect:
+            break
+    return grid, rect
 
 
 # ---------------------------------------------------------------------------
@@ -335,6 +387,33 @@ def main():
         i_coil < 0.1,
         f"{i_coil*1000:.0f}mA coil vs 200mA transistor rating"))
 
+    # Coil safety envelope (worst bank at operating ceiling)
+    grid, rect = coil_envelope()
+    rows.append(check(
+        "Coil envelope rectangle exists",
+        rect is not None,
+        f"L >= {rect[0]}uH AND R_total >= {rect[1]*1000:.0f} mOhm "
+        f"(all grid points inside are safe)" if rect else "no safe rectangle"))
+    demo_inside = (COIL["L_uH"] >= rect[0] and COIL["R_total_ohm"] >= rect[1]) if rect else False
+    rows.append(check(
+        "Demo coil inside validated envelope",
+        demo_inside,
+        f"demo {COIL['L_uH']}uH/{COIL['R_total_ohm']*1000:.0f} mOhm vs "
+        f"envelope L>={rect[0]}uH, R>={rect[1]*1000:.0f} mOhm" if rect else "n/a"))
+
+    import json as _json
+    ENVELOPE_JSON.write_text(_json.dumps({
+        "worst_bank_uF": BANK_OPTIONS_UF[-1],
+        "v_bank_max": V_BANK_MAX,
+        "design_i_pk_a": DESIGN_I_PK_A,
+        "L_min_uH": rect[0] if rect else None,
+        "R_total_min_ohm": rect[1] if rect else None,
+        "demo_coil": COIL,
+        "criteria": ["I_pk<=600A", "FET dTj<50K", "diode I2t 10x",
+                     "pour dT<5K", "ADC FS>=1.25*I_pk"],
+    }, indent=2), encoding="utf-8")
+    print(f"  Coil envelope written to {ENVELOPE_JSON.name}")
+
     # ---- emit markdown ----
     md = ["# Driver board design calculations",
           "",
@@ -394,6 +473,25 @@ def main():
            "- Relay sequencing: charge relay closes only after precharge"
            " equalization, opens only with boost inhibited; dump relay"
            " switches <=0.6A resistive.",
+           "",
+           "## Coil safety envelope (worst case: full bank at operating ceiling)",
+           "",
+           f"A connected coil is validated iff **L >= {rect[0]} uH AND "
+           f"R_total >= {rect[1]*1000:.0f} mOhm** (total series resistance "
+           "including leads/wiring), swept at "
+           f"{BANK_OPTIONS_UF[-1]}uF / {V_BANK_MAX:.0f}V against: "
+           "I_pk <= 600A, FET dTj < 50K, diode I2t 10x, pour dT < 5K, "
+           "ADC FS >= 1.25*I_pk.",
+           "",
+           "| L \\ R_total | " + " | ".join(f"{r*1000:.0f}m" for r in ENV_R_GRID_OHM) + " |",
+           "|---" * (len(ENV_R_GRID_OHM) + 1) + "|",
+           *[f"| {L}uH | " + " | ".join(
+               ("OK" if grid[(L, R)][0] else f"**{grid[(L, R)][1]:.0f}A**")
+               for R in ENV_R_GRID_OHM) + " |"
+             for L in ENV_L_GRID_UH],
+           "",
+           "(unsafe cells show the offending peak current; envelope excludes"
+           " them by construction)",
            "",
            "## Part constants used (verify against datasheets at order time)",
            "",

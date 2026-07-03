@@ -38,6 +38,8 @@ Baseline population: **4400uF** (2x 2200uF snap-in).
 | OVP trip ceiling below capacitor rating | trip_max 62.0V < 63V rating - 1V | PASS |
 | Dump relay closing current within DC contact class | 0.28A resistive at 55V (HF3FF ~10A/28VDC class; opens only after discharge) | PASS |
 | Relay coil drive within MMBT3904 | 30mA coil vs 200mA transistor rating | PASS |
+| Coil envelope rectangle exists | L >= 1uH AND R_total >= 90 mOhm (all grid points inside are safe) | PASS |
+| Demo coil inside validated envelope | demo 12.406uH/110 mOhm vs envelope L>=1uH, R>=90 mOhm | PASS |
 
 ## Sense chain
 
@@ -58,6 +60,28 @@ Baseline population: **4400uF** (2x 2200uF snap-in).
 - Ladder: operating 55V < OVP 59.1..62.0V (CJ431 +/-0.5% + 1% divider) < capacitor rating 63V
 - Boost enable is fail-safe INHIBITED (pull-up holds COMP low; MCU must drive BOOST_EN_N low to charge)
 - Relay sequencing: charge relay closes only after precharge equalization, opens only with boost inhibited; dump relay switches <=0.6A resistive.
+
+## Coil safety envelope (worst case: full bank at operating ceiling)
+
+A connected coil is validated iff **L >= 1 uH AND R_total >= 90 mOhm** (total series resistance including leads/wiring), swept at 11000uF / 55V against: I_pk <= 600A, FET dTj < 50K, diode I2t 10x, pour dT < 5K, ADC FS >= 1.25*I_pk.
+
+| L \ R_total | 20m | 30m | 50m | 70m | 90m | 110m | 150m | 200m | 300m | 500m |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1uH | **2055A** | **1529A** | **1001A** | **741A** | OK | OK | OK | OK | OK | OK |
+| 2uH | **1809A** | **1396A** | **949A** | **714A** | OK | OK | OK | OK | OK | OK |
+| 3uH | **1653A** | **1305A** | **909A** | **694A** | OK | OK | OK | OK | OK | OK |
+| 4uH | **1540A** | **1235A** | **877A** | **676A** | OK | OK | OK | OK | OK | OK |
+| 5uH | **1452A** | **1180A** | **851A** | **661A** | OK | OK | OK | OK | OK | OK |
+| 6uH | **1380A** | **1133A** | **827A** | **648A** | OK | OK | OK | OK | OK | OK |
+| 8uH | **1268A** | **1058A** | **789A** | **625A** | OK | OK | OK | OK | OK | OK |
+| 10uH | **1183A** | **999A** | **757A** | **606A** | OK | OK | OK | OK | OK | OK |
+| 12.4uH | **1103A** | **942A** | **725A** | OK | OK | OK | OK | OK | OK | OK |
+| 16uH | **1011A** | **876A** | **686A** | OK | OK | OK | OK | OK | OK | OK |
+| 20uH | **935A** | **818A** | **651A** | OK | OK | OK | OK | OK | OK | OK |
+| 30uH | **805A** | **718A** | OK | OK | OK | OK | OK | OK | OK | OK |
+| 40uH | **720A** | **650A** | OK | OK | OK | OK | OK | OK | OK | OK |
+
+(unsafe cells show the offending peak current; envelope excludes them by construction)
 
 ## Part constants used (verify against datasheets at order time)
 

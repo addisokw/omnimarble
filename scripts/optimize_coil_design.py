@@ -234,6 +234,14 @@ def run_verification(scored, model, device):
 # ============================================================
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Multi-objective coil design optimizer")
+    parser.add_argument("--max-voltage", type=float, default=None,
+                        help="Constrain charge voltage (e.g. 55 for the SELV driver board)")
+    parser.add_argument("--max-current", type=float, default=None,
+                        help="Constrain peak current (e.g. 600 for the driver board switch)")
+    args = parser.parse_args()
+
     print("=" * 60)
     print("  MULTI-OBJECTIVE COIL DESIGN OPTIMIZER")
     print("=" * 60)
@@ -244,8 +252,14 @@ def main():
     # Load model
     model, device = load_pinn_designspace(device)
 
-    # Run optimization with default constraints
+    # Run optimization (optionally board-constrained)
     constraints = UserConstraints()
+    if args.max_voltage is not None:
+        constraints.max_voltage_V = args.max_voltage
+    if args.max_current is not None:
+        constraints.max_current_A = args.max_current
+    print(f"Constraints: V0 <= {constraints.max_voltage_V}V, "
+          f"I_peak <= {constraints.max_current_A}A")
     n_samples = constraints.n_samples
     print(f"\nGenerating {n_samples} candidates via Latin Hypercube Sampling...")
     print(f"Evaluating candidates...")

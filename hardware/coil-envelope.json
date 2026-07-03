@@ -1,0 +1,18 @@
+{
+  "worst_bank_uF": 11000,
+  "v_bank_max": 55.0,
+  "design_i_pk_a": 600.0,
+  "L_min_uH": 1,
+  "R_total_min_ohm": 0.09,
+  "demo_coil": {
+    "L_uH": 12.406,
+    "R_total_ohm": 0.1102
+  },
+  "criteria": [
+    "I_pk<=600A",
+    "FET dTj<50K",
+    "diode I2t 10x",
+    "pour dT<5K",
+    "ADC FS>=1.25*I_pk"
+  ]
+}

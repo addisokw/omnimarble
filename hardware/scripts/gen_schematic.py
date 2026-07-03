@@ -431,8 +431,25 @@ def build_pulse_switch(sch):
 
 
 def build_flyback(sch):
+    import json
     s, c = sch, GLOBAL_COUNTER
     s.text("Pulse loop: VBANK -> blocking -> COIL -> switch -> shunt -> GND", (30, 20), 3)
+
+    # Coil requirements note, values sourced from calcs.py's swept envelope
+    # (hardware/coil-envelope.json) so the schematic cannot drift from the
+    # asserted numbers. Run calcs.py before gen_schematic.py.
+    env = json.loads((HW_DIR / "coil-envelope.json").read_text(encoding="utf-8"))
+    demo = env["demo_coil"]
+    s.text("COIL REQUIREMENTS (J5) - validated envelope, swept in calcs.py at "
+           f"{env['worst_bank_uF']}uF / {env['v_bank_max']:.0f}V:\n"
+           f"  L >= {env['L_min_uH']} uH  AND  R_total >= "
+           f"{env['R_total_min_ohm']*1000:.0f} mOhm\n"
+           "  (R_total = coil DC resistance + leads/lugs; keep leads short)\n"
+           f"  Validated default: 30T demo coil, {demo['L_uH']} uH, "
+           f"{demo['R_total_ohm']*1000:.0f} mOhm total\n"
+           f"  Below envelope the pulse can exceed the {env['design_i_pk_a']:.0f}A "
+           "switch design point - DO NOT FIRE.",
+           (30, 180), 2.2)
 
     # Series blocking diodes (2x parallel): reproduce sim's I>=0 clamp
     for i in range(2):
