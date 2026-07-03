@@ -241,3 +241,22 @@ PARTS = {
 # Bank options achievable with the 5 snap-in positions (2200uF each)
 BANK_POSITIONS = 5
 BANK_UNIT_UF = 2200.0
+
+# Demo-coil PHYSICAL BUILD SPEC (experiment #1). Single source of truth for
+# hardware/README.md's build sheet and tests/test_coil_physics.py's
+# field-geometry contract test. The field model (analytical_bfield.
+# solenoid_field) places N ideal loops at loop_center_radius_mm with
+# centers np.linspace(-span/2, +span/2, N) -- the physical winding must
+# match LOOP CENTERS, not wire edges.
+DEMO_COIL_BUILD = {
+    "n_turns": 30,
+    "loop_center_radius_mm": 15.0,     # = (inner 12 + outer 18)/2 of config
+    "center_span_mm": 30.0,            # first-to-last turn CENTER distance
+    "pitch_mm": 30.0 / 29,             # ~1.034 center-to-center (span/(N-1))
+    "wire_copper_mm": 0.8,             # AWG20 conductor
+    "wire_finished_od_mm": 0.87,       # copper + 2 x 0.035 enamel
+    "former_od_mm": 2 * (15.0 - 0.87 / 2),  # ~29.13; set CENTER radius, not OD
+    "expected_L_uH": 17.3,             # Wheeler at 15mm (config says 12.4 -- see
+    "expected_R_dc_mohm": 97,          #  model-inconsistency note); measure and
+    "expected_R_total_mohm": 127,      #  write actuals into coil_params.json
+}

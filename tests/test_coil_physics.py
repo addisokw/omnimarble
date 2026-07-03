@@ -152,3 +152,52 @@ def test_marble_mass():
     cp = CoilPhysics()
     # 10mm steel sphere: (4/3)*pi*5^3 mm^3 * 7.8e-3 g/mm^3 ~ 4.08 g
     assert cp.marble_mass_kg == pytest.approx(0.00408, rel=0.01)
+
+
+def test_demo_coil_build_matches_field_model():
+    """Sim-to-real contract: the documented physical build spec
+    (hardware/scripts/parts.py DEMO_COIL_BUILD) must reproduce the field
+    model's winding geometry EXACTLY — same loop-center radius and the
+    same np.linspace loop-center positions. If either side changes, this
+    fails instead of becoming tribal knowledge.
+    """
+    import numpy as np
+    import sys
+    sys.path.insert(0, str(ROOT / "hardware" / "scripts"))
+    from parts import DEMO_COIL_BUILD as B
+    from analytical_bfield import single_loop_field, solenoid_field
+
+    # 1) Constants agree with the shared config
+    r_mean_cfg = (CONFIG["inner_radius_mm"] + CONFIG["outer_radius_mm"]) / 2
+    assert B["loop_center_radius_mm"] == pytest.approx(r_mean_cfg, abs=1e-9), (
+        "build loop-center radius diverged from the field model's R_mean")
+    assert B["n_turns"] == CONFIG["num_turns"]
+    assert B["center_span_mm"] == pytest.approx(CONFIG["length_mm"])
+    assert B["pitch_mm"] == pytest.approx(
+        B["center_span_mm"] / (B["n_turns"] - 1))  # linspace pitch, ~1.034
+    assert B["former_od_mm"] == pytest.approx(
+        2 * (B["loop_center_radius_mm"] - B["wire_finished_od_mm"] / 2))
+    assert B["wire_finished_od_mm"] == pytest.approx(
+        B["wire_copper_mm"] + 2 * CONFIG["insulation_thickness_mm"])
+
+    # 2) Numerical equivalence: summing ideal loops at the BUILD SPEC's
+    # centers reproduces solenoid_field bit-for-bit at sample points
+    cp = {
+        "current_A": 100.0,
+        "num_turns": CONFIG["num_turns"],
+        "inner_radius_mm": CONFIG["inner_radius_mm"],
+        "outer_radius_mm": CONFIG["outer_radius_mm"],
+        "length_mm": CONFIG["length_mm"],
+    }
+    centers = np.linspace(-B["center_span_mm"] / 2, B["center_span_mm"] / 2,
+                          B["n_turns"])
+    for r, z in [(0.1, 0.0), (5.0, 10.0), (0.1, -20.0), (10.0, 25.0)]:
+        br_model, bz_model = solenoid_field(r, z, cp)
+        br_build = sum(single_loop_field(r, z - zc,
+                                         B["loop_center_radius_mm"], 100.0)[0]
+                       for zc in centers)
+        bz_build = sum(single_loop_field(r, z - zc,
+                                         B["loop_center_radius_mm"], 100.0)[1]
+                       for zc in centers)
+        assert br_build == pytest.approx(br_model, rel=1e-12, abs=1e-15)
+        assert bz_build == pytest.approx(bz_model, rel=1e-12, abs=1e-15)

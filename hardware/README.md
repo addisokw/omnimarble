@@ -70,16 +70,25 @@ model predicts.
 
 ### Coil build sheet — experiment #1 (demo coil, field-geometry build)
 
+The field model uses **ideal loop centers**: 30 loops at radius 15.0 mm
+with centers at `np.linspace(-15, +15, 30)`. The physical winding must
+match **turn centers**, not wire edges. Machine-readable spec:
+`hardware/scripts/parts.py DEMO_COIL_BUILD`, contract-tested against the
+field model by `tests/test_coil_physics.py::
+test_demo_coil_build_matches_field_model` (fails if either side drifts).
+
 | Item | Spec |
 |---|---|
-| Former | Rigid tube/bobbin, **29.2 mm outside diameter** (0.8 mm wire centers land at 15.0 mm radius), 30 mm winding window between flanges |
-| Wire | 0.8 mm (AWG20) enameled magnet wire, ~3 m incl. leads |
+| Target geometry | **Wire CENTER radius = 15.0 mm** (this is the spec; former OD follows from your wire) |
+| Former | For 0.87 mm finished wire OD (0.8 mm copper + 2×0.035 mm enamel): **~29.13 mm OD**. Measure your wire's finished OD and set former OD = 2×(15.0 − OD/2). 32 mm winding window between flanges |
+| Wire | 0.8 mm copper (AWG20) enameled magnet wire, ~3 m incl. leads |
 | Turns | **30 turns, single layer, one direction** |
-| Spacing | **Evenly spread over the full 30.0 mm** (1.0 mm pitch with small gaps, NOT close-wound — the model places loops evenly over the length; close-winding compresses to ~26 mm and shifts the field profile) |
+| Spacing | **30 turn CENTERS evenly spanning 30.0 mm** → center-to-center pitch **30/29 ≈ 1.034 mm** (not 1.000). First and last turn centers sit at ±15.0 mm from coil center. NOT close-wound (that compresses the span to ~26 mm and shifts the field profile) |
 | Leads | Short and heavy (>=AWG16 or doubled), crimped ring lugs to J5 |
 
-Winding tips: score/print 1.0 mm-pitch guide grooves on the former,
-secure the ends (CA glue) before the winding relaxes, leave 100 mm tails.
+Winding tips: score/print **1.034 mm-pitch** guide grooves (or a printed
+thread) so the groove *centers* span exactly 30.0 mm; secure the ends
+(CA glue) before the winding relaxes; leave 100 mm tails.
 
 **Verify after winding** (LCR meter ~1 kHz + milliohm measurement), then
 **write the measured values into `config/coil_params.json`** so sim and
