@@ -1,0 +1,497 @@
+{
+    "$schema": "https://schemas.kicad.org/drc.v1.json",
+    "coordinate_units": "mm",
+    "date": "2026-07-03T18:38:07",
+    "ignored_checks": [
+        {
+            "description": "Footprint has no courtyard defined",
+            "key": "missing_courtyard"
+        },
+        {
+            "description": "Track endpoint not centered on via",
+            "key": "track_not_centered_on_via"
+        },
+        {
+            "description": "Tuning profile track geometries",
+            "key": "tuning_profile_track_geometries"
+        },
+        {
+            "description": "Footprint doesn't match symbol's footprint filters",
+            "key": "footprint_filters_mismatch"
+        },
+        {
+            "description": "Footprint component type doesn't match footprint pads",
+            "key": "footprint_type_mismatch"
+        }
+    ],
+    "included_severities": [
+        "error",
+        "warning"
+    ],
+    "kicad_version": "10.0.4",
+    "schematic_parity": [],
+    "source": "gate-rail.kicad_pcb",
+    "unconnected_items": [],
+    "violations": [
+        {
+            "description": "Silkscreen clipped by board edge",
+            "items": [
+                {
+                    "description": "Segment on Edge.Cuts",
+                    "pos": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "uuid": "eca0a9af-e75d-4703-bc23-f9d6ed5c6abb"
+                },
+                {
+                    "description": "Reference field of H1",
+                    "pos": {
+                        "x": 4.5,
+                        "y": -0.15
+                    },
+                    "uuid": "29de4fee-6597-426d-b28d-3afd56ed42dc"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_edge_clearance"
+        },
+        {
+            "description": "Silkscreen clearance",
+            "items": [
+                {
+                    "description": "PCB text 'EMIT [  ]  RECV [  ]' on F.Silkscreen",
+                    "pos": {
+                        "x": 46.0,
+                        "y": 8.0
+                    },
+                    "uuid": "2e65180c-4397-4dec-b47c-81c68d9b6c2f"
+                },
+                {
+                    "description": "PCB text 'z=-20' on F.Silkscreen",
+                    "pos": {
+                        "x": 54.5,
+                        "y": 7.4
+                    },
+                    "uuid": "7176d5d6-1693-4718-b091-8b6454d27a06"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance",
+            "items": [
+                {
+                    "description": "PCB text 'EMIT [  ]  RECV [  ]' on F.Silkscreen",
+                    "pos": {
+                        "x": 46.0,
+                        "y": 8.0
+                    },
+                    "uuid": "2e65180c-4397-4dec-b47c-81c68d9b6c2f"
+                },
+                {
+                    "description": "Arc of D3 on F.Silkscreen",
+                    "pos": {
+                        "x": 51.27,
+                        "y": 10.9
+                    },
+                    "uuid": "40af59d0-4b25-437a-9be1-4b1510483600"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance",
+            "items": [
+                {
+                    "description": "PCB text 'EMIT [  ]  RECV [  ]' on F.Silkscreen",
+                    "pos": {
+                        "x": 46.0,
+                        "y": 8.0
+                    },
+                    "uuid": "2e65180c-4397-4dec-b47c-81c68d9b6c2f"
+                },
+                {
+                    "description": "Reference field of D3",
+                    "pos": {
+                        "x": 51.27,
+                        "y": 6.94
+                    },
+                    "uuid": "74a577ff-f49e-4b86-b6a0-44e8bf6bbe02"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance",
+            "items": [
+                {
+                    "description": "PCB text 'EMIT [  ]  RECV [  ]' on F.Silkscreen",
+                    "pos": {
+                        "x": 46.0,
+                        "y": 8.0
+                    },
+                    "uuid": "2e65180c-4397-4dec-b47c-81c68d9b6c2f"
+                },
+                {
+                    "description": "Circle of D3 on F.Silkscreen",
+                    "pos": {
+                        "x": 51.27,
+                        "y": 10.9
+                    },
+                    "uuid": "94280449-6e29-44c8-8ef8-10d97ae40fe8"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance",
+            "items": [
+                {
+                    "description": "Arc of Q3 on F.Silkscreen",
+                    "pos": {
+                        "x": 51.27,
+                        "y": 4.8
+                    },
+                    "uuid": "69960aaf-89c4-44c4-be4c-e7b41f1f8b63"
+                },
+                {
+                    "description": "Reference field of D3",
+                    "pos": {
+                        "x": 51.27,
+                        "y": 6.94
+                    },
+                    "uuid": "74a577ff-f49e-4b86-b6a0-44e8bf6bbe02"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance",
+            "items": [
+                {
+                    "description": "Reference field of D3",
+                    "pos": {
+                        "x": 51.27,
+                        "y": 6.94
+                    },
+                    "uuid": "74a577ff-f49e-4b86-b6a0-44e8bf6bbe02"
+                },
+                {
+                    "description": "Arc of Q3 on F.Silkscreen",
+                    "pos": {
+                        "x": 51.27,
+                        "y": 4.8
+                    },
+                    "uuid": "cd5312c0-5039-4a59-b022-680c1cc87362"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance",
+            "items": [
+                {
+                    "description": "Arc of Q5 on F.Silkscreen",
+                    "pos": {
+                        "x": 131.27,
+                        "y": 4.8
+                    },
+                    "uuid": "2b578d7e-410f-4697-b687-a7a3ca29602e"
+                },
+                {
+                    "description": "Reference field of D5",
+                    "pos": {
+                        "x": 131.27,
+                        "y": 6.94
+                    },
+                    "uuid": "c2ef9d4d-3f0c-4979-8d86-bd8bea97f14b"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance",
+            "items": [
+                {
+                    "description": "Arc of Q5 on F.Silkscreen",
+                    "pos": {
+                        "x": 131.27,
+                        "y": 4.8
+                    },
+                    "uuid": "9c0890e8-9541-4df9-841c-b065c9a6b931"
+                },
+                {
+                    "description": "Reference field of D5",
+                    "pos": {
+                        "x": 131.27,
+                        "y": 6.94
+                    },
+                    "uuid": "c2ef9d4d-3f0c-4979-8d86-bd8bea97f14b"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance",
+            "items": [
+                {
+                    "description": "PCB text 'z=0' on F.Silkscreen",
+                    "pos": {
+                        "x": 74.5,
+                        "y": 8.199999
+                    },
+                    "uuid": "14b4f054-a88b-42a4-87d2-e55e5a86016b"
+                },
+                {
+                    "description": "Arc of D4 on F.Silkscreen",
+                    "pos": {
+                        "x": 76.27,
+                        "y": 10.9
+                    },
+                    "uuid": "783edecd-1a36-408d-9ede-94d0c1993093"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance",
+            "items": [
+                {
+                    "description": "PCB text 'z=0' on F.Silkscreen",
+                    "pos": {
+                        "x": 74.5,
+                        "y": 8.199999
+                    },
+                    "uuid": "14b4f054-a88b-42a4-87d2-e55e5a86016b"
+                },
+                {
+                    "description": "Circle of D4 on F.Silkscreen",
+                    "pos": {
+                        "x": 76.27,
+                        "y": 10.9
+                    },
+                    "uuid": "4caf0c2b-d0c1-4946-9a60-6447fcd87186"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance",
+            "items": [
+                {
+                    "description": "Reference field of D4",
+                    "pos": {
+                        "x": 76.27,
+                        "y": 6.94
+                    },
+                    "uuid": "038c3065-57c0-4dc0-81b3-3d43c9c29ee4"
+                },
+                {
+                    "description": "Arc of Q4 on F.Silkscreen",
+                    "pos": {
+                        "x": 76.27,
+                        "y": 4.8
+                    },
+                    "uuid": "75e6b325-486f-45d1-99dd-c342f2b11a20"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance",
+            "items": [
+                {
+                    "description": "Reference field of D4",
+                    "pos": {
+                        "x": 76.27,
+                        "y": 6.94
+                    },
+                    "uuid": "038c3065-57c0-4dc0-81b3-3d43c9c29ee4"
+                },
+                {
+                    "description": "Arc of Q4 on F.Silkscreen",
+                    "pos": {
+                        "x": 76.27,
+                        "y": 4.8
+                    },
+                    "uuid": "6f3428e9-f21b-442b-8bac-9c1b49229ab9"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance",
+            "items": [
+                {
+                    "description": "Segment of J1 on F.Silkscreen",
+                    "pos": {
+                        "x": 196.43,
+                        "y": 10.52
+                    },
+                    "uuid": "12a8f6ee-c5f3-41bb-927a-d376dcf6ea30"
+                },
+                {
+                    "description": "PCB text 'z=+120' on F.Silkscreen",
+                    "pos": {
+                        "x": 194.5,
+                        "y": 7.4
+                    },
+                    "uuid": "b4da2427-8506-40be-96e5-000575beaffa"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance",
+            "items": [
+                {
+                    "description": "Segment of J1 on F.Silkscreen",
+                    "pos": {
+                        "x": 195.13,
+                        "y": 11.83
+                    },
+                    "uuid": "07ad77bc-751c-44d4-9cd5-6a40b7dcb631"
+                },
+                {
+                    "description": "PCB text 'z=+120' on F.Silkscreen",
+                    "pos": {
+                        "x": 194.5,
+                        "y": 7.4
+                    },
+                    "uuid": "b4da2427-8506-40be-96e5-000575beaffa"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance",
+            "items": [
+                {
+                    "description": "PCB text 'z=+120' on F.Silkscreen",
+                    "pos": {
+                        "x": 194.5,
+                        "y": 7.4
+                    },
+                    "uuid": "b4da2427-8506-40be-96e5-000575beaffa"
+                },
+                {
+                    "description": "Reference field of D6",
+                    "pos": {
+                        "x": 191.27,
+                        "y": 6.94
+                    },
+                    "uuid": "efbe3e8a-5067-4b12-99b0-6102c25db516"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance",
+            "items": [
+                {
+                    "description": "Arc of Q6 on F.Silkscreen",
+                    "pos": {
+                        "x": 191.27,
+                        "y": 4.8
+                    },
+                    "uuid": "0cadbeb7-3ca0-4936-9821-5e458bc53e7b"
+                },
+                {
+                    "description": "Reference field of D6",
+                    "pos": {
+                        "x": 191.27,
+                        "y": 6.94
+                    },
+                    "uuid": "efbe3e8a-5067-4b12-99b0-6102c25db516"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance",
+            "items": [
+                {
+                    "description": "Arc of Q2 on F.Silkscreen",
+                    "pos": {
+                        "x": 31.27,
+                        "y": 4.8
+                    },
+                    "uuid": "2f42a620-3762-4a66-afc4-5f184fd3ee03"
+                },
+                {
+                    "description": "Reference field of D2",
+                    "pos": {
+                        "x": 31.27,
+                        "y": 6.94
+                    },
+                    "uuid": "cf610b6e-8885-4a2f-aa17-164853f3b995"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance",
+            "items": [
+                {
+                    "description": "Arc of Q2 on F.Silkscreen",
+                    "pos": {
+                        "x": 31.27,
+                        "y": 4.8
+                    },
+                    "uuid": "be55d568-87b7-4851-87a2-f2ca829412d6"
+                },
+                {
+                    "description": "Reference field of D2",
+                    "pos": {
+                        "x": 31.27,
+                        "y": 6.94
+                    },
+                    "uuid": "cf610b6e-8885-4a2f-aa17-164853f3b995"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance",
+            "items": [
+                {
+                    "description": "Reference field of D1",
+                    "pos": {
+                        "x": 11.27,
+                        "y": 6.94
+                    },
+                    "uuid": "1a767496-34bf-4d2e-89cb-7f2e56ec8a73"
+                },
+                {
+                    "description": "Arc of Q1 on F.Silkscreen",
+                    "pos": {
+                        "x": 11.27,
+                        "y": 4.8
+                    },
+                    "uuid": "f501ef05-e972-4645-9873-95455f550db6"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        }
+    ]
+}

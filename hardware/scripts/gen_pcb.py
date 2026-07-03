@@ -175,7 +175,7 @@ def place_all(board, comps, padnet):
     # mounting holes
     for i, (x, y) in enumerate(MOUNT_HOLES):
         fp = load_footprint(
-            "MountingHole:MountingHole_3.2mm_M3")
+            "MountingHole:MountingHole_3.2mm_M3_Pad")
         fp.SetReference(f"H{i + 1}")
         fp.SetPosition(V(x, y))
         board.Add(fp)
@@ -1020,7 +1020,8 @@ def route_signals(board, g, nets, escapes):
 # Main
 # --------------------------------------------------------------------------
 
-def main():
+def build_preroute():
+    """Board with placement, pulse copper, Kelvin, GND drops - no signals."""
     comps, netlist_nets, padnet = load_netlist()
     board = new_board()
     add_outline(board)
@@ -1028,7 +1029,6 @@ def main():
     if missing:
         print(f"UNPLACED refs: {missing}")
 
-    # courtyard/bbox overlap check (catches placement collisions)
     boxes = []
     for fp in board.Footprints():
         bb = fp.GetBoundingBox(False)
@@ -1061,7 +1061,6 @@ def main():
     g = build_grid(board)
     build_via_forbid()
 
-    # explicit Kelvin sense tracks (shunt -> net-ties -> INA240)
     for ra, pa, rb, pb, w in KELVIN_TRACKS:
         fa = board.FindFootprintByReference(ra)
         fb = board.FindFootprintByReference(rb)
@@ -1077,7 +1076,6 @@ def main():
         add_track(board, g, nets, net, 0, pcbnew.ToMM(a.x), pcbnew.ToMM(a.y),
                   pcbnew.ToMM(b.x), pcbnew.ToMM(b.y), w)
 
-    # manual fat tracks (e.g. clamp anodes to their via cluster)
     for ref, padnum, (tx, ty), w, layer_i in MANUAL_TRACKS:
         fp = board.FindFootprintByReference(ref)
         for pad in fp.Pads():
@@ -1086,7 +1084,6 @@ def main():
                 add_track(board, g, nets, pad.GetNetname(), layer_i,
                           pcbnew.ToMM(pp.x), pcbnew.ToMM(pp.y), tx, ty, w)
 
-    # surge via clusters
     for net, cx, cy, nx, ny, pitch, drill, size in VIA_CLUSTERS:
         for ix in range(nx):
             for iy in range(ny):
@@ -1097,18 +1094,32 @@ def main():
     strag_failed = route_stragglers(board, g, nets, misses, zone_by_net)
     print(f"straggler failures: {strag_failed}")
 
-    escapes = fanout_escapes(board, g, nets)
-    print(f"fanout escapes: {len(escapes)}")
-    for r in ("J6", "J7", "J9", "J10", "J11"):
-        got = sorted(pn for (rr, pn) in escapes if rr == r)
-        print(f"   {r} escapes: {got}")
-
     nvias = gnd_via_drops(board, g, nets)
     print(f"GND via drops: {nvias}")
 
+    add_text(board, "DANGER - STORED ENERGY", 100, 6, 2.5)
+    add_text(board, "CAPACITORS MAY BE CHARGED - CHECK LIVE LED", 100, 10, 1.5)
+    add_text(board, "COIL: L>=1uH R_total>=90mOhm", 30, 37, 1.2)
+
+    return board, g, nets, misses, strag_failed
+
+
+def finish(board, label):
+    filler = pcbnew.ZONE_FILLER(board)
+    filler.Fill(board.Zones())
+    pcbnew.SaveBoard(str(PCB_OUT), board)
+    board.BuildConnectivity()
+    unconn = board.GetConnectivity().GetUnconnectedCount(True)
+    print(f"SAVED ({label}): unconnected={unconn}")
+    return unconn
+
+
+def main_scripted():
+    board, g, nets, misses, strag_failed = build_preroute()
+    escapes = fanout_escapes(board, g, nets)
+    print(f"fanout escapes: {len(escapes)}")
     routed, failed, route_order = route_signals(board, g, nets, escapes)
     print(f"pass1: routed {routed} edges, {len(failed)} failed; retrying")
-    # phase 2: retry failures (board state has changed; some now succeed)
     still = []
     for name, ka, kb in failed:
         pa = board.FindFootprintByReference(ka[0])
@@ -1135,32 +1146,195 @@ def main():
         emit_tie(board, g, nets, name, sb, path[-1], w2)
     print(f"pass2: {len(failed) - len(still)} recovered, "
           f"{len(still)} still FAILED")
-    # failures first, then the order just used (stable fixed-point)
     hf = SCRIPTS / ".route_hints.json"
-    prio = []
+    fail_names = []
     for n, _, _ in still:
-        if n not in prio:
-            prio.append(n)
-    rest = [n for n in route_order if n not in prio]
-    hf.write_text(json.dumps({"prio": prio, "order": rest}))
-    for f in still[:30]:
-        print("   FAIL", f)
-    failed = still
+        if n not in fail_names:
+            fail_names.append(n)
+    rest = [n for n in route_order if n not in fail_names]
+    hf.write_text(json.dumps({"prio": fail_names, "order": rest}))
+    unconn = finish(board, "scripted")
+    print(f"route_failures={len(still)}, straggler_failures={len(strag_failed)}")
 
-    add_text(board, "DANGER - STORED ENERGY", 100, 6, 2.5)
-    add_text(board, "CAPACITORS MAY BE CHARGED - CHECK LIVE LED", 100, 10, 1.5)
-    add_text(board, "COIL: L>=1uH R_total>=90mOhm", 30, 36, 1.2)
 
-    filler = pcbnew.ZONE_FILLER(board)
-    filler.Fill(board.Zones())
+def main_preroute():
+    board, g, nets, misses, strag_failed = build_preroute()
+    board.SetLayerType(pcbnew.In1_Cu, pcbnew.LT_POWER)
+    board.SetLayerType(pcbnew.In2_Cu, pcbnew.LT_POWER)
+    unconn = finish(board, "preroute")
+    dsn = PROJ / "omnimarble-driver.dsn"
+    if dsn.exists():
+        dsn.unlink()
+    ok = pcbnew.ExportSpecctraDSN(board, str(dsn))
+    print(f"DSN export: {ok} -> {dsn}")
 
-    pcbnew.SaveBoard(str(PCB_OUT), board)
 
-    board.BuildConnectivity()
-    unconn = board.GetConnectivity().GetUnconnectedCount(True)
-    print(f"SAVED: unconnected={unconn}, route_failures={len(failed)}, "
-          f"straggler_failures={len(strag_failed)}")
+def main_import_ses():
+    board = pcbnew.LoadBoard(str(PCB_OUT))
+    ses = PROJ / "omnimarble-driver.ses"
+    ok = pcbnew.ImportSpecctraSES(board, str(ses))
+    print(f"SES import: {ok}")
+
+    # strip ALL pulse-net tracks/vias (mine and freerouting's), then rebuild
+    # the scripted pulse copper deterministically on the imported board
+    removed = inner = 0
+    for t in list(board.GetTracks()):
+        if t.GetNetname() in PULSE_NETS:
+            board.Delete(t)
+            removed += 1
+        elif (t.GetClass() == "PCB_TRACK"
+              and t.GetLayer() in (pcbnew.In1_Cu, pcbnew.In2_Cu)):
+            board.Delete(t)
+            inner += 1
+    print(f"stripped {removed} pulse-net items, {inner} inner-layer tracks")
+
+    nets = {}
+    for fp in board.Footprints():
+        for pad in fp.Pads():
+            n = pad.GetNetname()
+            if n and n not in nets:
+                nets[n] = pad.GetNet()
+
+    g = build_grid(board)
+    build_via_forbid()
+
+    # mark every surviving/imported track and via into the grid so the
+    # rebuilt pulse copper and repairs route around them
+    for t in board.GetTracks():
+        n = t.GetNetname() or "__nc__"
+        if t.GetClass() == "PCB_VIA":
+            pos = t.GetPosition()
+            half = pcbnew.ToMM(t.GetWidth()) / 2 + 0.36
+            r = int(math.ceil(half / GRID))
+            for layer in (0, 1):
+                for dx in range(-r, r + 1):
+                    for dy in range(-r, r + 1):
+                        if (dx * GRID) ** 2 + (dy * GRID) ** 2 <= half * half:
+                            g.block(layer,
+                                    pcbnew.ToMM(pos.x) + dx * GRID,
+                                    pcbnew.ToMM(pos.y) + dy * GRID, n)
+        else:
+            li = {pcbnew.F_Cu: 0, pcbnew.B_Cu: 1}.get(t.GetLayer())
+            if li is None:
+                continue
+            a, b = t.GetStart(), t.GetEnd()
+            mark_swath(g, li, pcbnew.ToMM(a.x), pcbnew.ToMM(a.y),
+                       pcbnew.ToMM(b.x), pcbnew.ToMM(b.y), n,
+                       pcbnew.ToMM(t.GetWidth()))
+
+    # re-stitch pulse zones (GND stitch vias survived the strip)
+    for name, pts in PULSE_ZONES:
+        if name == "GND":
+            continue
+        stitch_zone(board, nets[name], pts)
+
+    # kelvin ties: re-add only the stripped (pulse-net) ones
+    for ra, pa, rb, pb, w in KELVIN_TRACKS:
+        fa = board.FindFootprintByReference(ra)
+        fb = board.FindFootprintByReference(rb)
+        pada = padb = None
+        for pad in fa.Pads():
+            if pad.GetNumber() == pa:
+                pada = pad
+        for pad in fb.Pads():
+            if pad.GetNumber() == pb:
+                padb = pad
+        net = pada.GetNetname()
+        if net not in PULSE_NETS:
+            continue
+        a, b = pada.GetPosition(), padb.GetPosition()
+        add_track(board, g, nets, net, 0, pcbnew.ToMM(a.x), pcbnew.ToMM(a.y),
+                  pcbnew.ToMM(b.x), pcbnew.ToMM(b.y), w)
+    # (manual GND tracks and via clusters survived the strip - not re-added)
+
+    # straggler feeds
+    zone_by_net = {}
+    for name, pts in PULSE_ZONES:
+        zone_by_net.setdefault(name, []).append(pts)
+    zlist = [(name, pts, None) for name, pts in PULSE_ZONES]
+    misses = check_pulse_pads(board, zlist)
+    strag_failed = route_stragglers(board, g, nets, misses, zone_by_net)
+    print(f"straggler failures: {strag_failed}")
+
+    finish(board, "freerouted")
+
+
+def main_repair():
+    """Route leftover unconnected pairs from the last DRC report."""
+    import re
+    board = pcbnew.LoadBoard(str(PCB_OUT))
+    drc = json.loads((HW_DIR / "fab" / "drc_driver.json").read_text(
+        encoding="utf-8"))
+
+    nets = {}
+    for fp in board.Footprints():
+        for pad in fp.Pads():
+            n = pad.GetNetname()
+            if n and n not in nets:
+                nets[n] = pad.GetNet()
+
+    g = build_grid(board)
+    build_via_forbid()
+    for t in board.GetTracks():
+        n = t.GetNetname() or "__nc__"
+        if t.GetClass() == "PCB_VIA":
+            pos = t.GetPosition()
+            half = pcbnew.ToMM(t.GetWidth()) / 2 + 0.36
+            r = int(math.ceil(half / GRID))
+            for layer in (0, 1):
+                for dx in range(-r, r + 1):
+                    for dy in range(-r, r + 1):
+                        if (dx * GRID) ** 2 + (dy * GRID) ** 2 <= half * half:
+                            g.block(layer,
+                                    pcbnew.ToMM(pos.x) + dx * GRID,
+                                    pcbnew.ToMM(pos.y) + dy * GRID, n)
+        else:
+            li = {pcbnew.F_Cu: 0, pcbnew.B_Cu: 1}.get(t.GetLayer())
+            if li is None:
+                continue
+            a, b = t.GetStart(), t.GetEnd()
+            mark_swath(g, li, pcbnew.ToMM(a.x), pcbnew.ToMM(a.y),
+                       pcbnew.ToMM(b.x), pcbnew.ToMM(b.y), n,
+                       pcbnew.ToMM(t.GetWidth()))
+
+    ok = fail = skipped = 0
+    for u in drc.get("unconnected_items", []):
+        items = u["items"]
+        if len(items) != 2 or any("Zone" in it["description"]
+                                  for it in items):
+            skipped += 1
+            continue
+        m = re.search(r"\[(.+?)\]", items[0]["description"])
+        if not m:
+            skipped += 1
+            continue
+        net = m.group(1)
+        if net in PULSE_NETS or net == "GND":
+            skipped += 1
+            continue
+        pa = (items[0]["pos"]["x"], items[0]["pos"]["y"])
+        pb = (items[1]["pos"]["x"], items[1]["pos"]["y"])
+        path = astar(g, net, pa, pb, frozenset())
+        if path is None:
+            fail += 1
+            print(f"   REPAIR FAIL {net} {pa} {pb}")
+            continue
+        w = NET_WIDTHS.get(net, 0.3)
+        emit_path(board, g, nets, net, path, w)
+        emit_tie(board, g, nets, net, pa, path[0], w)
+        emit_tie(board, g, nets, net, pb, path[-1], w)
+        ok += 1
+    print(f"repair: {ok} routed, {fail} failed, {skipped} skipped")
+    finish(board, "repaired")
 
 
 if __name__ == "__main__":
-    main()
+    mode = sys.argv[1] if len(sys.argv) > 1 else "scripted"
+    if mode == "preroute":
+        main_preroute()
+    elif mode == "import-ses":
+        main_import_ses()
+    elif mode == "repair":
+        main_repair()
+    else:
+        main_scripted()
