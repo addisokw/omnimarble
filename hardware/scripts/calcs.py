@@ -33,7 +33,7 @@ COIL = {  # demo coil, config/coil_params.json
     "R_total_ohm": 0.1102,  # R_dc 0.0802 + ESR 0.01 + wiring 0.02
 }
 
-V_BANK_MAX = 60.0          # SELV design ceiling
+V_BANK_MAX = 55.0          # commanded operating ceiling (see boost/OVP ladder)
 V_BANK_ABS = 63.0          # capacitor voltage rating / OVP trip
 # Bank built from 2200uF/63V snap-in cans, 1..5 positions populated
 BANK_OPTIONS_UF = [int(BANK_UNIT_UF * n) for n in range(1, BANK_POSITIONS + 1)]
@@ -85,10 +85,29 @@ CHARGER = {
     "v_floor": 24.5,        # boost cannot regulate below Vin
 }
 BLEED_R_OHM = 6_800.0       # permanent bleed (0.53W at 60V -> 2W part)
-DUMP_R_OHM = 100.0          # MCU-commanded dump
+DUMP_R_OHM = 200.0          # MCU dump: 2x 100R/10W cement in series
 PRECHARGE_R_OHM = 47.0
 
 DIVIDER = {"top": 100_000.0, "bottom": 5_100.0}   # V_bank sense (E24/JLC-basic values)
+
+# Boost feedback / setpoint network (UC3843, Vref_FB = 2.5V):
+#   VBOOST = 2.5 + RT*(2.5/RB - (VSET-2.5)/RJ)
+# Summing topology is inverting: PWM duty UP -> voltage DOWN. PWM stuck
+# LOW therefore commands the MAXIMUM, which must sit BELOW the OVP floor.
+BOOST_FB = {"rt": 100_000.0, "rb": 10_000.0, "rj": 9_100.0, "vref": 2.5}
+BOOST_FLOOR_V = 24.5     # boost cannot regulate below Vin
+
+# Hardware OVP: TL431A (2.495V +/-1%) + 1% divider pulls UC3843 COMP low
+OVP = {"top": 100_000.0, "bottom": 4_300.0, "vref": 2.495,
+       "r_tol": 0.01, "ref_tol": 0.005}  # CJ431 is +/-0.5%
+
+# Relays (Hongfa HF3FF/012-1ZS): contact 15A/125VAC, ~10A/28VDC class.
+# DC switching at bank voltage is managed by SEQUENCING, not contact
+# rating: charge relay closes only after the 47R precharge equalizes
+# (dV<5V) and opens only with the boost inhibited (no current); dump
+# relay closes onto <=0.6A resistive and opens after full discharge.
+RELAY = {"coil_v": 12.0, "coil_r_ohm": 400.0,  # HF3FF datasheet "contact_close_dv_max": 5.0,
+         "dump_close_a": None}  # dump_close computed below
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -264,6 +283,58 @@ def main():
         f"{v_adc_at_max:.2f}V at {V_BANK_ABS:.0f}V bank (divider "
         f"{DIVIDER['top']/1000:.0f}k/{DIVIDER['bottom']/1000:.2f}k)"))
 
+    # Boost setpoint transfer function endpoints
+    def vboost(vset):
+        f = BOOST_FB
+        return f["vref"] + f["rt"] * (f["vref"] / f["rb"] - (vset - f["vref"]) / f["rj"])
+
+    v_cmd_max = vboost(0.0)      # PWM stuck low = worst commanded voltage
+    v_cmd_min = vboost(3.3)
+    rows.append(check(
+        "Boost commanded max (PWM=0, fail state)",
+        abs(v_cmd_max - V_BANK_MAX) < 1.0,
+        f"{v_cmd_max:.1f}V ~= operating ceiling {V_BANK_MAX:.0f}V "
+        f"(RT/RB/RJ = {BOOST_FB['rt']/1e3:.0f}k/{BOOST_FB['rb']/1e3:.0f}k/"
+        f"{BOOST_FB['rj']/1e3:.1f}k)"))
+    rows.append(check(
+        "Boost commanded min below converter floor",
+        v_cmd_min < BOOST_FLOOR_V,
+        f"{v_cmd_min:.1f}V < {BOOST_FLOOR_V}V floor (full PWM = converter idles)"))
+
+    # OVP trip band across component tolerances
+    def ovp_trip(r_sign, ref_sign):
+        t, b = OVP["top"], OVP["bottom"]
+        rt_ = t * (1 + r_sign * OVP["r_tol"])
+        rb_ = b * (1 - r_sign * OVP["r_tol"])
+        vref_ = OVP["vref"] * (1 + ref_sign * OVP["ref_tol"])
+        return vref_ * (rt_ + rb_) / rb_
+
+    trip_lo = ovp_trip(-1, -1)
+    trip_hi = ovp_trip(+1, +1)
+    rows.append(check(
+        "OVP trip floor above commanded max",
+        trip_lo > v_cmd_max + 1.0,
+        f"trip_min {trip_lo:.1f}V > {v_cmd_max:.1f}V + 1V margin "
+        f"(nominal {ovp_trip(0,0):.1f}V)"))
+    rows.append(check(
+        "OVP trip ceiling below capacitor rating",
+        trip_hi < V_BANK_ABS - 1.0,
+        f"trip_max {trip_hi:.1f}V < {V_BANK_ABS:.0f}V rating - 1V"))
+
+    # Relay stress at close (sequencing-managed)
+    dv_close = PRECHARGE_R_OHM  # precharge equalizes; residual dV budget
+    i_dump_close = V_BANK_MAX / DUMP_R_OHM
+    i_coil = RELAY["coil_v"] / RELAY["coil_r_ohm"]
+    rows.append(check(
+        "Dump relay closing current within DC contact class",
+        i_dump_close <= 10.0,
+        f"{i_dump_close:.2f}A resistive at {V_BANK_MAX:.0f}V "
+        f"(HF3FF ~10A/28VDC class; opens only after discharge)"))
+    rows.append(check(
+        "Relay coil drive within MMBT3904",
+        i_coil < 0.1,
+        f"{i_coil*1000:.0f}mA coil vs 200mA transistor rating"))
+
     # ---- emit markdown ----
     md = ["# Driver board design calculations",
           "",
@@ -308,8 +379,21 @@ def main():
            f"usable charge range {CHARGER['v_floor']:.1f}-{V_BANK_MAX:.0f}V",
            f"- Charge current {CHARGER['i_charge_a']}A avg; precharge {PRECHARGE_R_OHM:.0f} Ohm "
            "across the charge-relay contacts, relay closes only above 20V bank",
-           f"- Permanent bleed {BLEED_R_OHM/1000:.0f}k ({V_BANK_MAX**2/BLEED_R_OHM:.2f}W at 60V); "
-           f"dump {DUMP_R_OHM:.0f} Ohm/25W via relay",
+           f"- Permanent bleed {BLEED_R_OHM/1000:.1f}k ({V_BANK_MAX**2/BLEED_R_OHM:.2f}W at {V_BANK_MAX:.0f}V); "
+           f"dump {DUMP_R_OHM:.0f} Ohm (2x 100R/10W series) via relay",
+           "",
+           "## Boost setpoint / OVP protection ladder",
+           "",
+           f"- VBOOST = 2.5 + RT*(2.5/RB - (VSET-2.5)/RJ) with RT/RB/RJ = "
+           f"{BOOST_FB['rt']/1e3:.0f}k / {BOOST_FB['rb']/1e3:.0f}k / {BOOST_FB['rj']/1e3:.1f}k",
+           f"- PWM=0 (fail state) -> {vboost(0.0):.1f}V; PWM=100% -> {vboost(3.3):.1f}V (< {BOOST_FLOOR_V}V floor, idle)",
+           f"- Ladder: operating {V_BANK_MAX:.0f}V < OVP {trip_lo:.1f}..{trip_hi:.1f}V "
+           f"(TL431A 1% + 1% divider) < capacitor rating {V_BANK_ABS:.0f}V",
+           "- Boost enable is fail-safe INHIBITED (pull-up holds COMP low; MCU"
+           " must drive BOOST_EN_N low to charge)",
+           "- Relay sequencing: charge relay closes only after precharge"
+           " equalization, opens only with boost inhibited; dump relay"
+           " switches <=0.6A resistive.",
            "",
            "## Part constants used (verify against datasheets at order time)",
            "",

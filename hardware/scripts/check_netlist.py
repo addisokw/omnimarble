@@ -60,8 +60,10 @@ def main():
           "U6" in mcu_fire and not ({"U7", "U8"} & mcu_fire),
           f"MCU_FIRE on {sorted(mcu_fire)}")
     fire_gated = refs("FIRE_GATED")
-    check("FIRE_GATED drives both gate drivers via U6 only",
-          {"U6", "U7", "U8"} <= fire_gated and len(fire_gated) == 3,
+    extras = fire_gated - {"U6", "U7", "U8"}
+    check("FIRE_GATED drives both gate drivers via U6 (+pulldown only)",
+          {"U6", "U7", "U8"} <= fire_gated
+          and all(e.startswith("R") for e in extras),
           f"FIRE_GATED on {sorted(fire_gated)}")
 
     # 2. Driver VDD is on the ARMed rail, not raw +12V

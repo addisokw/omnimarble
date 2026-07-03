@@ -99,7 +99,10 @@ def _atom(x):
     if isinstance(x, (int, float)):
         return _num(x)
     s = str(x)
-    return '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
+    # Literal newlines inside quoted strings are rejected by KiCad's
+    # parser; multiline text must use the \n escape sequence.
+    s = s.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
+    return '"' + s + '"'
 
 
 def _num(v):

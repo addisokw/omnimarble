@@ -4,17 +4,17 @@ diode_pulse,YFW,MBR60100DC,C6069541,ext,TO-263,5,"100V 60A Schottky, IFSM 450A (
 shunt,Yezhan,ASR-M-7-0.2F,C469442,ext,5930,1,0.2mOhm 1% 15W metal element (Kelvin PCB routing),"HolRS3920-5W-0.2mR-1% (C558625); Bourns CSS2H-3920R-L200FE (C4126121, low stock)"
 cap_bank,Nichicon,LKG1J222MESBBK,C3724971,hand,snap-in 30x30mm,2,"2200uF 63V snap-in; 5 positions, populate 2 baseline (4400uF), max 11000uF",Chengx radial 18mm 2200uF/63V (C47858)
 term_coil,Kangnex,HB9500-9.5-02P-13-00A,C60785,ext-tht,9.5mm barrier,2,"32A barrier terminal, coil + aux-bank connections (pulse path)","Wurth REDCUBE M4 (hand-install, not LCSC)"
-fuse_aux,Littelfuse,0997030.WXN,C207030,hand,MINI blade,1,"30A 58VDC MINI blade fuse, aux-bank feed (holder hand-installed)","ATO 0287030.PXCN (C142686, 32V rating - marginal at 60V)"
-boost_ctrl,TI,LM3481MMX/NOPB,C543002,ext,MSOP-10,1,"Boost controller, 24V->24.5..60V @ ~0.5A (custom symbol)",UC3843BD1R2G (C16414; mind 30V Vcc max)
+fuse_aux,Littelfuse,0997030.WXN,C207030,hand,MINI blade,1,"30A 58VDC MINI blade fuse, aux-bank feed; holder Keystone 3568","ATO 0287030.PXCN (C142686, 32V - marginal)"
+boost_ctrl,onsemi,UC3843BD1R2G,C16414,ext,SOIC-8,1,"Current-mode boost controller, 24V->24.5..60V @ ~0.5A, Vcc from +12V rail",LM3481MMX/NOPB (C543002; needs custom symbol)
 boost_fet,AOS,AOD66923,C485687,ext,TO-252,1,100V 11mOhm boost switch,UMW 15N10 (C359106)
 boost_diode,MDD,SS510,C65010,ext,SMA,1,"100V 5A Schottky, boost rectifier","SS510B (C7420368, SMB, preferred-class)"
 boost_ind,YJYCOIN,YSPI1365-470M,C497913,ext,1265,1,47uH 5A/7Asat shielded power inductor,APH1265T470M (C5349639)
 relay,Hongfa,HF3FF/012-1ZS,C399561,ext-tht,THT relay,2,"12V coil SPDT 15A (charge + dump), NO contact used","HF115F/012-1HS3 (C61377, 16A, lower stock)"
-tl431,Changjing,CJ431,C3113,basic,SOT-23,1,"Shunt reference, 63V hardware OVP trip",TL431AIDBZR (C79737)
+tl431,Changjing,CJ431,C3113,basic,SOT-23,1,"Shunt reference +/-0.5%, OVP trip 60.5V nom (59.1-62.0V band)","TI TL431AIDBZR (C23892, 1%)"
 buck5,Diodes,AP63205WU-7,C2071056,ext,TSOT-23-6,1,24V->5V/2A buck (logic + Pico VSYS + gate emitters),"TPS54331DR (C9865, preferred-class)"
 reg12,UMW,78L12(UMW),C347272,ext,SOT-89,1,"24V->12V linear, gate-driver + relay rail (<60mA)",CJ78L12 (C8615)
 tvs_in,HJC,SMBJ33A,C19077586,ext,SMB,1,24V input TVS,C173526 (higher stock)
-fuse_in,Littelfuse,0997005.WXN,,hand,MINI blade,1,5A input fuse (holder hand-installed; confirm PN at order),any 5A MINI blade
+fuse_in,Littelfuse,0997005.WXN,C2680609,hand,MINI blade,1,5A input fuse (holder hand-installed; confirm PN at order),any 5A MINI blade
 pfet_rpp,AOS,AOD4185,C77317,ext,TO-252,1,-40V PFET reverse-polarity protection (confirm stock at order),"any 40V+ PFET, TO-252"
 jack24,XKB,DC-005-5A-2.0,C381116,ext-tht,DC barrel 5.5/2.1,1,"24V input jack (5A, 24V rated - input only)",5.08mm terminal WJ128V-5.0-2P (C8269)
 gate_drv,TI,UCC27524ADR,C185857,ext,SOIC-8,2,Dual 5A low-side gate driver (per-FET gate resistors),UCC27524DR (C465729)
@@ -28,6 +28,15 @@ ir_led,Everlight,IR333C-A,C5130,ext-tht,5mm THT,6,940nm IR emitter (gate-rail EM
 ir_pt,Everlight,PT204-6B,C5133,ext-tht,3mm THT,6,940nm NPN phototransistor (gate-rail RECV variant),"PT333-3C (C264295, OUT OF STOCK 2026-07)"
 idc10,BOOMELE,2.54-2*5P box header,C5665,ext-tht,IDC 2x5,4,"Sensor-rail ribbon headers (2 on driver, 1 per rail)",any shrouded 2x5 2.54mm
 jst_xh4,JST,B4B-XH-A(LF)(SN),C144395,ext-tht,JST-XH 4p,1,Spare ad-hoc sensor connector,B4B-XH-AM (C161871)
-pico_socket,-,2x 1x20 2.54mm socket,,hand,THT,2,Raspberry Pi Pico socket (Pico bought separately),
-io_breakout,-,2x13 2.54mm pin header,,hand,THT,1,MCU-agnostic IO breakout (parallel with Pico socket),
+r_precharge,VO,SQM5W-47R-5%,C5807995,ext-tht,cement THT,1,47R 5W precharge across charge-relay contacts,"TyOhm SMW 5W 47R (C2937346, SMD)"
+r_dump,CCO,CR-M10W100RJ,C216413,ext-tht,cement THT,2,100R 10W x2 in series = 200R/20W dump (5.3s to <5V),RX27-4V 20W from Digi-Key if single-part preferred
+r_bleed,Ever Ohms,CRH2512J6K80E04Z,ORDER-REVIEW,ext,2512 2W,1,"6.8k 2W permanent bleed (0.44W cont); C-number uncrawlable, verify at order",2x 3.4k 1W 2512 in series
+r_boost_cs,Milliohm,HoLLR2512-3W-50mR-1%,C2994645,ext,2512 3W,1,50mOhm boost switch current sense,GX2512-2W-50mR-1% (C500723)
+cap_boost_out,Honor,RVT1J101M1010,C28241,ext,SMD 10x10.2,2,100uF 63V boost output x2 (ripple: datasheet check at order),Lelon VE-101M1JTR-1010 (C249468)
+cap_bulk_35v,Lelon,VEJ101M1VTR-0607,C176666,ext,SMD 6.3x7.7,2,100uF 35V input bulk + armed-rail reservoir,
+ind_buck,Sunlord,SWPA6045S100MT,C79272,ext,6x6x4.5,1,"10uH Isat 3.5A, 5V buck output",SWPA5040S100MT (C84608)
+buzzer,Fengming,YS-MBZ12085C05R42,C409842,ext-tht,12mm THT,1,5V passive electromagnetic buzzer,"MLT-8530 SMD (C94599, 2.5-4.5V)"
+fuse_holder,Keystone,Keystone 3568,C5249699,ext-tht,MINI clip THT,4,MINI blade fuse holder (2 clips per fuse position),
+pico_socket,BOOMELE,2.54-1*20P female,C50984,ext-tht,THT,2,Raspberry Pi Pico socket (Pico bought separately),
+io_breakout,Ckmtw,B-2100S40P-B110 2x20 breakaway,C124383,ext-tht,THT,1,MCU-agnostic IO breakout (parallel with Pico socket),
 arm_key,-,key switch SPST,,hand,panel,1,"ARM keyswitch (panel-mount, wired to header)",

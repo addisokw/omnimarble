@@ -43,8 +43,8 @@ PARTS = {
     ),
     "fuse_aux": dict(
         mpn="0997030.WXN", mfr="Littelfuse", lcsc="C207030", jlc="hand",
-        package="MINI blade", desc="30A 58VDC MINI blade fuse, aux-bank feed (holder hand-installed)",
-        qty=1, alt="ATO 0287030.PXCN (C142686, 32V rating - marginal at 60V)",
+        package="MINI blade", desc="30A 58VDC MINI blade fuse, aux-bank feed; holder Keystone 3568",
+        qty=1, alt="ATO 0287030.PXCN (C142686, 32V - marginal)",
     ),
 
     # --- charger -------------------------------------------------------------
@@ -76,8 +76,8 @@ PARTS = {
     ),
     "tl431": dict(
         mpn="CJ431", mfr="Changjing", lcsc="C3113", jlc="basic",
-        package="SOT-23", desc="Shunt reference, 63V hardware OVP trip",
-        qty=1, alt="TL431AIDBZR (C79737)",
+        package="SOT-23", desc="Shunt reference +/-0.5%, OVP trip 60.5V nom (59.1-62.0V band)",
+        qty=1, alt="TI TL431AIDBZR (C23892, 1%)",
     ),
 
     # --- power rails -----------------------------------------------------------
@@ -97,7 +97,7 @@ PARTS = {
         qty=1, alt="C173526 (higher stock)",
     ),
     "fuse_in": dict(
-        mpn="0997005.WXN", mfr="Littelfuse", lcsc="", jlc="hand",
+        mpn="0997005.WXN", mfr="Littelfuse", lcsc="C2680609", jlc="hand",
         package="MINI blade", desc="5A input fuse (holder hand-installed; confirm PN at order)",
         qty=1, alt="any 5A MINI blade",
     ),
@@ -174,14 +174,60 @@ PARTS = {
         qty=1, alt="B4B-XH-AM (C161871)",
     ),
 
+    "r_precharge": dict(
+        mpn="SQM5W-47R-5%", mfr="VO", lcsc="C5807995", jlc="ext-tht",
+        package="cement THT", desc="47R 5W precharge across charge-relay contacts",
+        qty=1, alt="TyOhm SMW 5W 47R (C2937346, SMD)",
+    ),
+    "r_dump": dict(
+        mpn="CR-M10W100RJ", mfr="CCO", lcsc="C216413", jlc="ext-tht",
+        package="cement THT", desc="100R 10W x2 in series = 200R/20W dump (5.3s to <5V)",
+        qty=2, alt="RX27-4V 20W from Digi-Key if single-part preferred",
+    ),
+    "r_bleed": dict(
+        mpn="CRH2512J6K80E04Z", mfr="Ever Ohms", lcsc="ORDER-REVIEW", jlc="ext",
+        package="2512 2W", desc="6.8k 2W permanent bleed (0.44W cont); C-number uncrawlable, verify at order",
+        qty=1, alt="2x 3.4k 1W 2512 in series",
+    ),
+    "r_boost_cs": dict(
+        mpn="HoLLR2512-3W-50mR-1%", mfr="Milliohm", lcsc="C2994645", jlc="ext",
+        package="2512 3W", desc="50mOhm boost switch current sense",
+        qty=1, alt="GX2512-2W-50mR-1% (C500723)",
+    ),
+    "cap_boost_out": dict(
+        mpn="RVT1J101M1010", mfr="Honor", lcsc="C28241", jlc="ext",
+        package="SMD 10x10.2", desc="100uF 63V boost output x2 (ripple: datasheet check at order)",
+        qty=2, alt="Lelon VE-101M1JTR-1010 (C249468)",
+    ),
+    "cap_bulk_35v": dict(
+        mpn="VEJ101M1VTR-0607", mfr="Lelon", lcsc="C176666", jlc="ext",
+        package="SMD 6.3x7.7", desc="100uF 35V input bulk + armed-rail reservoir",
+        qty=2, alt="",
+    ),
+    "ind_buck": dict(
+        mpn="SWPA6045S100MT", mfr="Sunlord", lcsc="C79272", jlc="ext",
+        package="6x6x4.5", desc="10uH Isat 3.5A, 5V buck output",
+        qty=1, alt="SWPA5040S100MT (C84608)",
+    ),
+    "buzzer": dict(
+        mpn="YS-MBZ12085C05R42", mfr="Fengming", lcsc="C409842", jlc="ext-tht",
+        package="12mm THT", desc="5V passive electromagnetic buzzer",
+        qty=1, alt="MLT-8530 SMD (C94599, 2.5-4.5V)",
+    ),
+    "fuse_holder": dict(
+        mpn="Keystone 3568", mfr="Keystone", lcsc="C5249699", jlc="ext-tht",
+        package="MINI clip THT", desc="MINI blade fuse holder (2 clips per fuse position)",
+        qty=4, alt="",
+    ),
+
     # --- hand-install (not JLC) -----------------------------------------------------
     "pico_socket": dict(
-        mpn="2x 1x20 2.54mm socket", mfr="-", lcsc="", jlc="hand",
+        mpn="2.54-1*20P female", mfr="BOOMELE", lcsc="C50984", jlc="ext-tht",
         package="THT", desc="Raspberry Pi Pico socket (Pico bought separately)",
         qty=2, alt="",
     ),
     "io_breakout": dict(
-        mpn="2x13 2.54mm pin header", mfr="-", lcsc="", jlc="hand",
+        mpn="B-2100S40P-B110 2x20 breakaway", mfr="Ckmtw", lcsc="C124383", jlc="ext-tht",
         package="THT", desc="MCU-agnostic IO breakout (parallel with Pico socket)",
         qty=1, alt="",
     ),

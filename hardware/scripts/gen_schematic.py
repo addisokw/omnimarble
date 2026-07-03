@@ -45,6 +45,10 @@ FP = {
     "TSSOP8": "Package_SO:TSSOP-8_3x3mm_P0.65mm",
     "VSSOP8": "Package_SO:VSSOP-8_2.3x2mm_P0.5mm",
     "IND1265": "Inductor_SMD:L_12x12mm_H8mm",
+    "IND6045": "Inductor_SMD:L_Changjiang_FNR6045S",
+    "CEMENT5W": "Resistor_THT:R_Box_L26.0mm_W5.0mm_P20.00mm",
+    "CEMENT10W": "Resistor_THT:R_Radial_Power_L11.0mm_W7.0mm_P5.00mm",
+    "CP_SMD_D63": "Capacitor_SMD:CP_Elec_6.3x7.7",
     "SHUNT5930": "omnimarble:Shunt_5930_DRAFT",
     "RELAY": "omnimarble:Relay_HF3FF_T73_DRAFT",
     "BARREL": "Connector_BarrelJack:BarrelJack_Horizontal",
@@ -66,13 +70,15 @@ FP = {
 # JLC Basic passives (LCSC C-numbers; blank = fill at order review)
 RVALS = {
     "10R": "C22859", "1k": "C21190", "4.7k": "C23162", "5.1k": "C23186",
-    "10k": "C25804", "22k": "C31850", "27k": "", "47k": "C25819",
+    "10k": "C25804", "22k": "C31850", "27k": "C22967", "47k": "C25819",
+    "9.1k": "C23260", "4.3k": "C23159", "150": "C22808",
     "100k": "C25803", "220k": "C22961", "2k": "C22975", "51k": "C23196",
-    "0.05R-2512": "", "47R-5W": "", "100R-25W": "", "6.8k-2W": "",
+    "0.05R-2512": "C2994645", "47R-5W": "C5807995", "100R-10W": "C216413",
+    "6.8k-2W": "ORDER-REVIEW",
 }
 CVALS = {
-    "100n": "C14663", "1u": "C15849", "1n": "C1588", "10n": "",
-    "2.2n": "", "10u": "C15850", "100u-63V": "", "100u-35V": "",
+    "100n": "C14663", "1u": "C15849", "1n": "C1588", "10n": "C57112",
+    "2.2n": "C1604", "10u": "C15850", "100u-63V": "C28241", "100u-35V": "C176666",
 }
 
 
@@ -142,7 +148,7 @@ def build_power_input(sch):
                  footprint=FP["BARREL"], lcsc=PARTS["jack24"]["lcsc"],
                  nets={"1": "24V_JACK", "2": "GND"})
     s.add_symbol("Device:Fuse", "F1", "5A-MINI", (70, 45),
-                 footprint=FP["FUSE_MINI"], lcsc="",
+                 footprint=FP["FUSE_MINI"], lcsc=PARTS["fuse_holder"]["lcsc"],
                  nets={"1": "24V_JACK", "2": "24V_F"})
     # Reverse-polarity PFET: D=24V_F, S=+24V, G pulled to GND, zener G-S
     s.add_symbol("Transistor_FET:Q_PMOS_GDS", "Q90", "AOD4185", (100, 50),
@@ -153,7 +159,7 @@ def build_power_input(sch):
        "SOD123", PARTS["gate_clamp"]["lcsc"])
     s.add_symbol("Device:D_TVS", "D90", "SMBJ33A", (135, 80), footprint=FP["SMB"],
                  lcsc=PARTS["tvs_in"]["lcsc"], nets={"1": "+24V", "2": "GND"})
-    C_(s, c, "100u-35V", (150, 50), "+24V", "GND", fp="CP_SMD_D10")
+    C_(s, c, "100u-35V", (150, 50), "+24V", "GND", fp="CP_SMD_D63")
 
     # 5V buck AP63205 (fixed 5V: FB senses VOUT)
     s.add_symbol("Regulator_Switching:AP63205WU", "U1", "AP63205", (60, 120),
@@ -161,8 +167,8 @@ def build_power_input(sch):
                  nets={"3": "+24V", "2": "+24V", "4": "GND",
                        "5": "BUCK_SW", "6": "BUCK_BST", "1": "+5V"})
     C_(s, c, "100n", (85, 110), "BUCK_SW", "BUCK_BST")
-    s.add_symbol("Device:L", "L1", "10uH", (100, 115), footprint=FP["IND1265"],
-                 lcsc="", nets={"1": "BUCK_SW", "2": "+5V"})
+    s.add_symbol("Device:L", "L1", "10uH", (100, 115), footprint=FP["IND6045"],
+                 lcsc=PARTS["ind_buck"]["lcsc"], nets={"1": "BUCK_SW", "2": "+5V"})
     C_(s, c, "10u", (120, 120), "+5V", "GND", fp="C0805")
     C_(s, c, "10u", (45, 120), "+24V", "GND", fp="C0805")
 
@@ -229,34 +235,46 @@ def build_boost_charger(sch):
     C_(s, c, "100u-63V", (140, 140), "VBOOST", "GND", fp="CP_SMD_D10")
     R(s, c, "100k", (155, 140), "VBOOST", "GND")  # VBOOST local bleed
 
-    # Feedback: VBOOST -> 220k -> FB -> 5.1k+2k series trim -> GND
-    # (2.5V ref: 60V * 7.1/227.1 = 1.877V < 2.5 -> add PWM offset pulls UP;
-    #  MCU Vset PWM injects via 51k so 0%..100% spans ~24.5..60V+)
-    R(s, c, "220k", (150, 60), "VBOOST", "BST_FB")
+    # Feedback: FB(2.5V) node with Rt=100k from VBOOST, Rb=10k to GND, and
+    # Rj=9.1k injection from the filtered MCU PWM. Transfer function (derived
+    # and asserted in calcs.py):
+    #   VBOOST = 2.5 + Rt*(2.5/Rb - (VSET-2.5)/Rj)
+    #   VSET=0V   -> 55.0V  (= commanded MAX; PWM-stuck-low is a SAFE state,
+    #                        below the 57.2V worst-case OVP floor)
+    #   VSET=3.3V -> 18.7V  (below the ~24.5V boost floor -> converter idles)
+    # NOTE the summing topology is inherently inverting (PWM duty UP ->
+    # voltage DOWN); firmware maps duty = f(target) accordingly.
+    R(s, c, "100k", (150, 60), "VBOOST", "BST_FB")
     R(s, c, "10k", (150, 80), "BST_FB", "GND")
-    R(s, c, "51k", (175, 60), "VSET_FLT", "BST_FB")
+    R(s, c, "9.1k", (175, 60), "VSET_FLT", "BST_FB")
     R(s, c, "10k", (175, 80), "VSET_PWM", "VSET_RC")
     C_(s, c, "1u", (175, 100), "VSET_RC", "GND")
     R(s, c, "10k", (190, 80), "VSET_RC", "VSET_FLT")
     C_(s, c, "1u", (190, 100), "VSET_FLT", "GND")
 
-    # Hardware OVP: CJ431 trips at 63V and yanks COMP low (independent of MCU)
+    # Hardware OVP: CJ431 (+/-0.5%) + 1% divider trips 60.5V nominal
+    # (59.1-62.0V across tolerances, asserted in calcs.py: above the 55.0V
+    # commanded max, below the 63V capacitor rating) and yanks COMP low,
+    # independent of the MCU.
     R(s, c, "100k", (210, 60), "VBOOST", "OVP_REF")
-    R(s, c, "4.7k", (210, 80), "OVP_REF", "GND")  # trip ~55.7V*ref... set by calc
-    s.add_symbol("Reference_Voltage:TL431DBZ", "U5", "CJ431", (230, 70),
+    R(s, c, "4.3k", (210, 80), "OVP_REF", "GND")
+    s.add_symbol("Reference_Voltage:TL431DBZ", "U5", "CJ431-0.5%", (230, 70),
                  footprint=FP["SOT23"], lcsc=PARTS["tl431"]["lcsc"],
                  nets={"1": "BST_COMP", "2": "OVP_REF", "3": "GND"})
 
-    # MCU boost inhibit: NPN pulls COMP low
+    # Boost enable is FAIL-SAFE INHIBITED: NPN base pulled up to +5V holds
+    # COMP low (no switching) unless the MCU actively drives BOOST_EN_N low.
+    # A dead, absent, or resetting Pico can never start a charge.
     NPN(s, c, (230, 110), "BSTINH_B", "BST_COMP", "GND")
-    R(s, c, "1k", (210, 110), "BOOST_INH", "BSTINH_B")
+    R(s, c, "10k", (245, 95), "+5V", "BSTINH_B")
+    R(s, c, "1k", (210, 110), "BOOST_EN_N", "BSTINH_B")
 
     # Charge relay: VBOOST -> (NO contact) -> VBANK, 47R precharge across
     s.add_symbol("Relay:Relay_SPDT", "K1", "HF3FF-12V", (60, 210),
                  footprint=FP["RELAY"], lcsc=PARTS["relay"]["lcsc"],
                  nets={"A1": "+12V", "A2": "K1_COIL", "11": "VBOOST",
                        "14": "VBANK"}, no_connect=("12",))
-    R(s, c, "47R-5W", (95, 200), "VBOOST", "VBANK", fp="R2512")
+    R(s, c, "47R-5W", (95, 200), "VBOOST", "VBANK", fp="CEMENT5W")
     NPN(s, c, (40, 240), "K1_B", "K1_COIL", "GND")
     R(s, c, "1k", (25, 230), "RLY_CHARGE", "K1_B")
     D_(s, c, "Device:D", "1N4148W", (60, 240), "K1_COIL", "+12V",
@@ -267,7 +285,10 @@ def build_boost_charger(sch):
                  footprint=FP["RELAY"], lcsc=PARTS["relay"]["lcsc"],
                  nets={"A1": "+12V", "A2": "K2_COIL", "11": "VBANK",
                        "14": "DUMP_R"}, no_connect=("12",))
-    R(s, c, "100R-25W", (175, 210), "DUMP_R", "GND", fp="R2512")
+    # Dump: 2x 100R/10W cement in series (=200R/20W; no single 20-25W part
+    # stocked on LCSC). ~15W initial decaying pulse each, 5.3s to <5V.
+    R(s, c, "100R-10W", (175, 205), "DUMP_R", "DUMP_MID", fp="CEMENT10W")
+    R(s, c, "100R-10W", (175, 225), "DUMP_MID", "GND", fp="CEMENT10W")
     NPN(s, c, (120, 240), "K2_B", "K2_COIL", "GND")
     R(s, c, "1k", (105, 230), "RLY_DUMP", "K2_B")
     D_(s, c, "Device:D", "1N4148W", (140, 240), "K2_COIL", "+12V",
@@ -303,7 +324,7 @@ def build_cap_bank(sch):
                  footprint=FP["TERM2"], lcsc=PARTS["term_coil"]["lcsc"],
                  nets={"1": "AUX_BANK", "2": "GND"})
     s.add_symbol("Device:Fuse", "F2", "30A-MINI", (180, 90),
-                 footprint=FP["FUSE_MINI"], lcsc=PARTS["fuse_aux"]["lcsc"],
+                 footprint=FP["FUSE_MINI"], lcsc=PARTS["fuse_holder"]["lcsc"],
                  nets={"1": "AUX_BANK", "2": "VBANK"})
 
     # V_bank divider + buffer (MCP6002 unit 1)
@@ -346,7 +367,7 @@ def build_pulse_switch(sch):
     R(s, c, "27k", (125, 50), "+12V_SW", "ARM_SENSE")
     R(s, c, "10k", (125, 70), "ARM_SENSE", "GND")
     C_(s, c, "10u", (150, 60), "+12V_SW", "GND", fp="C0805")
-    C_(s, c, "100u-35V", (165, 60), "+12V_SW", "GND", fp="CP_SMD_D10")
+    C_(s, c, "100u-35V", (165, 60), "+12V_SW", "GND", fp="CP_SMD_D63")
 
     # Hardware interlock: FIRE_GATED = MCU_FIRE AND ARM_DIV(3.3V level)
     s.add_symbol("74xGxx:74LVC1G08", "U6", "74LVC1G08", (60, 110),
@@ -354,6 +375,19 @@ def build_pulse_switch(sch):
                  nets={"1": "MCU_FIRE", "2": "ARM_SENSE", "4": "FIRE_GATED",
                        "5": "3V3", "3": "GND"})
     C_(s, c, "100n", (85, 110), "3V3", "GND")
+    # Fail-safe defaults: FIRE nets are pulled LOW so an absent/resetting
+    # Pico or an unpowered AND gate cannot assert fire. (UCC27524A inputs
+    # also have internal pulldowns per datasheet — this is belt-and-braces.)
+    R(s, c, "10k", (35, 130), "MCU_FIRE", "GND")
+    R(s, c, "10k", (85, 130), "FIRE_GATED", "GND")
+    s.text("SAFETY NOTES:\n"
+           "- E-STOP (J3) is a NORMALLY-CLOSED loop in series with the ARM key;\n"
+           "  ship with jumper closed if no E-STOP fitted. Open = drivers unpowered.\n"
+           "- ARM_SENSE divider bottom (10k) holds sense LOW if key/loop open.\n"
+           "- Q10-Q12 MUST be same date/lot code; layout: mirror-symmetric\n"
+           "  drain/source copper, equal-length gate loops (<25mm), driver GND\n"
+           "  returns to the FET source rail at the shunt star point.",
+           (170, 210), 2.0)
 
     # Gate drivers: 2x UCC27524A, VDD on the ARMed 12V rail.
     # DRVx = driver outputs to the pulse FETs (IR-gate signals are GATEx)
@@ -473,6 +507,13 @@ def build_sense_gates(sch):
     R(s, c, "10k", (160, 130), "VTH_GATE", "GND")
     C_(s, c, "100n", (175, 130), "VTH_GATE", "GND")
 
+    s.text("IR GATE TRUTH TABLE:\n"
+           "beam PRESENT -> phototransistor ON  -> SIGx ~0V  -> comparator OUT LOW\n"
+           "beam BROKEN  -> phototransistor OFF -> SIGx ~5V  -> comparator OUT HIGH\n"
+           "GATEx HIGH = marble in beam. Firmware timestamps the RISING edge.\n"
+           "(open-collector outputs pulled to 3V3: Pico-safe levels)",
+           (40, 285), 2.0)
+
     lm339_pins = {  # unit -> (out, minus, plus)
         1: ("2", "4", "5"), 2: ("1", "6", "7"),
         3: ("13", "10", "11"), 4: ("14", "8", "9"),
@@ -518,7 +559,7 @@ PICO = {
     1: "GP0_NC", 2: "GP1_NC", 3: "GND", 4: "GATE1", 5: "GATE2", 6: "GATE3",
     7: "GATE4", 8: "GND", 9: "GATE5", 10: "GATE6", 11: "MCU_FIRE",
     12: "ARM_SENSE", 13: "GND", 14: "RLY_CHARGE", 15: "RLY_DUMP",
-    16: "BOOST_INH", 17: "VSET_PWM", 18: "GND", 19: "BUZZ", 20: "ESTOP_SENSE",
+    16: "BOOST_EN_N", 17: "VSET_PWM", 18: "GND", 19: "BUZZ", 20: "ESTOP_SENSE",
     21: "ADC_SDO", 22: "ADC_CS", 23: "GND", 24: "ADC_SCK", 25: "GP19_NC",
     26: "LED_ARMED", 27: "LED_CHG", 28: "GND", 29: "GP22_NC", 30: "RUN_NC",
     31: "VBANK_SENSE", 32: "V24_SENSE", 33: "GND", 34: "GP28_NC",
@@ -528,7 +569,7 @@ PICO = {
 
 BREAKOUT = [
     "GATE1", "GATE2", "GATE3", "GATE4", "GATE5", "GATE6",
-    "MCU_FIRE", "ARM_SENSE", "RLY_CHARGE", "RLY_DUMP", "BOOST_INH",
+    "MCU_FIRE", "ARM_SENSE", "RLY_CHARGE", "RLY_DUMP", "BOOST_EN_N",
     "VSET_PWM", "BUZZ", "ESTOP_SENSE", "ADC_SDO", "ADC_CS", "ADC_SCK",
     "VBANK_SENSE", "V24_SENSE", "LED_ARMED", "LED_CHG", "SIG_SPARE",
     "3V3", "+5V", "GND", "GND",
@@ -552,12 +593,14 @@ def build_mcu_status(sch):
             else:
                 ncs.append(str(idx))
         s.add_symbol("Connector_Generic:Conn_01x20", jref, "PICO-SOCKET",
-                     (x, 100), footprint=FP["HDR1X20"], lcsc="",
+                     (x, 100), footprint=FP["HDR1X20"],
+                     lcsc=PARTS["pico_socket"]["lcsc"],
                      nets=nets, no_connect=tuple(ncs))
 
     # Breakout header 2x13 (odd/even numbering: pin k -> BREAKOUT[k-1])
     s.add_symbol("Connector_Generic:Conn_02x13_Odd_Even", "J11", "IO-BREAKOUT",
-                 (150, 100), footprint=FP["HDR2X13"], lcsc="",
+                 (150, 100), footprint=FP["HDR2X13"],
+                 lcsc=PARTS["io_breakout"]["lcsc"],
                  nets={str(i + 1): BREAKOUT[i] for i in range(26)})
 
     # Status LEDs (MCU-driven)
@@ -570,7 +613,7 @@ def build_mcu_status(sch):
     NPN(s, c, (210, 130), "BUZZ_B", "BUZZ_DRV", "GND")
     R(s, c, "1k", (195, 120), "BUZZ", "BUZZ_B")
     s.add_symbol("Device:Buzzer", "BZ1", "buzzer-5V", (230, 130),
-                 footprint=FP["BUZZER"], lcsc="",
+                 footprint=FP["BUZZER"], lcsc=PARTS["buzzer"]["lcsc"],
                  nets={"1": "BUZZ_DRV", "2": "+5V"})
     D_(s, c, "Device:D", "1N4148W", (250, 130), "BUZZ_DRV", "+5V",
        "SOD123", "C81598")

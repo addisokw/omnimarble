@@ -8,11 +8,11 @@ Coil model: L=12.406uH, R_total=0.1102Ohm (same values the simulation uses).
 
 | Bank | regime | zeta | I_pk | t_pk | pulse | E | I2t | FET dTj (shared/fault) | pour dT |
 |------|--------|------|------|------|-------|---|-----|------------------------|---------|
-| 2200uF | underdamped | 0.73 | 357A | 182us | 0.76ms | 4.0J | 35.9 A^2s | 3.8K / 34K | 0.02K |
-| 4400uF | overdamped | 1.04 | 405A | 231us | 1.13ms | 7.9J | 71.5 A^2s | 5.1K / 46K | 0.05K |
-| 6600uF | overdamped | 1.27 | 431A | 263us | 1.13ms | 11.9J | 102.8 A^2s | 7.3K / 66K | 0.07K |
-| 8800uF | overdamped | 1.47 | 447A | 287us | 1.13ms | 15.8J | 127.8 A^2s | 9.1K / 82K | 0.08K |
-| 11000uF | overdamped | 1.64 | 458A | 306us | 1.13ms | 19.8J | 147.4 A^2s | 10.5K / 94K | 0.09K |
+| 2200uF | underdamped | 0.73 | 327A | 182us | 0.76ms | 3.3J | 30.2 A^2s | 3.2K / 28K | 0.02K |
+| 4400uF | overdamped | 1.04 | 372A | 231us | 1.13ms | 6.7J | 60.1 A^2s | 4.3K / 38K | 0.04K |
+| 6600uF | overdamped | 1.27 | 395A | 263us | 1.13ms | 10.0J | 86.4 A^2s | 6.1K / 55K | 0.05K |
+| 8800uF | overdamped | 1.47 | 410A | 287us | 1.13ms | 13.3J | 107.4 A^2s | 7.6K / 69K | 0.07K |
+| 11000uF | overdamped | 1.64 | 420A | 306us | 1.13ms | 16.6J | 123.9 A^2s | 8.8K / 79K | 0.08K |
 
 Baseline population: **4400uF** (2x 2200uF snap-in).
 
@@ -20,30 +20,44 @@ Baseline population: **4400uF** (2x 2200uF snap-in).
 
 | Check | Detail | Result |
 |-------|--------|--------|
-| Worst-case peak within switch design point | I_pk 458A <= 600A design point | PASS |
-| Per-FET pulsed current (shared) | 153A/device <= IDM 760A (3x SCILICON SFT040N150C3 (TOLL, 150V, C42395334)) | PASS |
-| FET junction rise, shared conduction | dTj 10.5K < 50K | PASS |
-| FET junction rise, single-device fault (baseline bank) | dTj 45.7K < 150K at 4400uF (extreme-bank fault case: 94K — info only, requires all FETs functional) | PASS |
-| Blocking diode I2t margin | pulse I2t/pkg 37 A^2s, rating 1012 A^2s (>=10x) | PASS |
-| Shunt pulse energy | 29.5 mJ per shot (peak 42W for 1.1ms), continuous rating 15.0W | PASS |
-| Pulse pour adiabatic heating | dT 0.09K per shot (20mm 2oz x2, R=0.61 mOhm) | PASS |
-| ADC full scale vs worst peak | FS 750A >= 1.25 x 458A (LSB 0.18A) | PASS |
-| Charge time (largest bank) | 0.78s to 60V at 0.5A (11000uF) | PASS |
-| Dump to <5V (largest bank) | 2.7s through 100 Ohm dump | PASS |
+| Worst-case peak within switch design point | I_pk 420A <= 600A design point | PASS |
+| Per-FET pulsed current (shared) | 140A/device <= IDM 760A (3x SCILICON SFT040N150C3 (TOLL, 150V, C42395334)) | PASS |
+| FET junction rise, shared conduction | dTj 8.8K < 50K | PASS |
+| FET junction rise, single-device fault (baseline bank) | dTj 38.4K < 150K at 4400uF (extreme-bank fault case: 79K — info only, requires all FETs functional) | PASS |
+| Blocking diode I2t margin | pulse I2t/pkg 31 A^2s, rating 1012 A^2s (>=10x) | PASS |
+| Shunt pulse energy | 24.8 mJ per shot (peak 35W for 1.1ms), continuous rating 15.0W | PASS |
+| Pulse pour adiabatic heating | dT 0.08K per shot (20mm 2oz x2, R=0.61 mOhm) | PASS |
+| ADC full scale vs worst peak | FS 750A >= 1.25 x 420A (LSB 0.18A) | PASS |
+| Charge time (largest bank) | 0.67s to 55V at 0.5A (11000uF) | PASS |
+| Dump to <5V (largest bank) | 5.3s through 200 Ohm dump | PASS |
 | Passive bleed 3-tau (largest bank) | 3tau = 224s through 7k bleed | PASS |
-| V_bank divider inside ADC range at OVP | 3.13V at 63V bank (divider 100k/5.23k) | PASS |
+| V_bank divider inside ADC range at OVP | 3.06V at 63V bank (divider 100k/5.10k) | PASS |
+| Boost commanded max (PWM=0, fail state) | 55.0V ~= operating ceiling 55V (RT/RB/RJ = 100k/10k/9.1k) | PASS |
+| Boost commanded min below converter floor | 18.7V < 24.5V floor (full PWM = converter idles) | PASS |
+| OVP trip floor above commanded max | trip_min 59.1V > 55.0V + 1V margin (nominal 60.5V) | PASS |
+| OVP trip ceiling below capacitor rating | trip_max 62.0V < 63V rating - 1V | PASS |
+| Dump relay closing current within DC contact class | 0.28A resistive at 55V (HF3FF ~10A/28VDC class; opens only after discharge) | PASS |
+| Relay coil drive within MMBT3904 | 30mA coil vs 200mA transistor rating | PASS |
 
 ## Sense chain
 
 - Shunt 0.2 mOhm x INA240 gain 20 = 4 mV/A
 - ADC full scale 750A at 3.0V ref, LSB 0.18A (12-bit)
-- V_bank divider 100k/5.23k -> 2.98V at 60V, standing drain 0.57 mA
+- V_bank divider 100k/5.10k -> 2.67V at 60V, standing drain 0.52 mA
 
 ## Charger / discharge
 
-- Boost floor 24.5V (cannot regulate below 24V input) — usable charge range 24.5-60V
+- Boost floor 24.5V (cannot regulate below 24V input) — usable charge range 24.5-55V
 - Charge current 0.5A avg; precharge 47 Ohm across the charge-relay contacts, relay closes only above 20V bank
-- Permanent bleed 7k (0.53W at 60V); dump 100 Ohm/25W via relay
+- Permanent bleed 6.8k (0.44W at 55V); dump 200 Ohm (2x 100R/10W series) via relay
+
+## Boost setpoint / OVP protection ladder
+
+- VBOOST = 2.5 + RT*(2.5/RB - (VSET-2.5)/RJ) with RT/RB/RJ = 100k / 10k / 9.1k
+- PWM=0 (fail state) -> 55.0V; PWM=100% -> 18.7V (< 24.5V floor, idle)
+- Ladder: operating 55V < OVP 59.1..62.0V (TL431A 1% + 1% divider) < capacitor rating 63V
+- Boost enable is fail-safe INHIBITED (pull-up holds COMP low; MCU must drive BOOST_EN_N low to charge)
+- Relay sequencing: charge relay closes only after precharge equalization, opens only with boost inhibited; dump relay switches <=0.6A resistive.
 
 ## Part constants used (verify against datasheets at order time)
 
