@@ -2,7 +2,7 @@
 	(version 20251024)
 	(generator "omnimarble_gen")
 	(generator_version "10.0")
-	(uuid "114a717f-ae82-4918-9be3-274e950a00cd")
+	(uuid "b92926c4-3a7d-4dd2-8b3b-7812764f21d3")
 	(paper "A3")
 	(title_block
 		(title "omnimarble-driver / cap_bank")
@@ -1255,7 +1255,7 @@
 				(size 3 3)
 			)
 		)
-		(uuid "a01fe2f1-4739-41ac-9ac9-e1f5fdb21ee5")
+		(uuid "6855aab0-2254-429a-8c49-52fc18238f08")
 	)
 	(symbol
 		(lib_id "Device:C_Polarized")
@@ -1265,7 +1265,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "8d8d9879-db51-40e9-8787-f56497f340a2")
+		(uuid "4f52a2cc-df44-4d30-a743-0bf39f04771e")
 		(property "Reference" "C90"
 			(at 39.37 57.15 0)
 			(show_name no)
@@ -1331,14 +1331,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "dd3eef3b-5689-465b-b608-ae3f08953dfa")
+			(uuid "7670bf47-e00d-4fd6-aac1-19e46ca6f748")
 		)
 		(pin "2"
-			(uuid "253f67fc-0ca3-4668-bcf1-60b1cef80781")
+			(uuid "db1f34cd-2c51-485f-9c02-6eca1db882b5")
 		)
 		(instances
 			(project "omnimarble-driver"
-				(path "/70e4f6fa-a16c-43fd-8b02-c5feb48cd6d1/09f45a2a-6a6a-469b-877a-84170f6c473d"
+				(path "/be74192f-67ac-494b-9ef4-1b59d4ce9fe4/509670b2-7640-42fc-b2b2-dc39736afa50"
 					(reference "C90")
 					(unit 1)
 				)
@@ -1354,7 +1354,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "31eec2f9-b915-4159-82cc-0c1380820faf")
+		(uuid "0737ba2c-1278-4519-b58d-6c9a60e91e45")
 	)
 	(global_label "VBANK"
 		(shape passive)
@@ -1365,7 +1365,7 @@
 			)
 			(justify left)
 		)
-		(uuid "e8d11491-3e43-4404-b19e-5aade994cae7")
+		(uuid "9dedc4d5-4b62-4d62-9ad0-2a2577cd97b1")
 	)
 	(wire
 		(pts
@@ -1376,7 +1376,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "facf5884-0bbd-4360-b7c0-787ed5282006")
+		(uuid "6f3d74f8-79f9-487f-a0fa-bea046b3978e")
 	)
 	(global_label "GND"
 		(shape passive)
@@ -1387,7 +1387,7 @@
 			)
 			(justify left)
 		)
-		(uuid "a86c5dcd-9180-44e5-87f8-93a4c91d4f34")
+		(uuid "494d1a61-1e57-49a9-9f62-e194eed8a78c")
 	)
 	(symbol
 		(lib_id "Device:C_Polarized")
@@ -1397,7 +1397,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "5a981198-ee6e-48f1-8b37-e828a99e6a6d")
+		(uuid "a04461b1-37c8-48ef-8888-5b8218332790")
 		(property "Reference" "C91"
 			(at 64.77 57.15 0)
 			(show_name no)
@@ -1463,14 +1463,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "4e7152a5-cfa8-4938-affd-b4932d59765b")
+			(uuid "441fcdde-fdcd-451c-ba6b-255487e6db02")
 		)
 		(pin "2"
-			(uuid "3cdcc4df-74e2-4e5d-8711-e1c0d3feae46")
+			(uuid "33f37aa9-cd58-4656-8bf4-ae80b8e3864a")
 		)
 		(instances
 			(project "omnimarble-driver"
-				(path "/70e4f6fa-a16c-43fd-8b02-c5feb48cd6d1/09f45a2a-6a6a-469b-877a-84170f6c473d"
+				(path "/be74192f-67ac-494b-9ef4-1b59d4ce9fe4/509670b2-7640-42fc-b2b2-dc39736afa50"
 					(reference "C91")
 					(unit 1)
 				)
@@ -1486,7 +1486,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "2880d034-ba5b-4fec-b9b5-194917161cf1")
+		(uuid "de364577-4fc6-4cdf-8b2a-7009cb5b44a6")
 	)
 	(global_label "VBANK"
 		(shape passive)
@@ -1497,7 +1497,7 @@
 			)
 			(justify left)
 		)
-		(uuid "063fb824-56ba-4d37-b7fe-db5c6b847407")
+		(uuid "6439b6b7-9f5a-41ef-a493-9aaa2bd30a79")
 	)
 	(wire
 		(pts
@@ -1508,7 +1508,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "2a78f6e4-028a-46c7-b93b-a64d3c0ea5ef")
+		(uuid "68219a7b-07be-4525-ab3b-dfd59fe423b7")
 	)
 	(global_label "GND"
 		(shape passive)
@@ -1519,7 +1519,7 @@
 			)
 			(justify left)
 		)
-		(uuid "3231cd0a-e091-4e66-8fad-f377aea2f2e5")
+		(uuid "19ba2ee3-bac0-4bed-ab1f-2b77f94fccf9")
 	)
 	(symbol
 		(lib_id "Device:C_Polarized")
@@ -1529,7 +1529,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp yes)
-		(uuid "1d78777b-bae2-4024-b32c-506ca3c99e53")
+		(uuid "298a5383-c83b-4485-9a19-2b7a5629ad11")
 		(property "Reference" "C92"
 			(at 90.17 57.15 0)
 			(show_name no)
@@ -1595,14 +1595,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "5e554319-6406-41a2-a764-7addafe4f509")
+			(uuid "dc7301a8-e30e-4d89-aa33-78f9f5af4b8c")
 		)
 		(pin "2"
-			(uuid "6bd03050-adbe-4253-ae3b-0e9ccf02039f")
+			(uuid "c55eff8f-fb76-43d9-a0b9-53643f8b9fba")
 		)
 		(instances
 			(project "omnimarble-driver"
-				(path "/70e4f6fa-a16c-43fd-8b02-c5feb48cd6d1/09f45a2a-6a6a-469b-877a-84170f6c473d"
+				(path "/be74192f-67ac-494b-9ef4-1b59d4ce9fe4/509670b2-7640-42fc-b2b2-dc39736afa50"
 					(reference "C92")
 					(unit 1)
 				)
@@ -1618,7 +1618,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "af7fed17-0f8f-44ff-9e58-2ecb29cbafa6")
+		(uuid "7b809dcc-21ad-4df4-8ed4-4b2f3c03ee4d")
 	)
 	(global_label "VBANK"
 		(shape passive)
@@ -1629,7 +1629,7 @@
 			)
 			(justify left)
 		)
-		(uuid "b85934e3-4bb9-4380-b12d-5ca8edb7cc62")
+		(uuid "f6461dfe-a329-4f75-8348-e9befcf53d54")
 	)
 	(wire
 		(pts
@@ -1640,7 +1640,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "3108e3d3-2a16-4634-9f52-9bfccd71fc7b")
+		(uuid "67a8b1cb-fd16-44cb-9351-8d2cc1806073")
 	)
 	(global_label "GND"
 		(shape passive)
@@ -1651,7 +1651,7 @@
 			)
 			(justify left)
 		)
-		(uuid "4708767e-0d02-4e17-8e68-331b4e9ec762")
+		(uuid "f08535a1-306d-45c8-9449-556db5a79bed")
 	)
 	(symbol
 		(lib_id "Device:C_Polarized")
@@ -1661,7 +1661,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp yes)
-		(uuid "ba53d8ef-8f3e-4da4-a856-066f4f692618")
+		(uuid "4c20b2e0-5d60-42ea-9bc9-c960ee70a829")
 		(property "Reference" "C93"
 			(at 115.57 57.15 0)
 			(show_name no)
@@ -1727,14 +1727,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "90446776-3012-4868-b234-e886cd691ddc")
+			(uuid "3ed63350-dece-40f5-8379-495400066f29")
 		)
 		(pin "2"
-			(uuid "ae90ba5a-8c82-4893-80ad-6c474ee8aa29")
+			(uuid "31272853-b1da-4c46-88a4-91a793335f9f")
 		)
 		(instances
 			(project "omnimarble-driver"
-				(path "/70e4f6fa-a16c-43fd-8b02-c5feb48cd6d1/09f45a2a-6a6a-469b-877a-84170f6c473d"
+				(path "/be74192f-67ac-494b-9ef4-1b59d4ce9fe4/509670b2-7640-42fc-b2b2-dc39736afa50"
 					(reference "C93")
 					(unit 1)
 				)
@@ -1750,7 +1750,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "31d29124-ba9b-4b80-b435-ec48d013c9f9")
+		(uuid "18429f62-06df-4acb-a166-364001c6d294")
 	)
 	(global_label "VBANK"
 		(shape passive)
@@ -1761,7 +1761,7 @@
 			)
 			(justify left)
 		)
-		(uuid "83af57f1-da6e-4a63-85b7-8263badb849f")
+		(uuid "933f4207-6cc2-4266-829e-45db4638985c")
 	)
 	(wire
 		(pts
@@ -1772,7 +1772,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "ef77d8e3-2def-4703-bbc4-b64b58c0b608")
+		(uuid "67e82de2-6182-40ea-acfd-ae0bed43857d")
 	)
 	(global_label "GND"
 		(shape passive)
@@ -1783,7 +1783,7 @@
 			)
 			(justify left)
 		)
-		(uuid "415cd653-97d1-4014-9b22-0dbaf73b4e24")
+		(uuid "845e0e25-6065-4cb8-b7bb-5071b5b83a3e")
 	)
 	(symbol
 		(lib_id "Device:C_Polarized")
@@ -1793,7 +1793,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp yes)
-		(uuid "e9b66859-ebf2-4f3e-b2ae-a9b03e9bff17")
+		(uuid "f6dceecf-e02d-49ab-9309-7552d344bda3")
 		(property "Reference" "C94"
 			(at 139.7 57.15 0)
 			(show_name no)
@@ -1859,14 +1859,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "29b07320-e9d9-4067-942b-c8c34b09d045")
+			(uuid "a47e876a-06ec-4e8f-8036-d2d4e9f35f3a")
 		)
 		(pin "2"
-			(uuid "fe670ec5-f1ce-42f3-b4d8-cb8b2501f3e5")
+			(uuid "1e7ca05c-d926-430c-94e5-6b686d194c0e")
 		)
 		(instances
 			(project "omnimarble-driver"
-				(path "/70e4f6fa-a16c-43fd-8b02-c5feb48cd6d1/09f45a2a-6a6a-469b-877a-84170f6c473d"
+				(path "/be74192f-67ac-494b-9ef4-1b59d4ce9fe4/509670b2-7640-42fc-b2b2-dc39736afa50"
 					(reference "C94")
 					(unit 1)
 				)
@@ -1882,7 +1882,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "c3cfd330-94e7-4ec6-a1be-08e5d893983c")
+		(uuid "dd8b3ae2-4ec2-47e7-b114-308bf4246b34")
 	)
 	(global_label "VBANK"
 		(shape passive)
@@ -1893,7 +1893,7 @@
 			)
 			(justify left)
 		)
-		(uuid "87dc4165-7e4a-4dbd-bfff-498ad77b650c")
+		(uuid "f46d4a5d-20f4-4feb-bf99-34d327a23c08")
 	)
 	(wire
 		(pts
@@ -1904,7 +1904,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "b2cc36bf-c7dc-4738-a2df-cbf694de7d44")
+		(uuid "6f927caf-e8cd-4bc9-8df3-12ce6d1bcf0d")
 	)
 	(global_label "GND"
 		(shape passive)
@@ -1915,7 +1915,7 @@
 			)
 			(justify left)
 		)
-		(uuid "80fee37c-04fa-478b-81c8-5a21a4d98715")
+		(uuid "9b454684-151d-466a-8f4c-ca9f4fb5c77e")
 	)
 	(symbol
 		(lib_id "Connector:Screw_Terminal_01x02")
@@ -1925,7 +1925,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "eda0d767-df10-4e72-9db4-aac2022727ca")
+		(uuid "6c9b8674-20d1-47d3-bfb7-5c9f9e9d507d")
 		(property "Reference" "J2"
 			(at 180.34 57.15 0)
 			(show_name no)
@@ -1946,7 +1946,7 @@
 				)
 			)
 		)
-		(property "Footprint" "omnimarble:TerminalBarrier_1x02_P9.50mm_DRAFT"
+		(property "Footprint" "omnimarble:TerminalBarrier_1x02_P9.50mm"
 			(at 180.34 59.69 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -1991,14 +1991,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "4e36177e-e223-4205-ad8c-cc0a8d5a72c7")
+			(uuid "33d700c0-55d4-4929-b44b-66684d3e1008")
 		)
 		(pin "2"
-			(uuid "c894ac53-c156-4fd8-b74a-a103fc822028")
+			(uuid "69055c37-1d04-4089-9e98-b8b38687732c")
 		)
 		(instances
 			(project "omnimarble-driver"
-				(path "/70e4f6fa-a16c-43fd-8b02-c5feb48cd6d1/09f45a2a-6a6a-469b-877a-84170f6c473d"
+				(path "/be74192f-67ac-494b-9ef4-1b59d4ce9fe4/509670b2-7640-42fc-b2b2-dc39736afa50"
 					(reference "J2")
 					(unit 1)
 				)
@@ -2014,7 +2014,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "85231dc5-4bec-408d-8ae5-ce6b0a2a7fbd")
+		(uuid "e1e4a6f0-e7d4-4f27-9f36-8ee96c30a7ae")
 	)
 	(global_label "AUX_BANK"
 		(shape passive)
@@ -2025,7 +2025,7 @@
 			)
 			(justify right)
 		)
-		(uuid "4612a145-7120-4c52-a240-03fd3a7581e7")
+		(uuid "abc02ffc-52f0-42ed-bf20-08d450e5ec4e")
 	)
 	(wire
 		(pts
@@ -2036,7 +2036,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "797a38f3-c210-49e6-9bba-0397b2b3a835")
+		(uuid "c3c90ce8-367b-40e6-a3cf-86836be910b3")
 	)
 	(global_label "GND"
 		(shape passive)
@@ -2047,7 +2047,7 @@
 			)
 			(justify right)
 		)
-		(uuid "e63c43ec-1fb8-42eb-9386-3fae83ee3928")
+		(uuid "1c1906f0-3793-47ca-859f-fa8b5d5cbc91")
 	)
 	(symbol
 		(lib_id "Device:Fuse")
@@ -2057,7 +2057,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "5deab84e-6387-4994-9e7b-ad32aeef8226")
+		(uuid "8f97e9d8-ed9b-448f-8fbe-970a0569ddf8")
 		(property "Reference" "F2"
 			(at 180.34 87.63 0)
 			(show_name no)
@@ -2123,14 +2123,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "71a8fc14-05d1-48b8-848b-84daf7f7ea19")
+			(uuid "10478ae6-306a-4e54-9656-3cb8aa2728ac")
 		)
 		(pin "2"
-			(uuid "9b8425df-0ad1-4086-b33c-5c4a15048a8c")
+			(uuid "06318302-1498-4f67-9893-cf6c0702e631")
 		)
 		(instances
 			(project "omnimarble-driver"
-				(path "/70e4f6fa-a16c-43fd-8b02-c5feb48cd6d1/09f45a2a-6a6a-469b-877a-84170f6c473d"
+				(path "/be74192f-67ac-494b-9ef4-1b59d4ce9fe4/509670b2-7640-42fc-b2b2-dc39736afa50"
 					(reference "F2")
 					(unit 1)
 				)
@@ -2146,7 +2146,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "41a8820d-000b-41a8-bbd9-50690fc68088")
+		(uuid "225d40df-657e-46e9-abb7-fe797eb656d6")
 	)
 	(global_label "AUX_BANK"
 		(shape passive)
@@ -2157,7 +2157,7 @@
 			)
 			(justify left)
 		)
-		(uuid "8b6c908c-eb01-458f-a98d-b77de97551f2")
+		(uuid "2b2d0b93-c2d9-44ec-b00a-28a895c55ac0")
 	)
 	(wire
 		(pts
@@ -2168,7 +2168,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "272af0c2-85c5-4c53-9132-eb742648aea2")
+		(uuid "05f3b6a4-2db1-402b-b776-eff5636527a0")
 	)
 	(global_label "VBANK"
 		(shape passive)
@@ -2179,7 +2179,7 @@
 			)
 			(justify left)
 		)
-		(uuid "880c6065-6506-4c56-aec1-2eb3b8e5cde5")
+		(uuid "5434da94-9a02-42a9-82ea-11631cdcf4c0")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -2189,7 +2189,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "1ea8eb70-6cfb-4e11-9765-29abe8dfa332")
+		(uuid "c64a3cf0-7687-4827-bbd5-d59989279364")
 		(property "Reference" "R26"
 			(at 59.69 116.84 0)
 			(show_name no)
@@ -2255,14 +2255,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "14603cfa-bdd1-453c-8527-c03e79d6c321")
+			(uuid "ff631aea-dbf1-48cb-bcdc-8b4cff2b0e23")
 		)
 		(pin "2"
-			(uuid "116b1032-0557-40a6-97f0-8b751ed43012")
+			(uuid "31369918-60ad-43ea-bd99-f0d7fbe6b6ed")
 		)
 		(instances
 			(project "omnimarble-driver"
-				(path "/70e4f6fa-a16c-43fd-8b02-c5feb48cd6d1/09f45a2a-6a6a-469b-877a-84170f6c473d"
+				(path "/be74192f-67ac-494b-9ef4-1b59d4ce9fe4/509670b2-7640-42fc-b2b2-dc39736afa50"
 					(reference "R26")
 					(unit 1)
 				)
@@ -2278,7 +2278,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "e2c4c22d-9036-4545-b682-9426f4b69c11")
+		(uuid "151d568d-8d1d-471f-8319-90ccfabcd8db")
 	)
 	(global_label "VBANK"
 		(shape passive)
@@ -2289,7 +2289,7 @@
 			)
 			(justify left)
 		)
-		(uuid "512d48f2-ea0c-436f-a7de-7676d81e4cbc")
+		(uuid "a5364077-f181-43eb-97d6-8cd0aa3c9aa9")
 	)
 	(wire
 		(pts
@@ -2300,7 +2300,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "adbf4aee-5354-4585-b5cc-0c7c9d8c4189")
+		(uuid "0dc77950-d7ad-4e6f-aca8-f12dca31adf7")
 	)
 	(global_label "VBANK_DIV"
 		(shape passive)
@@ -2311,7 +2311,7 @@
 			)
 			(justify left)
 		)
-		(uuid "d16b0dff-73eb-4395-8642-8a5d28b0fa22")
+		(uuid "3788b379-a668-48a1-90a3-73c7a633b56b")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -2321,7 +2321,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "93fb3b5f-022c-4d0c-86af-5e15702f3b34")
+		(uuid "ee0302f8-00e6-4211-b575-4f69973d3f5d")
 		(property "Reference" "R27"
 			(at 59.69 137.16 0)
 			(show_name no)
@@ -2387,14 +2387,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "7b742f8e-8076-41fb-b8ff-1c4a2ab4ddd9")
+			(uuid "b96e6e38-947e-4c01-abde-ad3247fe5bc6")
 		)
 		(pin "2"
-			(uuid "ebe50d68-8e5f-41e3-8b42-06ffd8f94ca2")
+			(uuid "b7409b51-476e-49e2-8adb-28d5db2db3d1")
 		)
 		(instances
 			(project "omnimarble-driver"
-				(path "/70e4f6fa-a16c-43fd-8b02-c5feb48cd6d1/09f45a2a-6a6a-469b-877a-84170f6c473d"
+				(path "/be74192f-67ac-494b-9ef4-1b59d4ce9fe4/509670b2-7640-42fc-b2b2-dc39736afa50"
 					(reference "R27")
 					(unit 1)
 				)
@@ -2410,7 +2410,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "39136734-7c6b-40ab-b5aa-70dddf755978")
+		(uuid "e1322cd4-80b7-4871-9386-e65b2ac7c9f7")
 	)
 	(global_label "VBANK_DIV"
 		(shape passive)
@@ -2421,7 +2421,7 @@
 			)
 			(justify left)
 		)
-		(uuid "bc2e0b6b-6c44-42cb-ab1a-4b18c6b27eaa")
+		(uuid "ddebca8f-d5d4-43f1-bc02-75e672786efe")
 	)
 	(wire
 		(pts
@@ -2432,7 +2432,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "51c1e0ff-3b14-4070-96ef-32ea99cea5d0")
+		(uuid "8edb3784-1e6d-4871-946c-05dab7dd2011")
 	)
 	(global_label "GND"
 		(shape passive)
@@ -2443,7 +2443,7 @@
 			)
 			(justify left)
 		)
-		(uuid "43dc6d3d-cc0b-42ce-af61-df21207b9107")
+		(uuid "89cc2520-1169-4502-a979-959c4b66e1b1")
 	)
 	(symbol
 		(lib_id "Device:C")
@@ -2453,7 +2453,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "4e372a5a-dcba-4dac-beff-5abfd4545500")
+		(uuid "a99f4a95-e5e8-4916-9fc5-2b4e9a6ee319")
 		(property "Reference" "C16"
 			(at 74.93 137.16 0)
 			(show_name no)
@@ -2519,14 +2519,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "773ac609-d1c4-4725-99e0-efb11ce2bad5")
+			(uuid "45571dc5-bd34-481d-9ba5-98789a58a5a6")
 		)
 		(pin "2"
-			(uuid "6ad4a995-694c-435c-8334-bb3e4dc67670")
+			(uuid "4c3a4442-9123-434f-b1d8-0d6ddd4adcb3")
 		)
 		(instances
 			(project "omnimarble-driver"
-				(path "/70e4f6fa-a16c-43fd-8b02-c5feb48cd6d1/09f45a2a-6a6a-469b-877a-84170f6c473d"
+				(path "/be74192f-67ac-494b-9ef4-1b59d4ce9fe4/509670b2-7640-42fc-b2b2-dc39736afa50"
 					(reference "C16")
 					(unit 1)
 				)
@@ -2542,7 +2542,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "3880ee29-bb41-495e-a197-35e537977355")
+		(uuid "20a1bf01-f918-43bb-87e1-3cb9b007d812")
 	)
 	(global_label "VBANK_DIV"
 		(shape passive)
@@ -2553,7 +2553,7 @@
 			)
 			(justify left)
 		)
-		(uuid "17b9e3be-6af1-40dd-9434-7c59a4e5dc63")
+		(uuid "d124c458-eef5-47aa-a056-38d258cee9d3")
 	)
 	(wire
 		(pts
@@ -2564,7 +2564,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "e04eccef-dff9-4b8c-be74-ce57d8a51579")
+		(uuid "24146e49-edc1-4b80-b2f0-3fc41021c99d")
 	)
 	(global_label "GND"
 		(shape passive)
@@ -2575,7 +2575,7 @@
 			)
 			(justify left)
 		)
-		(uuid "d836f516-954d-4233-a36c-d339b2dd08a7")
+		(uuid "468f80cb-ccd1-4e3c-a46e-4d06ab439b7a")
 	)
 	(symbol
 		(lib_id "Amplifier_Operational:MCP6002-xSN")
@@ -2585,7 +2585,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "49685847-8454-412d-9fd0-2110be54dffe")
+		(uuid "b88b7c12-df99-4a5c-9cbf-d7f2a1ed6ba7")
 		(property "Reference" "U3"
 			(at 100.33 127 0)
 			(show_name no)
@@ -2651,17 +2651,17 @@
 			)
 		)
 		(pin "1"
-			(uuid "f5635fbb-a276-4000-b20e-25d55567d0a9")
+			(uuid "629dded5-09e6-41d6-9136-9f5db2773401")
 		)
 		(pin "2"
-			(uuid "73466f3a-af15-4d7a-b081-7f773b8b2c30")
+			(uuid "4824853b-eb71-4414-ac86-a7228b14796a")
 		)
 		(pin "3"
-			(uuid "e44e0828-6d83-4a18-91c4-d8394b39f18b")
+			(uuid "cf488521-6190-4dae-b596-a5191e0344f1")
 		)
 		(instances
 			(project "omnimarble-driver"
-				(path "/70e4f6fa-a16c-43fd-8b02-c5feb48cd6d1/09f45a2a-6a6a-469b-877a-84170f6c473d"
+				(path "/be74192f-67ac-494b-9ef4-1b59d4ce9fe4/509670b2-7640-42fc-b2b2-dc39736afa50"
 					(reference "U3")
 					(unit 1)
 				)
@@ -2677,7 +2677,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "6151409f-3593-4239-9a1e-a69891df3352")
+		(uuid "2545fc5f-6324-4c9e-913f-a56905f890ef")
 	)
 	(global_label "VBANK_DIV"
 		(shape passive)
@@ -2688,7 +2688,7 @@
 			)
 			(justify right)
 		)
-		(uuid "a4e116e4-a237-40a8-a6c2-a96aebd5abd1")
+		(uuid "1f501c44-f660-4ac1-8e83-3eb5355b30b2")
 	)
 	(wire
 		(pts
@@ -2699,7 +2699,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "f1e4d6c9-7d55-41db-a4fb-ce4409c6203c")
+		(uuid "caad5f73-fb76-465d-bf77-3217694b21e8")
 	)
 	(global_label "VBANK_SENSE"
 		(shape passive)
@@ -2710,7 +2710,7 @@
 			)
 			(justify right)
 		)
-		(uuid "27972da0-7c62-4a98-abd1-cda7ce36165c")
+		(uuid "4fd5fb52-5c99-4a3c-a4bc-4b8308196f78")
 	)
 	(wire
 		(pts
@@ -2721,7 +2721,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "e0288424-2bdc-4e2e-b342-950d0594bc87")
+		(uuid "531f0d36-fca6-49ce-9336-08a8e16e263d")
 	)
 	(global_label "VBANK_SENSE"
 		(shape passive)
@@ -2732,7 +2732,7 @@
 			)
 			(justify left)
 		)
-		(uuid "6de6eb7c-7183-467d-8739-5cdc5cd69964")
+		(uuid "c920be5e-e1e1-4c44-9726-448060eb2f17")
 	)
 	(symbol
 		(lib_id "Amplifier_Operational:MCP6002-xSN")
@@ -2742,7 +2742,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "e64a783e-d5b8-4fc0-b164-452b5bfd04ed")
+		(uuid "8f74ffff-b46a-46ee-9be7-34dfc8a82b52")
 		(property "Reference" "U3"
 			(at 139.7 127 0)
 			(show_name no)
@@ -2808,14 +2808,14 @@
 			)
 		)
 		(pin "4"
-			(uuid "ad7d0c56-1a6b-46b6-9ce5-edd99ef62266")
+			(uuid "eac1252b-888a-4667-8169-77e1b46df260")
 		)
 		(pin "8"
-			(uuid "bb4712e2-c101-4e15-9b8e-5711450845c3")
+			(uuid "f40411b4-f96e-475c-9ae7-ca7b2ca913d0")
 		)
 		(instances
 			(project "omnimarble-driver"
-				(path "/70e4f6fa-a16c-43fd-8b02-c5feb48cd6d1/09f45a2a-6a6a-469b-877a-84170f6c473d"
+				(path "/be74192f-67ac-494b-9ef4-1b59d4ce9fe4/509670b2-7640-42fc-b2b2-dc39736afa50"
 					(reference "U3")
 					(unit 3)
 				)
@@ -2831,7 +2831,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "259a9b82-1791-4169-8088-d9a9517f8b64")
+		(uuid "7ae6b2ab-8114-488b-9827-6ceaa1d9ea21")
 	)
 	(global_label "3V3"
 		(shape passive)
@@ -2842,7 +2842,7 @@
 			)
 			(justify left)
 		)
-		(uuid "bd5c8783-b907-42e8-8da8-9fbab22d4c24")
+		(uuid "0456d786-9ad7-48fc-a9c0-5a8a40a7db15")
 	)
 	(wire
 		(pts
@@ -2853,7 +2853,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "10e48bbd-1684-4984-98b4-f2b9a011b741")
+		(uuid "ec38bb55-4d51-4bd8-9f10-3b5f7231c060")
 	)
 	(global_label "GND"
 		(shape passive)
@@ -2864,7 +2864,7 @@
 			)
 			(justify left)
 		)
-		(uuid "f159de1c-fc31-43bf-8dce-9b0ee3a9ef7e")
+		(uuid "850dc970-2904-41f4-af78-377bcad9d439")
 	)
 	(symbol
 		(lib_id "Device:C")
@@ -2874,7 +2874,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "ccd70101-3079-4c95-ba22-9d2c245b2ddb")
+		(uuid "0c02f564-ffde-45f0-befe-11ba359a054b")
 		(property "Reference" "C17"
 			(at 160.02 127 0)
 			(show_name no)
@@ -2940,14 +2940,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "ce264264-86bb-4aa4-9e75-81e19903e535")
+			(uuid "223b3c07-9f0f-4920-9733-0e578a127ea8")
 		)
 		(pin "2"
-			(uuid "3df0b980-0922-4926-8074-7cac4415b30b")
+			(uuid "0f4727c8-8133-4e03-b406-ad737ef9e5b2")
 		)
 		(instances
 			(project "omnimarble-driver"
-				(path "/70e4f6fa-a16c-43fd-8b02-c5feb48cd6d1/09f45a2a-6a6a-469b-877a-84170f6c473d"
+				(path "/be74192f-67ac-494b-9ef4-1b59d4ce9fe4/509670b2-7640-42fc-b2b2-dc39736afa50"
 					(reference "C17")
 					(unit 1)
 				)
@@ -2963,7 +2963,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "b9324122-644a-4a8e-88b8-4ad6ee785f35")
+		(uuid "4ddb981d-d6c1-492a-ad0d-eaa45cc6e04d")
 	)
 	(global_label "3V3"
 		(shape passive)
@@ -2974,7 +2974,7 @@
 			)
 			(justify left)
 		)
-		(uuid "4066dd50-712d-435b-b078-35bf5009af72")
+		(uuid "ce7183c2-a8f9-495e-abee-fc9c4c8c745e")
 	)
 	(wire
 		(pts
@@ -2985,7 +2985,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "4a45df45-d5e3-46c6-8c5c-25ab7eeff245")
+		(uuid "7e0341d7-3e6b-40fe-82a0-328edac3d765")
 	)
 	(global_label "GND"
 		(shape passive)
@@ -2996,7 +2996,7 @@
 			)
 			(justify left)
 		)
-		(uuid "83b9612d-9bf1-4dae-b8d9-e1add7ea3655")
+		(uuid "9f2ca9f6-05b9-4f19-afaf-f99a19716aad")
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -3006,7 +3006,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "1520bf13-364b-4760-9b31-a66270332c33")
+		(uuid "83831d50-fa2b-45a4-8376-f27f6f84c845")
 		(property "Reference" "#PWR0011"
 			(at 59.69 167.64 0)
 			(show_name no)
@@ -3061,11 +3061,11 @@
 			)
 		)
 		(pin "1"
-			(uuid "f8478c89-a9db-4c76-8f6a-b5f1e3217d41")
+			(uuid "893b1c12-e597-4c72-a861-3d290a2aacbb")
 		)
 		(instances
 			(project "omnimarble-driver"
-				(path "/70e4f6fa-a16c-43fd-8b02-c5feb48cd6d1/09f45a2a-6a6a-469b-877a-84170f6c473d"
+				(path "/be74192f-67ac-494b-9ef4-1b59d4ce9fe4/509670b2-7640-42fc-b2b2-dc39736afa50"
 					(reference "#PWR0011")
 					(unit 1)
 				)
@@ -3081,7 +3081,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "9f33bad7-db33-45d8-816d-55d92ff9f62e")
+		(uuid "2bd13cb7-5277-4359-9534-1792a0a3d25a")
 	)
 	(global_label "GND"
 		(shape passive)
@@ -3092,7 +3092,7 @@
 			)
 			(justify left)
 		)
-		(uuid "70c13c37-0744-4ec3-8f1f-9b9587eab593")
+		(uuid "8f71a7f5-c85f-492f-a435-2e4913654ea6")
 	)
 	(embedded_fonts no)
 )
