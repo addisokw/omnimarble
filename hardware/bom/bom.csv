@@ -1,0 +1,33 @@
+key,mfr,mpn,lcsc,jlc_class,package,qty,description,alternate
+fet_pulse,SCILICON,SFT040N150C3,C42395334,ext,TOLL,3,"150V 4.0mOhm(max) NFET, ID(pulse) 760A","NCEP15T14LL (C2686615, TOLL 150V 5.8mOhm IDM 680A)"
+diode_pulse,YFW,MBR60100DC,C6069541,ext,TO-263,5,"100V 60A Schottky, IFSM 450A (blocking x2, freewheel x2, bank clamp x1)","MBR40100DC-B (C5359198, low stock)"
+shunt,Yezhan,ASR-M-7-0.2F,C469442,ext,5930,1,0.2mOhm 1% 15W metal element (Kelvin PCB routing),"HolRS3920-5W-0.2mR-1% (C558625); Bourns CSS2H-3920R-L200FE (C4126121, low stock)"
+cap_bank,Nichicon,LKG1J222MESBBK,C3724971,hand,snap-in 30x30mm,2,"2200uF 63V snap-in; 5 positions, populate 2 baseline (4400uF), max 11000uF",Chengx radial 18mm 2200uF/63V (C47858)
+term_coil,Kangnex,HB9500-9.5-02P-13-00A,C60785,ext-tht,9.5mm barrier,2,"32A barrier terminal, coil + aux-bank connections (pulse path)","Wurth REDCUBE M4 (hand-install, not LCSC)"
+fuse_aux,Littelfuse,0997030.WXN,C207030,hand,MINI blade,1,"30A 58VDC MINI blade fuse, aux-bank feed (holder hand-installed)","ATO 0287030.PXCN (C142686, 32V rating - marginal at 60V)"
+boost_ctrl,TI,LM3481MMX/NOPB,C543002,ext,MSOP-10,1,"Boost controller, 24V->24.5..60V @ ~0.5A (custom symbol)",UC3843BD1R2G (C16414; mind 30V Vcc max)
+boost_fet,AOS,AOD66923,C485687,ext,TO-252,1,100V 11mOhm boost switch,UMW 15N10 (C359106)
+boost_diode,MDD,SS510,C65010,ext,SMA,1,"100V 5A Schottky, boost rectifier","SS510B (C7420368, SMB, preferred-class)"
+boost_ind,YJYCOIN,YSPI1365-470M,C497913,ext,1265,1,47uH 5A/7Asat shielded power inductor,APH1265T470M (C5349639)
+relay,Hongfa,HF3FF/012-1ZS,C399561,ext-tht,THT relay,2,"12V coil SPDT 15A (charge + dump), NO contact used","HF115F/012-1HS3 (C61377, 16A, lower stock)"
+tl431,Changjing,CJ431,C3113,basic,SOT-23,1,"Shunt reference, 63V hardware OVP trip",TL431AIDBZR (C79737)
+buck5,Diodes,AP63205WU-7,C2071056,ext,TSOT-23-6,1,24V->5V/2A buck (logic + Pico VSYS + gate emitters),"TPS54331DR (C9865, preferred-class)"
+reg12,UMW,78L12(UMW),C347272,ext,SOT-89,1,"24V->12V linear, gate-driver + relay rail (<60mA)",CJ78L12 (C8615)
+tvs_in,HJC,SMBJ33A,C19077586,ext,SMB,1,24V input TVS,C173526 (higher stock)
+fuse_in,Littelfuse,0997005.WXN,,hand,MINI blade,1,5A input fuse (holder hand-installed; confirm PN at order),any 5A MINI blade
+pfet_rpp,AOS,AOD4185,C77317,ext,TO-252,1,-40V PFET reverse-polarity protection (confirm stock at order),"any 40V+ PFET, TO-252"
+jack24,XKB,DC-005-5A-2.0,C381116,ext-tht,DC barrel 5.5/2.1,1,"24V input jack (5A, 24V rated - input only)",5.08mm terminal WJ128V-5.0-2P (C8269)
+gate_drv,TI,UCC27524ADR,C185857,ext,SOIC-8,2,Dual 5A low-side gate driver (per-FET gate resistors),UCC27524DR (C465729)
+and_gate,TI,SN74LVC1G08DCKR,C7832,ext,SC-70-5,1,FIRE = MCU_FIRE AND ARM (hardware interlock),"SN74LVC1G08DBVR (C7666, SOT-23-5)"
+gate_clamp,-,BZT52C15,C19077412,ext,SOD-123,3,15V gate clamp zener per FET,SMAJ15A (C19077535)
+ina240,TI,INA240A1PWR,C93965,ext,TSSOP-8,1,"Current-sense amp, gain 20 (0.2mOhm -> 4mV/A)","INA240A2PWR (C129949, gain 50 - would clip)"
+adc,TI,ADS7042IDCUR,C701641,ext,VSSOP-8,1,12-bit 1MSPS SPI ADC for I(t) capture,"ADS7886SBDBVR (C2669886, SOT-23-6)"
+opamp,Microchip,MCP6002T-I/SN,C7377,ext,SOIC-8,1,RRIO dual op-amp: V_bank + 24V sense buffers,LMV358IDR (C63813)
+comparator,TI,LM339DR,C7948,ext,SOIC-14,2,Quad comparator x2: 6 IR gate channels + live-bank detect,LM339DR2G (C63821)
+ir_led,Everlight,IR333C-A,C5130,ext-tht,5mm THT,6,940nm IR emitter (gate-rail EMIT variant),"IR204C-A-L (C98863, 3mm)"
+ir_pt,Everlight,PT204-6B,C5133,ext-tht,3mm THT,6,940nm NPN phototransistor (gate-rail RECV variant),"PT333-3C (C264295, OUT OF STOCK 2026-07)"
+idc10,BOOMELE,2.54-2*5P box header,C5665,ext-tht,IDC 2x5,4,"Sensor-rail ribbon headers (2 on driver, 1 per rail)",any shrouded 2x5 2.54mm
+jst_xh4,JST,B4B-XH-A(LF)(SN),C144395,ext-tht,JST-XH 4p,1,Spare ad-hoc sensor connector,B4B-XH-AM (C161871)
+pico_socket,-,2x 1x20 2.54mm socket,,hand,THT,2,Raspberry Pi Pico socket (Pico bought separately),
+io_breakout,-,2x13 2.54mm pin header,,hand,THT,1,MCU-agnostic IO breakout (parallel with Pico socket),
+arm_key,-,key switch SPST,,hand,panel,1,"ARM keyswitch (panel-mount, wired to header)",

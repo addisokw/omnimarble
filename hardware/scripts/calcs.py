@@ -19,6 +19,9 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from rlc_circuit import compute_rlc_params, rlc_current
 
+sys.path.insert(0, str(HW_DIR / "scripts"))
+from parts import BANK_POSITIONS, BANK_UNIT_UF, PARTS
+
 OUT_MD = HW_DIR / "design-calcs.md"
 
 # ---------------------------------------------------------------------------
@@ -32,33 +35,37 @@ COIL = {  # demo coil, config/coil_params.json
 
 V_BANK_MAX = 60.0          # SELV design ceiling
 V_BANK_ABS = 63.0          # capacitor voltage rating / OVP trip
-BANK_OPTIONS_UF = [470, 1000, 2200, 4400, 4700, 8800, 10000]
-BANK_BASELINE_UF = 4400    # 2x 2200uF populated
+# Bank built from 2200uF/63V snap-in cans, 1..5 positions populated
+BANK_OPTIONS_UF = [int(BANK_UNIT_UF * n) for n in range(1, BANK_POSITIONS + 1)]
+BANK_BASELINE_UF = int(BANK_UNIT_UF * 2)   # 2 cans populated
 
-DESIGN_I_PK_A = 600.0      # switch/diode capability target (headroom > worst 453A)
+DESIGN_I_PK_A = 600.0      # switch/diode capability target (headroom > worst case)
 DESIGN_PULSE_S = 2e-3
 
-# Selected parts (datasheet constants — see bom/bom.csv for LCSC numbers)
+# Selected parts (datasheet constants sourced from parts.py / bom.csv)
+_fet = PARTS["fet_pulse"]
 FET = {
-    "name": "Infineon IPB083N15N5 (D2PAK, 150V)",
-    "n_parallel": 3,
-    "rds_on_hot_ohm": 0.0083 * 1.5,   # max Rds(on) x1.5 hot derating
-    "idm_pulse_a": 400.0,             # datasheet pulsed drain current (tp limited)
-    "zth_1ms_k_per_w": 0.12,          # junction-to-case transient at ~1ms
+    "name": f"{_fet['mfr']} {_fet['mpn']} ({_fet['package']}, 150V, {_fet['lcsc']})",
+    "n_parallel": _fet["qty"],
+    "rds_on_hot_ohm": _fet["rds_on_max_ohm"] * 1.5,   # max Rds(on) x1.5 hot derating
+    "idm_pulse_a": _fet["idm_pulse_a"],
+    "zth_1ms_k_per_w": 0.12,          # conservative Zth(jc,1ms); RthJC(dc)=0.48
     "vds_v": 150.0,
-    "tj_max_c": 175.0,
+    "tj_max_c": _fet["tj_max_c"],
 }
+_dio = PARTS["diode_pulse"]
 DIODE = {
-    "name": "ST STPS41H100CG (D2PAK, 100V dual Schottky, legs paralleled)",
-    "vf_v": 0.75,
-    "ifsm_a": 440.0,                  # per package, 10ms half-sine
-    "i2t_a2s": 970.0,                 # (IFSM^2 * 10ms / 2) class estimate
+    "name": f"{_dio['mfr']} {_dio['mpn']} ({_dio['package']}, 100V Schottky, {_dio['lcsc']})",
+    "vf_v": _dio["vf_v"],
+    "ifsm_a": _dio["ifsm_a"],
+    "i2t_a2s": _dio["i2t_a2s"],
     "n_blocking": 2,                  # paralleled packages in series-blocking role
 }
+_sh = PARTS["shunt"]
 SHUNT = {
-    "name": "0.2 mOhm 4-terminal (WSBS8518L2000JK class)",
-    "r_ohm": 0.0002,
-    "p_cont_w": 3.0,
+    "name": f"{_sh['mfr']} {_sh['mpn']} ({_sh['package']}, {_sh['lcsc']}, Kelvin-routed)",
+    "r_ohm": _sh["r_ohm"],
+    "p_cont_w": _sh["p_cont_w"],
 }
 INA240_GAIN = 20.0
 ADC_VREF = 3.0             # ADS7042 ref = 3.0V rail (buffered)

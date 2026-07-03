@@ -8,13 +8,11 @@ Coil model: L=12.406uH, R_total=0.1102Ohm (same values the simulation uses).
 
 | Bank | regime | zeta | I_pk | t_pk | pulse | E | I2t | FET dTj (shared/fault) | pour dT |
 |------|--------|------|------|------|-------|---|-----|------------------------|---------|
-| 470uF | underdamped | 0.34 | 237A | 99us | 0.26ms | 0.8J | 6.9 A^2s | 4.5K / 40K | 0.00K |
-| 1000uF | underdamped | 0.49 | 296A | 135us | 0.40ms | 1.8J | 15.9 A^2s | 6.5K / 59K | 0.01K |
-| 2200uF | underdamped | 0.73 | 357A | 182us | 0.76ms | 4.0J | 35.9 A^2s | 7.8K / 70K | 0.02K |
-| 4400uF | overdamped | 1.04 | 405A | 231us | 1.13ms | 7.9J | 71.5 A^2s | 10.5K / 95K | 0.05K |
-| 4700uF | overdamped | 1.07 | 410A | 236us | 1.13ms | 8.5J | 76.1 A^2s | 11.2K / 101K | 0.05K |
-| 8800uF | overdamped | 1.47 | 447A | 287us | 1.13ms | 15.8J | 127.8 A^2s | 18.8K / 170K | 0.08K |
-| 10000uF | overdamped | 1.56 | 453A | 298us | 1.13ms | 18.0J | 139.1 A^2s | 20.5K / 185K | 0.09K |
+| 2200uF | underdamped | 0.73 | 357A | 182us | 0.76ms | 4.0J | 35.9 A^2s | 3.8K / 34K | 0.02K |
+| 4400uF | overdamped | 1.04 | 405A | 231us | 1.13ms | 7.9J | 71.5 A^2s | 5.1K / 46K | 0.05K |
+| 6600uF | overdamped | 1.27 | 431A | 263us | 1.13ms | 11.9J | 102.8 A^2s | 7.3K / 66K | 0.07K |
+| 8800uF | overdamped | 1.47 | 447A | 287us | 1.13ms | 15.8J | 127.8 A^2s | 9.1K / 82K | 0.08K |
+| 11000uF | overdamped | 1.64 | 458A | 306us | 1.13ms | 19.8J | 147.4 A^2s | 10.5K / 94K | 0.09K |
 
 Baseline population: **4400uF** (2x 2200uF snap-in).
 
@@ -22,17 +20,17 @@ Baseline population: **4400uF** (2x 2200uF snap-in).
 
 | Check | Detail | Result |
 |-------|--------|--------|
-| Worst-case peak within switch design point | I_pk 453A <= 600A design point | PASS |
-| Per-FET pulsed current (shared) | 151A/device <= IDM 400A (3x Infineon IPB083N15N5 (D2PAK, 150V)) | PASS |
-| FET junction rise, shared conduction | dTj 20.5K < 50K | PASS |
-| FET junction rise, single-device fault (baseline bank) | dTj 94.9K < 150K at 4400uF (extreme-bank fault case: 185K — info only, requires all FETs functional) | PASS |
-| Blocking diode I2t margin | pulse I2t/pkg 35 A^2s, rating 970 A^2s (>=10x) | PASS |
-| Shunt pulse energy | 27.8 mJ per shot (peak 41W for 1.1ms), continuous rating 3.0W | PASS |
+| Worst-case peak within switch design point | I_pk 458A <= 600A design point | PASS |
+| Per-FET pulsed current (shared) | 153A/device <= IDM 760A (3x SCILICON SFT040N150C3 (TOLL, 150V, C42395334)) | PASS |
+| FET junction rise, shared conduction | dTj 10.5K < 50K | PASS |
+| FET junction rise, single-device fault (baseline bank) | dTj 45.7K < 150K at 4400uF (extreme-bank fault case: 94K — info only, requires all FETs functional) | PASS |
+| Blocking diode I2t margin | pulse I2t/pkg 37 A^2s, rating 1012 A^2s (>=10x) | PASS |
+| Shunt pulse energy | 29.5 mJ per shot (peak 42W for 1.1ms), continuous rating 15.0W | PASS |
 | Pulse pour adiabatic heating | dT 0.09K per shot (20mm 2oz x2, R=0.61 mOhm) | PASS |
-| ADC full scale vs worst peak | FS 750A >= 1.25 x 453A (LSB 0.18A) | PASS |
-| Charge time (largest bank) | 0.71s to 60V at 0.5A (10000uF) | PASS |
-| Dump to <5V (largest bank) | 2.5s through 100 Ohm dump | PASS |
-| Passive bleed 3-tau (largest bank) | 3tau = 204s through 7k bleed | PASS |
+| ADC full scale vs worst peak | FS 750A >= 1.25 x 458A (LSB 0.18A) | PASS |
+| Charge time (largest bank) | 0.78s to 60V at 0.5A (11000uF) | PASS |
+| Dump to <5V (largest bank) | 2.7s through 100 Ohm dump | PASS |
+| Passive bleed 3-tau (largest bank) | 3tau = 224s through 7k bleed | PASS |
 | V_bank divider inside ADC range at OVP | 3.13V at 63V bank (divider 100k/5.23k) | PASS |
 
 ## Sense chain
@@ -49,6 +47,6 @@ Baseline population: **4400uF** (2x 2200uF snap-in).
 
 ## Part constants used (verify against datasheets at order time)
 
-- FET: Infineon IPB083N15N5 (D2PAK, 150V), 3x parallel, Rds(on,hot) 12.4 mOhm, IDM 400A, Zth(1ms) 0.12 K/W
-- Diode: ST STPS41H100CG (D2PAK, 100V dual Schottky, legs paralleled), Vf 0.75V, IFSM 440A, I2t 970 A^2s
-- Shunt: 0.2 mOhm 4-terminal (WSBS8518L2000JK class)
+- FET: SCILICON SFT040N150C3 (TOLL, 150V, C42395334), 3x parallel, Rds(on,hot) 6.0 mOhm, IDM 760A, Zth(1ms) 0.12 K/W
+- Diode: YFW MBR60100DC (TO-263, 100V Schottky, C6069541), Vf 0.84V, IFSM 450A, I2t 1012 A^2s
+- Shunt: Yezhan ASR-M-7-0.2F (5930, C469442, Kelvin-routed)
