@@ -254,9 +254,13 @@ def compute_rlc_params(params: dict) -> dict:
         result["s1"] = s1
         result["s2"] = s2
 
-        # Peak current: d/dt I = 0
+        # Peak current: d/dt I = 0 -> s1*exp(s1*t) = s2*exp(s2*t)
+        # -> t_peak = ln(s2/s1)/(s1-s2). Both roots are negative with
+        # s1 > s2, so s2/s1 > 1 and t_peak > 0. (The previous ln(s1/s2)
+        # gave a negative t_peak and zeroed I_peak for every overdamped
+        # circuit.)
         if abs(s1 - s2) > 1e-12 and s1 != 0 and s2 != 0:
-            t_peak = math.log(s1 / s2) / (s1 - s2)
+            t_peak = math.log(s2 / s1) / (s1 - s2)
             if t_peak > 0:
                 I_peak = (V0 / (L * (s1 - s2))) * (math.exp(s1 * t_peak) - math.exp(s2 * t_peak))
             else:

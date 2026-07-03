@@ -111,6 +111,36 @@ def test_unit_system_force_prefactor():
     assert F_mN == pytest.approx(F_N * 1e3, rel=1e-12)
 
 
+def test_overdamped_peak_current():
+    """Overdamped analytic peak matches the numeric waveform maximum.
+
+    Regression for the ln(s1/s2) sign bug that zeroed I_peak for every
+    overdamped circuit (e.g. the 4700uF/60V SELV driver-board bank).
+    """
+    rlc = compute_rlc_params({
+        "capacitance_uF": 4700.0,
+        "charge_voltage_V": 60.0,
+        "inductance_uH": 12.4,
+        "total_resistance_ohm": 0.11,
+    })
+    assert rlc["regime"] == "overdamped"
+    assert rlc["time_to_peak_s"] > 0
+
+    # Numeric maximum over the pulse
+    n = 20000
+    t_end = rlc["effective_pulse_duration_s"]
+    I_num_max, t_num_max = max(
+        (rlc_current(i * t_end / n, rlc), i * t_end / n) for i in range(n)
+    )
+    assert I_num_max > 100.0  # sanity: hundreds of amps, not zero
+    assert rlc["peak_current_A"] == pytest.approx(I_num_max, rel=0.01)
+    assert rlc["time_to_peak_s"] == pytest.approx(t_num_max, rel=0.02)
+    # I(t_peak) from the closed form equals the reported peak
+    assert rlc_current(rlc["time_to_peak_s"], rlc) == pytest.approx(
+        rlc["peak_current_A"], rel=1e-9,
+    )
+
+
 def test_rlc_stored_energy_and_regime(rlc):
     assert rlc["regime"] == "underdamped"
     assert rlc["stored_energy_J"] == pytest.approx(0.5 * 470e-6 * 50 ** 2)
