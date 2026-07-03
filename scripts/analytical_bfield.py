@@ -69,6 +69,13 @@ def solenoid_field(r: float, z: float, coil_params: dict) -> tuple[float, float]
     The solenoid is centered at origin, extending from -L/2 to L/2 along z-axis.
     Uses the mean coil radius = (inner + outer) / 2.
 
+    NOTE (model inconsistency, documented in hardware/README.md): this
+    places every turn at R_mean = (inner+outer)/2 = 15mm for the default
+    config, while the winding/inductance model (coil_physics.py,
+    rlc_circuit.py) assumes a single layer on the 12mm inner former
+    (wire centers ~12.4mm). Physical builds should match THIS field
+    geometry (wire centers at R_mean) and reconcile L/R by measurement.
+
     Args:
         r: radial distance (mm)
         z: axial position (mm)

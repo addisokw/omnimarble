@@ -46,6 +46,57 @@ the full safe/unsafe sweep table is in `design-calcs.md`.
 Using this coil keeps hardware runs directly comparable to Kit runs
 (`config/coil_params.json` is the shared source of truth).
 
+### KNOWN MODEL INCONSISTENCY (affects how you build the coil)
+
+The simulation is internally inconsistent about where the windings sit:
+
+- The **field model** (`analytical_bfield.solenoid_field`, which the PINN
+  was trained on and the launch force derives from) places all 30 turns
+  at a **single 15.0 mm radius** — the mean of config's inner 12 / outer
+  18 mm.
+- The **circuit model** (Wheeler inductance + winding resistance in
+  `coil_physics.py` / `rlc_circuit.py`) assumes a single layer of 0.8 mm
+  wire on a 12 mm former (wire centers ~12.4 mm), which is where config's
+  persisted `inductance_uH = 12.406` and `resistance_ohm = 0.0802` come
+  from.
+
+No physical coil satisfies both. **Resolution: build to the FIELD
+geometry** (that is what the PINN/force model is being validated
+against), then reconcile the circuit side by measurement — the config
+accepts measured `inductance_uH` / `resistance_ohm` and the RLC model
+uses whatever is there. Building at 12 mm instead would bias the field
+test: closer windings give a measurably stronger on-axis field than the
+model predicts.
+
+### Coil build sheet — experiment #1 (demo coil, field-geometry build)
+
+| Item | Spec |
+|---|---|
+| Former | Rigid tube/bobbin, **29.2 mm outside diameter** (0.8 mm wire centers land at 15.0 mm radius), 30 mm winding window between flanges |
+| Wire | 0.8 mm (AWG20) enameled magnet wire, ~3 m incl. leads |
+| Turns | **30 turns, single layer, one direction** |
+| Spacing | **Evenly spread over the full 30.0 mm** (1.0 mm pitch with small gaps, NOT close-wound — the model places loops evenly over the length; close-winding compresses to ~26 mm and shifts the field profile) |
+| Leads | Short and heavy (>=AWG16 or doubled), crimped ring lugs to J5 |
+
+Winding tips: score/print 1.0 mm-pitch guide grooves on the former,
+secure the ends (CA glue) before the winding relaxes, leave 100 mm tails.
+
+**Verify after winding** (LCR meter ~1 kHz + milliohm measurement), then
+**write the measured values into `config/coil_params.json`** so sim and
+hardware run identical circuit numbers:
+
+| Quantity | Expected (field-geometry build) | Config's current value |
+|---|---|---|
+| Inductance | **~17.3 uH** (Wheeler at 15 mm) | 12.406 uH (12.4 mm assumption) |
+| R_dc | **~97 mOhm** (2.83 m of AWG20) | 80.2 mOhm |
+| R_total w/ leads | ~125–130 mOhm | 110.2 mOhm |
+| Envelope check | 127 mOhm >= 90 mOhm, 17 uH >= 1 uH — inside; worst-case pulse ~430 A vs the 600 A design point | — |
+
+### Experiment #2 (after #1 validates the model)
+
+Wind the optimizer-recommended coil below; its predicted **+1.0 m/s
+boost is itself a falsifiable prediction** of the digital twin.
+
 ### Optimizer-recommended coil for THIS board (55 V / 600 A constrained)
 
 `uv run python scripts/optimize_coil_design.py --max-voltage 55 --max-current 600`

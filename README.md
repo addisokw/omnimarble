@@ -330,6 +330,14 @@ All physical parameters live in `config/coil_params.json`:
 
 The Kit extension reads this JSON as the primary source of truth. UI fields in Kit override individual values at runtime.
 
+**Physical-build note:** the persisted `inductance_uH`/`resistance_ohm`
+derive from a 12mm-former winding assumption, while the field model (and
+the PINN trained on it) places the windings at R_mean = 15mm — no single
+physical coil satisfies both. Build real coils to the field geometry and
+overwrite these two values with LCR-measured ones; see
+`hardware/README.md` ("Supported coils" / build sheet) for the full
+analysis.
+
 ### Getting a stronger launch
 
 The default 50V/470uF circuit stores only 0.59J — at 50V the EM force barely
