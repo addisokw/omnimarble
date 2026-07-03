@@ -1,0 +1,6867 @@
+(kicad_sch
+	(version 20251024)
+	(generator "omnimarble_gen")
+	(generator_version "10.0")
+	(uuid "95a69ab1-6b21-4c02-81e5-444bae514e06")
+	(paper "A3")
+	(title_block
+		(title "omnimarble-driver / pulse_switch")
+		(company "OmniMarble")
+	)
+	(lib_symbols
+		(symbol "74xGxx:74LVC1G08"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "U"
+				(at -5.08 7.62 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "74LVC1G08"
+				(at 7.62 -7.62 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" "https://www.ti.com/lit/ds/symlink/sn74lvc1g08.pdf"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Single AND Gate, Low-Voltage CMOS"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "Single Gate AND LVC CMOS"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "SOT?23* Texas?R-PDSO-G5?DCK* Texas?R-PDSO-N5?DRL* Texas?X2SON*0.8x0.8mm*P0.48mm*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "74LVC1G08_0_1"
+				(arc
+					(start 0 5.08)
+					(mid 5.0579 0)
+					(end 0 -5.08)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 -5.08)
+						(xy -7.62 -5.08)
+						(xy -7.62 5.08)
+						(xy 0 5.08)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(symbol "74LVC1G08_1_1"
+				(pin input line
+					(at -15.24 2.54 0)
+					(length 7.62)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -15.24 -2.54 0)
+					(length 7.62)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0 -10.16 90)
+					(length 5.08)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 12.7 0 180)
+					(length 7.62)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0 10.16 270)
+					(length 5.08)
+					(name "VCC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Connector:TestPoint"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0.762)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "TP"
+				(at 0 6.858 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "TestPoint"
+				(at 0 5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 5.08 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 5.08 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "test point"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "test point tp"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "Pin* Test*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "TestPoint_0_1"
+				(circle
+					(center 0 3.302)
+					(radius 0.762)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "TestPoint_1_1"
+				(pin passive line
+					(at 0 0 90)
+					(length 2.54)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Connector_Generic:Conn_01x02"
+			(pin_names
+				(offset 1.016)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "J"
+				(at 0 2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Conn_01x02"
+				(at 0 -5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "connector"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "Connector*:*_1x??_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "Conn_01x02_1_1"
+				(rectangle
+					(start -1.27 1.27)
+					(end 1.27 -3.81)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(rectangle
+					(start -1.27 0.127)
+					(end 0 -0.127)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 -2.413)
+					(end 0 -2.667)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(pin passive line
+					(at -5.08 0 0)
+					(length 3.81)
+					(name "Pin_1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 -2.54 0)
+					(length 3.81)
+					(name "Pin_2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Connector_Generic:Conn_01x03"
+			(pin_names
+				(offset 1.016)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "J"
+				(at 0 5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Conn_01x03"
+				(at 0 -5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "connector"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "Connector*:*_1x??_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "Conn_01x03_1_1"
+				(rectangle
+					(start -1.27 3.81)
+					(end 1.27 -3.81)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(rectangle
+					(start -1.27 2.667)
+					(end 0 2.413)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 0.127)
+					(end 0 -0.127)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 -2.413)
+					(end 0 -2.667)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(pin passive line
+					(at -5.08 2.54 0)
+					(length 3.81)
+					(name "Pin_1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 0 0)
+					(length 3.81)
+					(name "Pin_2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 -2.54 0)
+					(length 3.81)
+					(name "Pin_3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Device:C"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0.254)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "C"
+				(at 0.635 2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "C"
+				(at 0.635 -2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" ""
+				(at 0.9652 -3.81 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Unpolarized capacitor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "cap capacitor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "C_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "C_0_1"
+				(polyline
+					(pts
+						(xy -2.032 0.762)
+						(xy 2.032 0.762)
+					)
+					(stroke
+						(width 0.508)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.032 -0.762)
+						(xy 2.032 -0.762)
+					)
+					(stroke
+						(width 0.508)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "C_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 2.794)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 2.794)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Device:D_Zener"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 1.016)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "D"
+				(at 0 2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "D_Zener"
+				(at 0 -2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Zener diode"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "diode"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "TO-???* *_Diode_* *SingleDiode* D_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "D_Zener_0_1"
+				(polyline
+					(pts
+						(xy -1.27 -1.27)
+						(xy -1.27 1.27)
+						(xy -0.762 1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 0)
+						(xy -1.27 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 -1.27)
+						(xy 1.27 1.27)
+						(xy -1.27 0)
+						(xy 1.27 -1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "D_Zener_1_1"
+				(pin passive line
+					(at -3.81 0 0)
+					(length 2.54)
+					(name "K"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 3.81 0 180)
+					(length 2.54)
+					(name "A"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Device:R"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "R"
+				(at 2.032 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "R"
+				(at 0 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at -1.778 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Resistor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "R res resistor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "R_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "R_0_1"
+				(rectangle
+					(start -1.016 -2.54)
+					(end 1.016 2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "R_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 1.27)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 1.27)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Driver_FET:UCC27524D"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "U"
+				(at -7.62 8.89 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "UCC27524D"
+				(at 1.27 8.89 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm"
+				(at 0 -8.89 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" "https://www.ti.com/lit/ds/symlink/ucc27524.pdf"
+				(at 0 -2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Dual 5A MOSFET driver, 4.5V..18V supply, non-inverting, SOIC-8"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "high-speed low-side negative-input-voltage-capability"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "*SOIC*3.9x4.9mm*P1.27mm*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "UCC27524D_0_1"
+				(rectangle
+					(start -7.62 7.62)
+					(end 7.62 -7.62)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(symbol "UCC27524D_1_1"
+				(pin input line
+					(at -10.16 5.08 0)
+					(length 2.54)
+					(name "ENA"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -10.16 2.54 0)
+					(length 2.54)
+					(name "INA"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0 -10.16 90)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -10.16 -2.54 0)
+					(length 2.54)
+					(name "INB"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 10.16 -2.54 180)
+					(length 2.54)
+					(name "OUTB"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0 10.16 270)
+					(length 2.54)
+					(name "V_{DD}"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 10.16 2.54 180)
+					(length 2.54)
+					(name "OUTA"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -10.16 -5.08 0)
+					(length 2.54)
+					(name "ENB"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "8"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Transistor_FET:Q_NMOS_GDS"
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "Q"
+				(at 5.08 1.905 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "Q_NMOS_GDS"
+				(at 5.08 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" ""
+				(at 5.08 2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "N-MOSFET transistor, gate/drain/source"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "transistor NMOS N-MOS N-MOSFET"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "Q_NMOS_GDS_0_1"
+				(polyline
+					(pts
+						(xy 0.254 1.905)
+						(xy 0.254 -1.905)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.254 0)
+						(xy -2.54 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.762 2.286)
+						(xy 0.762 1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.762 0.508)
+						(xy 0.762 -0.508)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.762 -1.27)
+						(xy 0.762 -2.286)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.762 -1.778)
+						(xy 3.302 -1.778)
+						(xy 3.302 1.778)
+						(xy 0.762 1.778)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.016 0)
+						(xy 2.032 0.381)
+						(xy 2.032 -0.381)
+						(xy 1.016 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(circle
+					(center 1.651 0)
+					(radius 2.794)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.54 2.54)
+						(xy 2.54 1.778)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 2.54 1.778)
+					(radius 0.254)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(circle
+					(center 2.54 -1.778)
+					(radius 0.254)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.54 -2.54)
+						(xy 2.54 0)
+						(xy 0.762 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.921 0.381)
+						(xy 3.683 0.381)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 3.302 0.381)
+						(xy 2.921 -0.254)
+						(xy 3.683 -0.254)
+						(xy 3.302 0.381)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "Q_NMOS_GDS_1_1"
+				(pin input line
+					(at -5.08 0 0)
+					(length 2.54)
+					(name "G"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 2.54 5.08 270)
+					(length 2.54)
+					(name "D"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 2.54 -5.08 90)
+					(length 2.54)
+					(name "S"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "power:GND"
+			(power global)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "#PWR"
+				(at 0 -6.35 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "GND"
+				(at 0 -3.81 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "global power"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "GND_0_1"
+				(polyline
+					(pts
+						(xy 0 0)
+						(xy 0 -1.27)
+						(xy 1.27 -1.27)
+						(xy 0 -2.54)
+						(xy -1.27 -1.27)
+						(xy 0 -1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "GND_1_1"
+				(pin power_in line
+					(at 0 0 270)
+					(length 0)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "power:PWR_FLAG"
+			(power global)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "#FLG"
+				(at 0 1.905 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "PWR_FLAG"
+				(at 0 3.81 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Special symbol for telling ERC where power comes from"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "flag power"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "PWR_FLAG_0_0"
+				(pin power_out line
+					(at 0 0 90)
+					(length 0)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "PWR_FLAG_0_1"
+				(polyline
+					(pts
+						(xy 0 0)
+						(xy 0 1.27)
+						(xy -1.016 1.905)
+						(xy 0 2.54)
+						(xy 1.016 1.905)
+						(xy 0 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+	)
+	(text "Pulse switch: 3x SFT040N150C3, UCC27524A drive, ARM interlock"
+		(exclude_from_sim no)
+		(at 30 20 0)
+		(effects
+			(font
+				(size 3 3)
+			)
+		)
+		(uuid "5c4f0937-7c87-4f18-9bf2-25e928585595")
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x02")
+		(at 39.37 59.69 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "180083b1-047d-4f09-936a-ae70700b9d3d")
+		(property "Reference" "J3"
+			(at 39.37 57.15 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "E-STOP-NC"
+			(at 39.37 62.23 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
+			(at 39.37 59.69 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 39.37 59.69 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 39.37 59.69 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "2abc923f-ba67-4578-a7ed-d1ed076a09b0")
+		)
+		(pin "2"
+			(uuid "b5150322-460b-4af6-a06c-0829748b667f")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "J3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 34.29 59.69)
+			(xy 31.75 59.69)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c54d26a9-cde5-41be-8659-2d7505349257")
+	)
+	(global_label "+12V"
+		(shape passive)
+		(at 31.75 59.69 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "489077e2-d118-443d-b841-69c3c243ba8a")
+	)
+	(wire
+		(pts
+			(xy 34.29 62.23)
+			(xy 31.75 62.23)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "98169da6-2cd8-4bed-95f8-ef0d39d4159b")
+	)
+	(global_label "ESTOP_OK"
+		(shape passive)
+		(at 31.75 62.23 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "a0b3b1ab-666f-4120-aec2-cd2a3cd711d5")
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x03")
+		(at 69.85 59.69 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "d29c64c3-1292-4245-ace3-1937b12a581e")
+		(property "Reference" "J4"
+			(at 69.85 57.15 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "ARM-KEY"
+			(at 69.85 62.23 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical"
+			(at 69.85 59.69 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 69.85 59.69 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 69.85 59.69 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "3be6cc72-cd7e-4505-8532-414b1c28ca53")
+		)
+		(pin "2"
+			(uuid "d1e532c5-cd0a-4626-983a-d4bb61b5eefd")
+		)
+		(pin "3"
+			(uuid "166eb150-60f1-4ae7-a667-7ac299ae573e")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "J4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 64.77 57.15)
+			(xy 62.23 57.15)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "57c3bc52-0565-480a-9362-6eee92450a21")
+	)
+	(global_label "ESTOP_OK"
+		(shape passive)
+		(at 62.23 57.15 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "ce2c585d-9246-495b-b06f-daceedb9121f")
+	)
+	(wire
+		(pts
+			(xy 64.77 59.69)
+			(xy 62.23 59.69)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "13237e84-491e-43a6-8c62-b2a73316e72f")
+	)
+	(global_label "+12V_SW"
+		(shape passive)
+		(at 62.23 59.69 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "318a4ecf-2cc0-4978-863f-ec4c751d3465")
+	)
+	(wire
+		(pts
+			(xy 64.77 62.23)
+			(xy 62.23 62.23)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "904673a5-ad80-4723-a5d7-365cd6e79cfb")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 62.23 62.23 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "3e000dbd-8d84-41f3-a062-681421f934a5")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 100.33 49.53 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "050db3c1-17be-412a-b24c-c1f895bb9d23")
+		(property "Reference" "R26"
+			(at 100.33 46.99 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "27k"
+			(at 100.33 52.07 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 100.33 49.53 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 100.33 49.53 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 100.33 49.53 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "af743feb-0297-4c0d-b1f7-a7b8b140e5f7")
+		)
+		(pin "2"
+			(uuid "04280f5a-ad35-4d69-8c55-e4340af0b3e2")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "R26")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 100.33 45.72)
+			(xy 100.33 43.18)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b58d9414-0bf5-4a2d-a7b4-37f5ecdc065c")
+	)
+	(global_label "ESTOP_OK"
+		(shape passive)
+		(at 100.33 43.18 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "5d9872ea-acae-4bf9-9171-b7ff9ad3cedc")
+	)
+	(wire
+		(pts
+			(xy 100.33 53.34)
+			(xy 100.33 55.88)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f5d92b3e-86ac-4975-9a0e-9284d9d9e787")
+	)
+	(global_label "ESTOP_SENSE"
+		(shape passive)
+		(at 100.33 55.88 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "2edf1682-1ef8-47ce-aa98-c615841e04af")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 100.33 69.85 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ddbc29eb-8e64-4ffa-a0f6-98b540788817")
+		(property "Reference" "R27"
+			(at 100.33 67.31 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10k"
+			(at 100.33 72.39 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 100.33 69.85 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 100.33 69.85 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 100.33 69.85 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C25804"
+			(at 100.33 69.85 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "7616f9ef-5cfb-436f-8ba7-bf3f50833013")
+		)
+		(pin "2"
+			(uuid "5045c661-7504-4b48-97af-8119d98622b4")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "R27")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 100.33 66.04)
+			(xy 100.33 63.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7d33d7ab-d04e-4259-ad19-ddcfbc8e0e34")
+	)
+	(global_label "ESTOP_SENSE"
+		(shape passive)
+		(at 100.33 63.5 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "f1962ccc-5e19-4f50-846e-74b82d51ad10")
+	)
+	(wire
+		(pts
+			(xy 100.33 73.66)
+			(xy 100.33 76.2)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6d68cc6e-03cd-45d4-96af-c5c619c02a4d")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 100.33 76.2 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "1040d20d-5910-487b-b0b0-9e7e4bbfc723")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 124.46 49.53 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "48e47730-5e22-492e-9259-afaed4efb199")
+		(property "Reference" "R28"
+			(at 124.46 46.99 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "27k"
+			(at 124.46 52.07 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 124.46 49.53 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 124.46 49.53 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 124.46 49.53 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "2e266dd1-266f-4a68-8e76-f9919dbfed6d")
+		)
+		(pin "2"
+			(uuid "c50ba98e-8083-4593-a928-026b8342263a")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "R28")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 124.46 45.72)
+			(xy 124.46 43.18)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "191b32f5-3f0f-48df-b20e-ee3b4b90a055")
+	)
+	(global_label "+12V_SW"
+		(shape passive)
+		(at 124.46 43.18 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "18eb1367-4730-44d0-bd3f-0391c0dcbcf9")
+	)
+	(wire
+		(pts
+			(xy 124.46 53.34)
+			(xy 124.46 55.88)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "354b5083-f53d-43b8-8522-789f6b5135bf")
+	)
+	(global_label "ARM_SENSE"
+		(shape passive)
+		(at 124.46 55.88 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "a80a8c3c-1392-47d2-b576-73efcc664ddf")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 124.46 69.85 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "8dce4f21-6c9f-410e-aef0-90ce219b8b13")
+		(property "Reference" "R29"
+			(at 124.46 67.31 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10k"
+			(at 124.46 72.39 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 124.46 69.85 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 124.46 69.85 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 124.46 69.85 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C25804"
+			(at 124.46 69.85 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "d0b44728-5fe9-4faf-a978-e3f330056c57")
+		)
+		(pin "2"
+			(uuid "17d42272-6935-4c64-aa40-370338e3fb73")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "R29")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 124.46 66.04)
+			(xy 124.46 63.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ad1d9fcf-fec9-4164-a39a-ec93743c75aa")
+	)
+	(global_label "ARM_SENSE"
+		(shape passive)
+		(at 124.46 63.5 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "6b7b9b80-74b5-46da-b0ba-821cc8f7743f")
+	)
+	(wire
+		(pts
+			(xy 124.46 73.66)
+			(xy 124.46 76.2)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fea8d03d-db06-47ea-885c-176dd565cb38")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 124.46 76.2 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "b03dd737-a8e8-45e3-a729-ee4c7433ed7f")
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 149.86 59.69 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "2a88e03f-8330-4ba6-8f75-38b95df579c6")
+		(property "Reference" "C18"
+			(at 149.86 57.15 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10u"
+			(at 149.86 62.23 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+			(at 149.86 59.69 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 149.86 59.69 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 149.86 59.69 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C15850"
+			(at 149.86 59.69 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "642d2d2e-c8ef-4fcd-863e-ad3621a41407")
+		)
+		(pin "2"
+			(uuid "dc0cc7d3-fd03-49e8-8562-5fd6ccc8cf77")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "C18")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 149.86 55.88)
+			(xy 149.86 53.34)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "41f15462-3f27-4059-90f7-6c478a72e7c0")
+	)
+	(global_label "+12V_SW"
+		(shape passive)
+		(at 149.86 53.34 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "a06a82dc-8577-43e8-bcd0-6ad01ec2323f")
+	)
+	(wire
+		(pts
+			(xy 149.86 63.5)
+			(xy 149.86 66.04)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f7a3a484-9326-4bf8-965b-808708f73bd0")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 149.86 66.04 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "0d9fae77-64c9-4cdd-9b20-2f65d3aa04c5")
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 165.1 59.69 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "3cab59cc-d27e-416e-bf31-142c9f195a46")
+		(property "Reference" "C19"
+			(at 165.1 57.15 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100u-35V"
+			(at 165.1 62.23 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:CP_Elec_10x10.5"
+			(at 165.1 59.69 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 165.1 59.69 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 165.1 59.69 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "d9a3b44b-2626-4bb9-b706-6903a81bc91e")
+		)
+		(pin "2"
+			(uuid "7b699ec0-d049-4910-a88b-62a69b8058d8")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "C19")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 165.1 55.88)
+			(xy 165.1 53.34)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "483e9ae1-3515-433b-9110-52c2b11eb6c0")
+	)
+	(global_label "+12V_SW"
+		(shape passive)
+		(at 165.1 53.34 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "fcf6679c-1cbc-4e27-9f87-f575803b09f2")
+	)
+	(wire
+		(pts
+			(xy 165.1 63.5)
+			(xy 165.1 66.04)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "38a876a9-e0b0-41dd-bccf-c033b95d7bb8")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 165.1 66.04 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "59050a02-f3f2-445b-b4ae-eded8c100fe5")
+	)
+	(symbol
+		(lib_id "74xGxx:74LVC1G08")
+		(at 59.69 110.49 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "e838388b-0199-4d87-9637-7aadc536da0a")
+		(property "Reference" "U6"
+			(at 59.69 107.95 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "74LVC1G08"
+			(at 59.69 113.03 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-353_SC-70-5"
+			(at 59.69 110.49 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 59.69 110.49 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 59.69 110.49 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C7832"
+			(at 59.69 110.49 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "b4c2f580-5df5-4a06-9ece-35d647e0d5e5")
+		)
+		(pin "2"
+			(uuid "a032cf9a-8d23-4432-afc3-34b42c0aa08a")
+		)
+		(pin "3"
+			(uuid "195c04c6-2da9-402f-9be5-12b3f66daab5")
+		)
+		(pin "4"
+			(uuid "9974568a-4cf9-474f-9b0b-c19d567e3cf6")
+		)
+		(pin "5"
+			(uuid "c9253985-9c6a-4686-874e-1a5dedc5e021")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "U6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 44.45 107.95)
+			(xy 41.91 107.95)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "028bd695-7e9c-400a-b714-ed77a1f1cebf")
+	)
+	(global_label "MCU_FIRE"
+		(shape passive)
+		(at 41.91 107.95 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "de1bc33e-3ec7-4fd0-b916-29ad74f01ac5")
+	)
+	(wire
+		(pts
+			(xy 44.45 113.03)
+			(xy 41.91 113.03)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "448ad8c5-8092-4a29-9e23-2a67ea1c1010")
+	)
+	(global_label "ARM_SENSE"
+		(shape passive)
+		(at 41.91 113.03 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "68cdb5a9-370a-4196-88fb-5a224eb32b8a")
+	)
+	(wire
+		(pts
+			(xy 72.39 110.49)
+			(xy 74.93 110.49)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "23604e33-9f08-49f7-ac87-f6d48d988e0c")
+	)
+	(global_label "FIRE_GATED"
+		(shape passive)
+		(at 74.93 110.49 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "227d51b7-631a-4c86-a4c0-b5feba7b7c18")
+	)
+	(wire
+		(pts
+			(xy 59.69 100.33)
+			(xy 59.69 97.79)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a69555d1-ef4c-4f39-a151-8b58d7ef31ab")
+	)
+	(global_label "3V3"
+		(shape passive)
+		(at 59.69 97.79 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "2cb8f766-069c-463e-92d5-61254f8150e9")
+	)
+	(wire
+		(pts
+			(xy 59.69 120.65)
+			(xy 59.69 123.19)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "decef4c5-ed97-43e7-a3b4-9c9f723b023f")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 59.69 123.19 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "2f831de4-f925-4906-905f-1e5337f13958")
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 85.09 110.49 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "5ee97e62-2b6a-45a6-a7db-b756cf8aeff0")
+		(property "Reference" "C20"
+			(at 85.09 107.95 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100n"
+			(at 85.09 113.03 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 85.09 110.49 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 85.09 110.49 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 85.09 110.49 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C14663"
+			(at 85.09 110.49 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "c6980110-55be-4e68-a43f-ff9df6da521b")
+		)
+		(pin "2"
+			(uuid "1f76564a-a54b-41a0-8dbb-c3260388e4fe")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "C20")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 85.09 106.68)
+			(xy 85.09 104.14)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "536dc5b9-0948-423a-a552-635df10541c4")
+	)
+	(global_label "3V3"
+		(shape passive)
+		(at 85.09 104.14 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "49f6387a-4344-44da-903b-47f4bbd954a2")
+	)
+	(wire
+		(pts
+			(xy 85.09 114.3)
+			(xy 85.09 116.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a7364e09-5a09-4245-ac36-ba3bbb2d34f8")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 85.09 116.84 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "2ad551ee-5dc3-4089-a40c-d0bec32e6950")
+	)
+	(symbol
+		(lib_id "Driver_FET:UCC27524D")
+		(at 59.69 149.86 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "10e99c71-a49b-4a00-b8a0-e0d258fed6a7")
+		(property "Reference" "U7"
+			(at 59.69 147.32 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "UCC27524A"
+			(at 59.69 152.4 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm"
+			(at 59.69 149.86 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 59.69 149.86 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 59.69 149.86 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C185857"
+			(at 59.69 149.86 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "620f8650-6989-4fa9-bbe1-f3ef61e28ada")
+		)
+		(pin "2"
+			(uuid "0927a47c-ad32-47a2-849e-85adc3588227")
+		)
+		(pin "3"
+			(uuid "6d98cd02-c161-4730-ac4e-add2e19605d9")
+		)
+		(pin "4"
+			(uuid "0903b21a-bd4b-4c6e-a32c-acea12f6601b")
+		)
+		(pin "5"
+			(uuid "7489c716-ec66-42c0-bc9c-15b76c039d34")
+		)
+		(pin "6"
+			(uuid "4fdcd2a1-6976-4feb-8200-9f48ce4885a2")
+		)
+		(pin "7"
+			(uuid "decaee9c-19eb-45d1-a804-86e676fd5722")
+		)
+		(pin "8"
+			(uuid "684db0c5-854c-43a9-87a3-efceccec329c")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "U7")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 49.53 144.78)
+			(xy 46.99 144.78)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "94d4454b-8e84-4dc8-80fd-65939d21ce43")
+	)
+	(global_label "+12V_SW"
+		(shape passive)
+		(at 46.99 144.78 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "d5da57f1-420b-4b15-9845-d1c629a7605b")
+	)
+	(wire
+		(pts
+			(xy 49.53 154.94)
+			(xy 46.99 154.94)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "42372212-eeea-4f69-93fc-1176f78126d4")
+	)
+	(global_label "+12V_SW"
+		(shape passive)
+		(at 46.99 154.94 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "9dabaaeb-0bb5-4b89-a152-9a8fa6ba8db0")
+	)
+	(wire
+		(pts
+			(xy 49.53 147.32)
+			(xy 46.99 147.32)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9cb63bb4-f332-4bec-9d94-9ce44679a6b0")
+	)
+	(global_label "FIRE_GATED"
+		(shape passive)
+		(at 46.99 147.32 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "7ae09651-d307-486f-a755-1c6c80f3d782")
+	)
+	(wire
+		(pts
+			(xy 49.53 152.4)
+			(xy 46.99 152.4)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "68eda0a4-8b44-4fb1-8d8f-6ff259819b24")
+	)
+	(global_label "FIRE_GATED"
+		(shape passive)
+		(at 46.99 152.4 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "8ca10498-86ae-4702-9f3e-8f3afad48f4f")
+	)
+	(wire
+		(pts
+			(xy 59.69 139.7)
+			(xy 59.69 137.16)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1f78dda7-a6fa-429a-86f8-5f31d892177d")
+	)
+	(global_label "+12V_SW"
+		(shape passive)
+		(at 59.69 137.16 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "1800a8aa-e785-423b-aa8c-61b4061b7204")
+	)
+	(wire
+		(pts
+			(xy 59.69 160.02)
+			(xy 59.69 162.56)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "40648e0a-98ed-4d96-927c-a25b230e44bc")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 59.69 162.56 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "81995bf2-4d2e-4f40-bea8-42a9151ce3be")
+	)
+	(wire
+		(pts
+			(xy 69.85 147.32)
+			(xy 72.39 147.32)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "655cea65-77ff-4f42-9f79-6542b0acbbdf")
+	)
+	(global_label "DRV1"
+		(shape passive)
+		(at 72.39 147.32 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "4c2e8bba-3b32-454a-b58d-fe361e7635e8")
+	)
+	(wire
+		(pts
+			(xy 69.85 152.4)
+			(xy 72.39 152.4)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "19c4c826-1c22-4c4c-b16b-496b496d7d09")
+	)
+	(global_label "DRV2"
+		(shape passive)
+		(at 72.39 152.4 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "5c89e0d7-c7e6-469f-b619-4583729ffbdc")
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 80.01 144.78 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "a8804aa8-4289-48d4-8644-ed19ede2b889")
+		(property "Reference" "C21"
+			(at 80.01 142.24 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "1u"
+			(at 80.01 147.32 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 80.01 144.78 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 80.01 144.78 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 80.01 144.78 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C15849"
+			(at 80.01 144.78 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "42220a2c-d371-4f21-b79d-e4e60436ceaf")
+		)
+		(pin "2"
+			(uuid "b58dbc63-089f-478c-a6af-6791345891e9")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "C21")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 80.01 140.97)
+			(xy 80.01 138.43)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "85a7b2c8-e15c-4fe3-b5d3-0adb9a152c1b")
+	)
+	(global_label "+12V_SW"
+		(shape passive)
+		(at 80.01 138.43 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "e21b1483-1cdf-4ef5-b33d-a1b0d6ae59b3")
+	)
+	(wire
+		(pts
+			(xy 80.01 148.59)
+			(xy 80.01 151.13)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e8706889-f70e-457c-bfef-6cb60002f51e")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 80.01 151.13 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "a233e18c-f831-4427-a99d-4be6d947f082")
+	)
+	(symbol
+		(lib_id "Driver_FET:UCC27524D")
+		(at 129.54 149.86 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "74ee42b7-0ea8-4bfc-879f-45ce9f562492")
+		(property "Reference" "U8"
+			(at 129.54 147.32 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "UCC27524A"
+			(at 129.54 152.4 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm"
+			(at 129.54 149.86 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 129.54 149.86 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 129.54 149.86 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C185857"
+			(at 129.54 149.86 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "9f92545c-ba88-4fba-af83-0ac1c4ec4ed7")
+		)
+		(pin "2"
+			(uuid "d29d6e73-c00d-40e1-b7b1-497e99c9041a")
+		)
+		(pin "3"
+			(uuid "5804760e-9639-4010-9dc2-5fafce1488f7")
+		)
+		(pin "4"
+			(uuid "c9a92515-40cb-4c62-829f-1007c67d77c7")
+		)
+		(pin "5"
+			(uuid "22a5f8b7-80d4-4b18-8924-a1a30f2f75c7")
+		)
+		(pin "6"
+			(uuid "97c57b28-79d7-4674-b153-6639dbc537d1")
+		)
+		(pin "7"
+			(uuid "6072684b-35e3-40fc-9d3b-09f243dc6f96")
+		)
+		(pin "8"
+			(uuid "f96bfae3-af08-4f58-b0c4-fa581505e010")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "U8")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 119.38 144.78)
+			(xy 116.84 144.78)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "bc08576a-a7ad-46da-837b-7198619ad2d4")
+	)
+	(global_label "+12V_SW"
+		(shape passive)
+		(at 116.84 144.78 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "b06d5327-3d69-4bd8-a9ba-691a7d4a1f64")
+	)
+	(wire
+		(pts
+			(xy 119.38 154.94)
+			(xy 116.84 154.94)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "023bbf4b-bc4a-45ba-9749-0f5e748b2f4a")
+	)
+	(global_label "+12V_SW"
+		(shape passive)
+		(at 116.84 154.94 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "1a37f889-f222-4649-8be0-62046e588bb5")
+	)
+	(wire
+		(pts
+			(xy 119.38 147.32)
+			(xy 116.84 147.32)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f98374f7-f3d6-46e3-8d45-a854152ef901")
+	)
+	(global_label "FIRE_GATED"
+		(shape passive)
+		(at 116.84 147.32 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "747fee3f-fd72-4593-b545-d6beb2ae9dc6")
+	)
+	(wire
+		(pts
+			(xy 119.38 152.4)
+			(xy 116.84 152.4)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d3c7e627-3a94-4c85-b35d-207ff0d742c7")
+	)
+	(global_label "FIRE_GATED"
+		(shape passive)
+		(at 116.84 152.4 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "239b43cd-189e-40f9-b2da-47832a424b93")
+	)
+	(wire
+		(pts
+			(xy 129.54 139.7)
+			(xy 129.54 137.16)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cc5f2035-f5c2-4244-ad05-2af677322e72")
+	)
+	(global_label "+12V_SW"
+		(shape passive)
+		(at 129.54 137.16 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "fd2a22b8-5b5d-43fc-bcc4-0f4696fbfa9b")
+	)
+	(wire
+		(pts
+			(xy 129.54 160.02)
+			(xy 129.54 162.56)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "663721ad-5aa0-4554-8092-a36059d48e1e")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 129.54 162.56 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "78f07df2-63c5-4495-861a-3cea94b898e1")
+	)
+	(wire
+		(pts
+			(xy 139.7 147.32)
+			(xy 142.24 147.32)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "33ce59a7-9baa-42a9-8fa5-d5216fed305a")
+	)
+	(global_label "DRV3"
+		(shape passive)
+		(at 142.24 147.32 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "b53bfac3-6217-436a-87b5-3b8aefc34a00")
+	)
+	(wire
+		(pts
+			(xy 139.7 152.4)
+			(xy 142.24 152.4)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2a9a9454-7de1-46d6-854a-ee3e0af460e6")
+	)
+	(global_label "DRV_SPARE"
+		(shape passive)
+		(at 142.24 152.4 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "2b3013ee-1f21-4cd4-869a-6c37830c056b")
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 149.86 144.78 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "90acff98-d981-4ccb-88ce-3fb4c6a62b76")
+		(property "Reference" "C22"
+			(at 149.86 142.24 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "1u"
+			(at 149.86 147.32 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 149.86 144.78 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 149.86 144.78 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 149.86 144.78 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C15849"
+			(at 149.86 144.78 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "9237ae6c-4f9a-4e7d-bed8-086aed4dc3af")
+		)
+		(pin "2"
+			(uuid "5bf63832-7869-417b-adc1-b35694760e3b")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "C22")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 149.86 140.97)
+			(xy 149.86 138.43)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9f88f1fb-6fd8-4eb5-a2eb-e7ef98f2f9de")
+	)
+	(global_label "+12V_SW"
+		(shape passive)
+		(at 149.86 138.43 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "453c1db6-a67d-466c-9f3f-0871b2a2edcb")
+	)
+	(wire
+		(pts
+			(xy 149.86 148.59)
+			(xy 149.86 151.13)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e4d652ef-6a8e-456a-bedc-0d4f41f002aa")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 149.86 151.13 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "05b27966-aff7-49db-ae6a-f2c1aae43364")
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 214.63 149.86 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "2ae3eb2f-8d8a-4743-9fd3-d849421db50f")
+		(property "Reference" "TP1"
+			(at 214.63 147.32 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "DRV_SPARE"
+			(at 214.63 152.4 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_1.5x1.5mm"
+			(at 214.63 149.86 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 214.63 149.86 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 214.63 149.86 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "0b88738b-1a4e-468f-8715-3f8925903e9d")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "TP1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 214.63 149.86)
+			(xy 214.63 152.4)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2ee394f5-ea44-4575-adf7-98d48dd63c6f")
+	)
+	(global_label "DRV_SPARE"
+		(shape passive)
+		(at 214.63 152.4 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "17f86fc1-38e4-4964-844b-4e61bcd08bbd")
+	)
+	(symbol
+		(lib_id "Transistor_FET:Q_NMOS_GDS")
+		(at 49.53 209.55 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "7f883a76-c644-475a-a57a-d75247b41208")
+		(property "Reference" "Q10"
+			(at 49.53 207.01 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "SFT040N150C3"
+			(at 49.53 212.09 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "omnimarble:TOLL-8_DRAFT"
+			(at 49.53 209.55 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 49.53 209.55 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 49.53 209.55 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C42395334"
+			(at 49.53 209.55 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "2f3bf793-74f6-4407-9b84-0983ef179ce0")
+		)
+		(pin "2"
+			(uuid "5f206f63-3858-4589-9e77-6e9917a20ea5")
+		)
+		(pin "3"
+			(uuid "f6a8c440-747e-48a4-a19e-9185d462a143")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "Q10")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 44.45 209.55)
+			(xy 41.91 209.55)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f1839dc0-bb56-4392-892b-da5adc1cdc1a")
+	)
+	(global_label "QG1"
+		(shape passive)
+		(at 41.91 209.55 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "1f10f243-e42b-4887-828f-a85acc8dfe46")
+	)
+	(wire
+		(pts
+			(xy 52.07 204.47)
+			(xy 52.07 201.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9a9f4f97-da2c-4043-ba6c-ac34e5d22154")
+	)
+	(global_label "SW_DRAIN"
+		(shape passive)
+		(at 52.07 201.93 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "60e70e06-8ab0-4f13-a112-4100ba0b4303")
+	)
+	(wire
+		(pts
+			(xy 52.07 214.63)
+			(xy 52.07 217.17)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "434e2922-67d4-4ca5-8451-786f178f9777")
+	)
+	(global_label "SHUNT_HI"
+		(shape passive)
+		(at 52.07 217.17 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "2f963098-5cdf-48d6-ae75-7cd60715ee1c")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 35.56 195.58 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "c0166653-6694-4d3d-a666-8bbe951d4b17")
+		(property "Reference" "R30"
+			(at 35.56 193.04 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10R"
+			(at 35.56 198.12 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 35.56 195.58 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 35.56 195.58 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 35.56 195.58 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C22859"
+			(at 35.56 195.58 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "dbf4b5c5-6e73-4052-b0dd-e597a6abd245")
+		)
+		(pin "2"
+			(uuid "59ea587f-4ef0-4085-b806-1994771b3ebf")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "R30")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 35.56 191.77)
+			(xy 35.56 189.23)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3d98b2ac-58b3-46b7-a38e-93fa24c47db8")
+	)
+	(global_label "DRV1"
+		(shape passive)
+		(at 35.56 189.23 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "884b378b-2cc9-438c-93d6-7e804b518583")
+	)
+	(wire
+		(pts
+			(xy 35.56 199.39)
+			(xy 35.56 201.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4f9c6025-3ccd-4767-bb8b-347c712f159b")
+	)
+	(global_label "QG1"
+		(shape passive)
+		(at 35.56 201.93 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "13609321-af77-494e-8344-b48f19a100e7")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 64.77 224.79 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "6d0903ce-05ef-441d-bc84-3927c0d3a921")
+		(property "Reference" "R31"
+			(at 64.77 222.25 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10k"
+			(at 64.77 227.33 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 64.77 224.79 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 64.77 224.79 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 64.77 224.79 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C25804"
+			(at 64.77 224.79 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "30adeb6c-e6e3-4354-ba76-dd76d0397142")
+		)
+		(pin "2"
+			(uuid "719461ab-2724-4bf7-aab3-147724558584")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "R31")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 64.77 220.98)
+			(xy 64.77 218.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "db58457f-8fbe-440c-b462-01b6bac7a307")
+	)
+	(global_label "QG1"
+		(shape passive)
+		(at 64.77 218.44 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "9a41ee42-5e82-4f74-9bf3-11ee1966123e")
+	)
+	(wire
+		(pts
+			(xy 64.77 228.6)
+			(xy 64.77 231.14)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ef9835fc-71c9-4d7a-9815-e80da6e99a7b")
+	)
+	(global_label "SHUNT_HI"
+		(shape passive)
+		(at 64.77 231.14 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "e3851e9d-beb4-419f-a7b0-3e16d99dbda8")
+	)
+	(symbol
+		(lib_id "Device:D_Zener")
+		(at 64.77 245.11 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "c7e187f6-50ab-4e06-b7e8-b3a1d24b49b9")
+		(property "Reference" "D6"
+			(at 64.77 242.57 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "BZT52C15"
+			(at 64.77 247.65 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Diode_SMD:D_SOD-123"
+			(at 64.77 245.11 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 64.77 245.11 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 64.77 245.11 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C19077412"
+			(at 64.77 245.11 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "db6032d0-1522-4ca3-b471-62a2e1fbd1ed")
+		)
+		(pin "2"
+			(uuid "83442057-8aa7-4ab2-8726-0d56f8106cd8")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "D6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 60.96 245.11)
+			(xy 58.42 245.11)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "894076d1-e290-4c2e-b1f1-893d9591105c")
+	)
+	(global_label "QG1"
+		(shape passive)
+		(at 58.42 245.11 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "1b09d479-8cc0-48d6-833d-df3eeca9680b")
+	)
+	(wire
+		(pts
+			(xy 68.58 245.11)
+			(xy 71.12 245.11)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4f467838-9f6d-42f6-8854-0f207fd6a922")
+	)
+	(global_label "SHUNT_HI"
+		(shape passive)
+		(at 71.12 245.11 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "05db9cbc-7214-4bb3-88cc-05a3360d016d")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 35.56 234.95 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "cee4290a-bdcf-444d-8822-c72f7136825a")
+		(property "Reference" "R32"
+			(at 35.56 232.41 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "4.7k"
+			(at 35.56 237.49 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_2512_6332Metric"
+			(at 35.56 234.95 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 35.56 234.95 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 35.56 234.95 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C23162"
+			(at 35.56 234.95 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "94230974-175b-4113-9b47-26c204edd481")
+		)
+		(pin "2"
+			(uuid "aace899a-caa7-4e87-93c0-bd48b8383baf")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "R32")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 35.56 231.14)
+			(xy 35.56 228.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cfcebc1d-5815-43b2-a03c-40c5a997ebec")
+	)
+	(global_label "SW_DRAIN"
+		(shape passive)
+		(at 35.56 228.6 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "dfad9945-7ece-4808-8e81-19b11b89b66b")
+	)
+	(wire
+		(pts
+			(xy 35.56 238.76)
+			(xy 35.56 241.3)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "769a2a8b-adc1-4e68-ad13-86f1a77dc8fe")
+	)
+	(global_label "SNB1"
+		(shape passive)
+		(at 35.56 241.3 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "701aaf34-92df-4a8b-8d4b-fe67c879590f")
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 35.56 255.27 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "2249770a-f9b9-4699-84b6-feddef1236a1")
+		(property "Reference" "C23"
+			(at 35.56 252.73 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10n"
+			(at 35.56 257.81 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 35.56 255.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 35.56 255.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 35.56 255.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "75efafeb-dba7-4ca6-8c78-542224397539")
+		)
+		(pin "2"
+			(uuid "34da5781-3edb-41df-a35f-1f950cdb1fe9")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "C23")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 35.56 251.46)
+			(xy 35.56 248.92)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e56a2202-cc07-440d-98f9-e153efd02926")
+	)
+	(global_label "SNB1"
+		(shape passive)
+		(at 35.56 248.92 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "e7fc9eca-3d55-4f92-9669-8e4a89776a5e")
+	)
+	(wire
+		(pts
+			(xy 35.56 259.08)
+			(xy 35.56 261.62)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "047b831c-669f-472f-8b1b-7b48bb4b1ed4")
+	)
+	(global_label "SHUNT_HI"
+		(shape passive)
+		(at 35.56 261.62 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "a408ba93-2359-473d-992a-b1fbbf2779e3")
+	)
+	(symbol
+		(lib_id "Transistor_FET:Q_NMOS_GDS")
+		(at 105.41 209.55 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "5cdf4530-3384-4e74-811a-6447ce778000")
+		(property "Reference" "Q11"
+			(at 105.41 207.01 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "SFT040N150C3"
+			(at 105.41 212.09 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "omnimarble:TOLL-8_DRAFT"
+			(at 105.41 209.55 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 105.41 209.55 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 105.41 209.55 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C42395334"
+			(at 105.41 209.55 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "7fed7762-d66c-437c-8b71-cb08723f0045")
+		)
+		(pin "2"
+			(uuid "89708543-b9e3-48bc-a5e3-2b22120cab23")
+		)
+		(pin "3"
+			(uuid "fecc9087-addf-4024-abc6-49271914ffcf")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "Q11")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 100.33 209.55)
+			(xy 97.79 209.55)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ebf80fd1-ed23-424c-8ad3-028ac0f7b658")
+	)
+	(global_label "QG2"
+		(shape passive)
+		(at 97.79 209.55 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "46a646bc-5939-4911-9f1d-e72ef5af565a")
+	)
+	(wire
+		(pts
+			(xy 107.95 204.47)
+			(xy 107.95 201.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0e31928a-e533-4d96-8806-df423c2705e3")
+	)
+	(global_label "SW_DRAIN"
+		(shape passive)
+		(at 107.95 201.93 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "0af392b5-0c45-4b0d-8897-9496ee0a1b84")
+	)
+	(wire
+		(pts
+			(xy 107.95 214.63)
+			(xy 107.95 217.17)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4c1ca462-062c-4535-8364-75f87e76be98")
+	)
+	(global_label "SHUNT_HI"
+		(shape passive)
+		(at 107.95 217.17 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "d7d89e37-d794-4a07-90a6-0afb1ce0840f")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 90.17 195.58 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "658ec028-f7b2-4962-a8f4-3af2c4da78a8")
+		(property "Reference" "R33"
+			(at 90.17 193.04 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10R"
+			(at 90.17 198.12 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 90.17 195.58 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 90.17 195.58 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 90.17 195.58 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C22859"
+			(at 90.17 195.58 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "952f4a82-666d-48c2-99e3-ce721277d11d")
+		)
+		(pin "2"
+			(uuid "ea167e72-dfb7-473d-a472-df0cf088e753")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "R33")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 90.17 191.77)
+			(xy 90.17 189.23)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "325ed9d7-0d32-43d7-8837-c0293cd0538a")
+	)
+	(global_label "DRV2"
+		(shape passive)
+		(at 90.17 189.23 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "b93d0f5e-567a-4e79-b712-724bff8521e0")
+	)
+	(wire
+		(pts
+			(xy 90.17 199.39)
+			(xy 90.17 201.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "54921e99-4f9d-4725-9a02-36d4510d1bba")
+	)
+	(global_label "QG2"
+		(shape passive)
+		(at 90.17 201.93 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "b9d45b97-f81a-49a6-a8f0-7cad388f9744")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 119.38 224.79 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "2de6633c-889a-45af-aa58-dc7437a1d0d2")
+		(property "Reference" "R34"
+			(at 119.38 222.25 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10k"
+			(at 119.38 227.33 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 119.38 224.79 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 119.38 224.79 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 119.38 224.79 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C25804"
+			(at 119.38 224.79 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "0a654ee7-a45a-47a4-a825-a57f1aff0e4c")
+		)
+		(pin "2"
+			(uuid "bd1da99d-e69d-46c3-8255-2f361d94e000")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "R34")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 119.38 220.98)
+			(xy 119.38 218.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3500a0f2-a0b1-49c2-935e-aba9ec701e74")
+	)
+	(global_label "QG2"
+		(shape passive)
+		(at 119.38 218.44 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "8a1668dc-84ec-4a8b-bc56-8fe101c9476e")
+	)
+	(wire
+		(pts
+			(xy 119.38 228.6)
+			(xy 119.38 231.14)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e1724b98-1ee2-4a6a-9dc9-2d1267788643")
+	)
+	(global_label "SHUNT_HI"
+		(shape passive)
+		(at 119.38 231.14 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "8fd730f8-3d8c-4ac7-a949-2b271b8c2d92")
+	)
+	(symbol
+		(lib_id "Device:D_Zener")
+		(at 119.38 245.11 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "2bbc679f-756d-4dd5-b28f-b687f881cf5c")
+		(property "Reference" "D7"
+			(at 119.38 242.57 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "BZT52C15"
+			(at 119.38 247.65 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Diode_SMD:D_SOD-123"
+			(at 119.38 245.11 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 119.38 245.11 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 119.38 245.11 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C19077412"
+			(at 119.38 245.11 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "c3dd2db6-bbad-4db3-8b6a-0be782c48ee5")
+		)
+		(pin "2"
+			(uuid "058ebb2b-2f39-4dc7-b4ad-75901d0414b7")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "D7")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 115.57 245.11)
+			(xy 113.03 245.11)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "62e6813e-010a-465a-91cf-d79b947944ca")
+	)
+	(global_label "QG2"
+		(shape passive)
+		(at 113.03 245.11 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "35b0e22f-d56a-4cd2-ae7d-858f95afc9e8")
+	)
+	(wire
+		(pts
+			(xy 123.19 245.11)
+			(xy 125.73 245.11)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "973d2b8a-fe65-40a8-9a5b-48b76ff60852")
+	)
+	(global_label "SHUNT_HI"
+		(shape passive)
+		(at 125.73 245.11 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "fbb6d903-ac31-48a0-b944-223a2e9ba162")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 90.17 234.95 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "55f0648d-2097-45b1-9cd7-d4a04d05d0e7")
+		(property "Reference" "R35"
+			(at 90.17 232.41 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "4.7k"
+			(at 90.17 237.49 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_2512_6332Metric"
+			(at 90.17 234.95 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 90.17 234.95 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 90.17 234.95 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C23162"
+			(at 90.17 234.95 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "3b45206a-9012-42bb-9430-86c9d63a747e")
+		)
+		(pin "2"
+			(uuid "9e8c129c-66ec-4247-a292-661cabf06550")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "R35")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 90.17 231.14)
+			(xy 90.17 228.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ee2b8f84-f32a-43db-a471-5db1bf8eaa8d")
+	)
+	(global_label "SW_DRAIN"
+		(shape passive)
+		(at 90.17 228.6 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "71919e21-6cc2-420b-9d0b-2e75d50b8dac")
+	)
+	(wire
+		(pts
+			(xy 90.17 238.76)
+			(xy 90.17 241.3)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "13738fc8-8d15-4560-b9ac-cf15cfe10540")
+	)
+	(global_label "SNB2"
+		(shape passive)
+		(at 90.17 241.3 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "8a3ade44-c787-4f37-b312-b6f2f1b1a3ec")
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 90.17 255.27 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "683289aa-1652-429f-87f6-069aeadcca6c")
+		(property "Reference" "C24"
+			(at 90.17 252.73 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10n"
+			(at 90.17 257.81 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 90.17 255.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 90.17 255.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 90.17 255.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "86026b0c-7b7e-4ebb-90ad-e6d14ae865a3")
+		)
+		(pin "2"
+			(uuid "8b9afbf3-ec9f-4514-b6ec-7e8a0e245dc1")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "C24")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 90.17 251.46)
+			(xy 90.17 248.92)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "714eca1d-e95d-4609-9afa-431b2bc10a9b")
+	)
+	(global_label "SNB2"
+		(shape passive)
+		(at 90.17 248.92 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "32f963b3-f076-4812-9312-effb7e7097f7")
+	)
+	(wire
+		(pts
+			(xy 90.17 259.08)
+			(xy 90.17 261.62)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9156b9ac-88d1-4140-a3a8-5d343f80e88f")
+	)
+	(global_label "SHUNT_HI"
+		(shape passive)
+		(at 90.17 261.62 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "a04c37b0-a93f-4b88-bbbc-4e0aaa5d6157")
+	)
+	(symbol
+		(lib_id "Transistor_FET:Q_NMOS_GDS")
+		(at 160.02 209.55 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "b5cc31c2-601c-45b4-85a8-03e59b09aa04")
+		(property "Reference" "Q12"
+			(at 160.02 207.01 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "SFT040N150C3"
+			(at 160.02 212.09 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "omnimarble:TOLL-8_DRAFT"
+			(at 160.02 209.55 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 160.02 209.55 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 160.02 209.55 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C42395334"
+			(at 160.02 209.55 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "f90b0400-311d-46e3-90f4-112ecf686db0")
+		)
+		(pin "2"
+			(uuid "1e13300b-795a-4847-a38e-83b180d6c3d4")
+		)
+		(pin "3"
+			(uuid "c62b5b38-6c7b-40c2-88f2-7a5e6797ee32")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "Q12")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 154.94 209.55)
+			(xy 152.4 209.55)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "43e70fc7-57d6-4e91-bd93-88958d735bfc")
+	)
+	(global_label "QG3"
+		(shape passive)
+		(at 152.4 209.55 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "b6fcde9b-b7f5-4f9a-92bc-f0bbac482239")
+	)
+	(wire
+		(pts
+			(xy 162.56 204.47)
+			(xy 162.56 201.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2041bd31-c1a8-4645-9840-87238ced4337")
+	)
+	(global_label "SW_DRAIN"
+		(shape passive)
+		(at 162.56 201.93 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "5c09c452-971c-41aa-b4dd-3db98df45a08")
+	)
+	(wire
+		(pts
+			(xy 162.56 214.63)
+			(xy 162.56 217.17)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6548162c-a06e-438d-bcd8-1253bc978ff3")
+	)
+	(global_label "SHUNT_HI"
+		(shape passive)
+		(at 162.56 217.17 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "9157a24c-46b5-48d5-9bd8-674400331424")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 144.78 195.58 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "3e7066cf-9205-4281-bd5b-29bf10e0e723")
+		(property "Reference" "R36"
+			(at 144.78 193.04 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10R"
+			(at 144.78 198.12 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 144.78 195.58 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 144.78 195.58 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 144.78 195.58 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C22859"
+			(at 144.78 195.58 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "0aec3d20-cfdf-480b-8b15-b4498729eaf1")
+		)
+		(pin "2"
+			(uuid "4450148c-4461-4bbf-b7c7-83523ac6f472")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "R36")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 144.78 191.77)
+			(xy 144.78 189.23)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ae513555-4e63-44db-9294-e107a1a39fea")
+	)
+	(global_label "DRV3"
+		(shape passive)
+		(at 144.78 189.23 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "f566c0ec-0df7-4aad-9cc5-17f725a5bfcb")
+	)
+	(wire
+		(pts
+			(xy 144.78 199.39)
+			(xy 144.78 201.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b6d540e0-6790-4f9b-afb9-74b84873845c")
+	)
+	(global_label "QG3"
+		(shape passive)
+		(at 144.78 201.93 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "a828a4cc-f0e1-47a0-92c9-93844bd36439")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 175.26 224.79 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "27157b64-3f68-41a3-9d2e-1274854a9dcf")
+		(property "Reference" "R37"
+			(at 175.26 222.25 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10k"
+			(at 175.26 227.33 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 175.26 224.79 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 175.26 224.79 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 175.26 224.79 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C25804"
+			(at 175.26 224.79 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "4064d2a4-8f4d-482d-bb57-27cf2c11abbd")
+		)
+		(pin "2"
+			(uuid "bc7f3490-25f1-4de1-9b29-8df53f56539b")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "R37")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 175.26 220.98)
+			(xy 175.26 218.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ad3f8dc3-77d6-4e3f-bb8c-0eb461553e89")
+	)
+	(global_label "QG3"
+		(shape passive)
+		(at 175.26 218.44 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "6da942a9-45c3-4087-9e90-723853124e6e")
+	)
+	(wire
+		(pts
+			(xy 175.26 228.6)
+			(xy 175.26 231.14)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "168d590f-f1c3-4ec5-ad15-8a259c23aa2d")
+	)
+	(global_label "SHUNT_HI"
+		(shape passive)
+		(at 175.26 231.14 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "9f2d4bd6-448f-4523-8d56-6cfd42a49ef7")
+	)
+	(symbol
+		(lib_id "Device:D_Zener")
+		(at 175.26 245.11 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "441ca371-7829-4c03-9df6-15cc93dc7a1b")
+		(property "Reference" "D8"
+			(at 175.26 242.57 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "BZT52C15"
+			(at 175.26 247.65 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Diode_SMD:D_SOD-123"
+			(at 175.26 245.11 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 175.26 245.11 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 175.26 245.11 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C19077412"
+			(at 175.26 245.11 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "5dd8a803-09b1-4c68-a538-a35255e575d4")
+		)
+		(pin "2"
+			(uuid "bab41337-8ed9-4c21-b06e-32fdb82dcf38")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "D8")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 171.45 245.11)
+			(xy 168.91 245.11)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c2032e6c-08d8-45e2-ad3a-68da948fa2e4")
+	)
+	(global_label "QG3"
+		(shape passive)
+		(at 168.91 245.11 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "66593255-44e5-4097-b4bf-e391b81a5a87")
+	)
+	(wire
+		(pts
+			(xy 179.07 245.11)
+			(xy 181.61 245.11)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "dbf04d4b-c282-4c45-8725-fd82c0d1fae4")
+	)
+	(global_label "SHUNT_HI"
+		(shape passive)
+		(at 181.61 245.11 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "274d3de1-8692-47bd-b2ce-7c0bb4bf9653")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 144.78 234.95 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "bcc46890-3bbd-4882-b8ca-1d8fa7dce14a")
+		(property "Reference" "R38"
+			(at 144.78 232.41 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "4.7k"
+			(at 144.78 237.49 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_2512_6332Metric"
+			(at 144.78 234.95 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 144.78 234.95 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 144.78 234.95 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C23162"
+			(at 144.78 234.95 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "12145a2f-190c-4492-bd3c-e9047f428c98")
+		)
+		(pin "2"
+			(uuid "26206698-45fd-4a14-8295-8c49939eebd2")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "R38")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 144.78 231.14)
+			(xy 144.78 228.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9f6111a1-31e1-452d-b056-6274e528087e")
+	)
+	(global_label "SW_DRAIN"
+		(shape passive)
+		(at 144.78 228.6 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "c3bac7aa-5c86-4875-8399-abc9a239db6e")
+	)
+	(wire
+		(pts
+			(xy 144.78 238.76)
+			(xy 144.78 241.3)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6f172cdc-41ad-42d9-8d7d-2bef2498ed91")
+	)
+	(global_label "SNB3"
+		(shape passive)
+		(at 144.78 241.3 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "18894696-f54e-444d-b7b4-184441e9aab4")
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 144.78 255.27 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "b61ab9e3-7b86-4004-8313-78434bd09f90")
+		(property "Reference" "C25"
+			(at 144.78 252.73 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10n"
+			(at 144.78 257.81 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 144.78 255.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 144.78 255.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 144.78 255.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "1cf0ac09-b2d1-4bf9-8491-b323e8d0532e")
+		)
+		(pin "2"
+			(uuid "7ec010e9-a1ef-487e-800d-2d3088240e8e")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "C25")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 144.78 251.46)
+			(xy 144.78 248.92)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6d490336-4a6d-4319-899c-8c7687023eda")
+	)
+	(global_label "SNB3"
+		(shape passive)
+		(at 144.78 248.92 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "c92b6e6b-1440-4809-8b5c-df7b6d62c534")
+	)
+	(wire
+		(pts
+			(xy 144.78 259.08)
+			(xy 144.78 261.62)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7e5c562c-da20-47df-a3e1-919527407db1")
+	)
+	(global_label "SHUNT_HI"
+		(shape passive)
+		(at 144.78 261.62 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "490cb6fc-ce49-42a3-a760-6f3d2efefd52")
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 199.39 250.19 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "b9da861a-6029-4e53-ba2c-a07b98b1dcd2")
+		(property "Reference" "#PWR0012"
+			(at 199.39 247.65 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 199.39 252.73 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 199.39 250.19 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 199.39 250.19 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 199.39 250.19 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "475d0380-ca82-468a-b34a-c0e532aaf921")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "#PWR0012")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 199.39 250.19)
+			(xy 199.39 247.65)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "dbc859a7-b08c-4b01-8168-92f2f3acb664")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 199.39 247.65 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "d183a32f-7f04-486c-927b-d41909fb81ba")
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 219.71 59.69 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "a35990c6-3f23-4450-aa26-21c31af29521")
+		(property "Reference" "#FLG0013"
+			(at 219.71 57.15 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 219.71 62.23 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 219.71 59.69 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 219.71 59.69 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 219.71 59.69 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "14aa5630-dc4d-4834-bead-82b5dcbb5cbc")
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c/c89d7e33-dafd-4f64-9684-61557418ada0"
+					(reference "#FLG0013")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 219.71 59.69)
+			(xy 219.71 62.23)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4149fabe-6560-4ae5-bde8-ff3681e0db0f")
+	)
+	(global_label "+12V_SW"
+		(shape passive)
+		(at 219.71 62.23 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "8e591bdc-85ec-49db-af64-895a020fc353")
+	)
+	(embedded_fonts no)
+)

@@ -49,9 +49,9 @@ PARTS = {
 
     # --- charger -------------------------------------------------------------
     "boost_ctrl": dict(
-        mpn="LM3481MMX/NOPB", mfr="TI", lcsc="C543002", jlc="ext",
-        package="MSOP-10", desc="Boost controller, 24V->24.5..60V @ ~0.5A (custom symbol)",
-        qty=1, alt="UC3843BD1R2G (C16414; mind 30V Vcc max)",
+        mpn="UC3843BD1R2G", mfr="onsemi", lcsc="C16414", jlc="ext",
+        package="SOIC-8", desc="Current-mode boost controller, 24V->24.5..60V @ ~0.5A, Vcc from +12V rail",
+        qty=1, alt="LM3481MMX/NOPB (C543002; needs custom symbol)",
     ),
     "boost_fet": dict(
         mpn="AOD66923", mfr="AOS", lcsc="C485687", jlc="ext",

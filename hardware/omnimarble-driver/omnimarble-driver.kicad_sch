@@ -1,0 +1,307 @@
+(kicad_sch
+	(version 20251024)
+	(generator "omnimarble_gen")
+	(generator_version "10.0")
+	(uuid "73d8eff6-39f1-4e5f-a80b-a36699d4dd7c")
+	(paper "A3")
+	(title_block
+		(title "OmniMarble 60V SELV coilgun driver")
+		(company "OmniMarble")
+	)
+	(lib_symbols)
+	(sheet
+		(at 30 40)
+		(size 50 30)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "fa789c71-1167-4558-bca0-71f763939438")
+		(property "Sheetname" "power_input"
+			(at 30 39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "power_input.kicad_sch"
+			(at 30 71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c"
+					(page "2")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 95 40)
+		(size 50 30)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "0f26d45f-e1be-4c7c-a91d-776df531433a")
+		(property "Sheetname" "boost_charger"
+			(at 95 39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "boost_charger.kicad_sch"
+			(at 95 71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 160 40)
+		(size 50 30)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "3fdb0994-c492-4402-ba13-446e089d2362")
+		(property "Sheetname" "cap_bank"
+			(at 160 39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "cap_bank.kicad_sch"
+			(at 160 71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c"
+					(page "4")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 225 40)
+		(size 50 30)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "c89d7e33-dafd-4f64-9684-61557418ada0")
+		(property "Sheetname" "pulse_switch"
+			(at 225 39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "pulse_switch.kicad_sch"
+			(at 225 71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c"
+					(page "5")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 30 90)
+		(size 50 30)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "578d012f-cf59-4e5d-b8f6-426a1b736d63")
+		(property "Sheetname" "flyback"
+			(at 30 89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "flyback.kicad_sch"
+			(at 30 121 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c"
+					(page "6")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 95 90)
+		(size 50 30)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "383413b7-da8c-4eea-99a2-d9792d9c8f92")
+		(property "Sheetname" "sense_gates"
+			(at 95 89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "sense_gates.kicad_sch"
+			(at 95 121 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c"
+					(page "7")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 160 90)
+		(size 50 30)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "9a6b881e-de96-4d92-be5d-8c154f59e0f5")
+		(property "Sheetname" "mcu_status"
+			(at 160 89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "mcu_status.kicad_sch"
+			(at 160 121 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "omnimarble-driver"
+				(path "/73d8eff6-39f1-4e5f-a80b-a36699d4dd7c"
+					(page "8")
+				)
+			)
+		)
+	)
+	(embedded_fonts no)
+)

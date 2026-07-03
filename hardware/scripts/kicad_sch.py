@@ -144,29 +144,54 @@ def _load_lib(lib_name):
 
 
 def get_symbol(lib_id):
-    """Return (symbol_sexpr, parents) for `Lib:Name`, renamed to lib_id form.
+    """Return (symbol_sexpr, []) for `Lib:Name`, renamed to lib_id form.
 
-    KiCad embeds library symbols in the schematic's lib_symbols block with
-    the full `Lib:Name` id. Derived symbols (`extends`) need their parent
-    embedded too (also renamed to `Lib:Parent`).
+    Derived symbols (`extends`) are FLATTENED the way KiCad does when
+    saving: the embedded symbol is the parent's full definition (drawing,
+    pins, sub-symbols) carrying the child's name and properties, with the
+    `extends` clause dropped. Embedding parent+child with a rewritten
+    extends is rejected by KiCad (lib_symbol_mismatch) and breaks pin
+    connectivity.
     """
+    import copy
     lib_name, sym_name = lib_id.split(":", 1)
     lib = _load_lib(lib_name)
     if sym_name not in lib:
         raise KeyError(f"symbol {sym_name!r} not in {lib_name}.kicad_sym")
 
-    import copy
-    sym = copy.deepcopy(lib[sym_name])
-    sym[1] = lib_id
-    parents = []
-    ext = find(sym, Sym("extends"))
-    if ext:
-        parent_name = ext[1]
-        parent = copy.deepcopy(lib[parent_name])
-        parent[1] = f"{lib_name}:{parent_name}"
-        ext[1] = f"{lib_name}:{parent_name}"
-        parents.append(parent)
-    return sym, parents
+    child = copy.deepcopy(lib[sym_name])
+    ext = find(child, Sym("extends"))
+    if ext is None:
+        child[1] = lib_id
+        return child, []
+
+    parent_name = ext[1]
+    flat = copy.deepcopy(lib[parent_name])
+    flat[1] = lib_id
+    # Rename parent's unit sub-symbols PARENT_u_s -> CHILD_u_s
+    for sub in find_all(flat, Sym("symbol")):
+        m = re.match(re.escape(parent_name) + r"_(\d+)_(\d+)$", sub[1])
+        if m:
+            sub[1] = f"{sym_name}_{m.group(1)}_{m.group(2)}"
+    # Override properties with the child's values
+    child_props = {p[1]: p for p in find_all(child, Sym("property"))}
+    kept = []
+    seen = set()
+    for item in flat:
+        if isinstance(item, list) and item and item[0] == Sym("property"):
+            name = item[1]
+            seen.add(name)
+            kept.append(child_props.get(name, item))
+        else:
+            kept.append(item)
+    flat[:] = kept
+    # Child-only properties (e.g. ki_* metadata) appended after existing ones
+    insert_at = max(i for i, it in enumerate(flat)
+                    if isinstance(it, list) and it and it[0] == Sym("property"))
+    extra = [p for n, p in child_props.items() if n not in seen]
+    for j, p in enumerate(extra):
+        flat.insert(insert_at + 1 + j, p)
+    return flat, []
 
 
 def symbol_pins(lib_id, unit=1):
@@ -220,12 +245,17 @@ def snap(v):
 
 
 class Schematic:
-    def __init__(self, title, page="A3"):
+    def __init__(self, title, page="A3", project="", instance_path=None):
         self.title = title
         self.page = page
+        self.project = project
         self.lib_symbols = {}
         self.items = []          # symbol/wire/label/... s-exprs
         self.sheet_uuid = uid()
+        # Hierarchical instance path for symbol instances. For a child sheet
+        # this must be "/<root_uuid>/<sheet_symbol_uuid>" or KiCad treats
+        # every symbol as un-annotated.
+        self.instance_path = instance_path or f"/{self.sheet_uuid}"
 
     # -- symbols ------------------------------------------------------------
 
@@ -270,8 +300,8 @@ class Schematic:
         for num in pins:
             inst.append([Sym("pin"), str(num), [Sym("uuid"), uid()]])
         inst.append([Sym("instances"),
-                     [Sym("project"), "",
-                      [Sym("path"), f"/{self.sheet_uuid}",
+                     [Sym("project"), self.project,
+                      [Sym("path"), self.instance_path,
                        [Sym("reference"), ref],
                        [Sym("unit"), unit],
                        ]]])
@@ -331,10 +361,21 @@ class Schematic:
 
     # -- power helpers --------------------------------------------------------
 
+    _power_ref_counter = [0]  # class-level: refs must be unique project-wide
+
+    def _power_ref(self, prefix):
+        # KiCad annotation requires references to END with a number
+        Schematic._power_ref_counter[0] += 1
+        return f"{prefix}{Schematic._power_ref_counter[0]:04d}"
+
     def power_flag(self, net, at):
         """PWR_FLAG marks a net as a legitimate power source for ERC."""
-        self.add_symbol("power:PWR_FLAG", f"#FLG_{net}_{len(self.items)}",
+        self.add_symbol("power:PWR_FLAG", self._power_ref("#FLG"),
                         "PWR_FLAG", at, nets={"1": net})
+
+    def power_symbol(self, net, at):
+        self.add_symbol(f"power:{net}", self._power_ref("#PWR"), net, at,
+                        nets={"1": net})
 
     # -- output ----------------------------------------------------------------
 

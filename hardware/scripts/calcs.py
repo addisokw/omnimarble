@@ -88,7 +88,7 @@ BLEED_R_OHM = 6_800.0       # permanent bleed (0.53W at 60V -> 2W part)
 DUMP_R_OHM = 100.0          # MCU-commanded dump
 PRECHARGE_R_OHM = 47.0
 
-DIVIDER = {"top": 100_000.0, "bottom": 5_230.0}   # V_bank sense
+DIVIDER = {"top": 100_000.0, "bottom": 5_100.0}   # V_bank sense (E24/JLC-basic values)
 
 # ---------------------------------------------------------------------------
 # Helpers
