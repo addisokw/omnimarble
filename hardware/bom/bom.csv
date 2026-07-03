@@ -5,7 +5,7 @@ shunt,Yezhan,ASR-M-7-0.2F,C469442,ext,5930,1,0.2mOhm 1% 15W metal element (Kelvi
 cap_bank,Nichicon,LKG1J222MESBBK,C3724971,hand,snap-in 30x30mm,2,"2200uF 63V snap-in; 5 positions, populate 2 baseline (4400uF), max 11000uF",Chengx radial 18mm 2200uF/63V (C47858)
 term_coil,Kangnex,HB9500-9.5-02P-13-00A,C60785,ext-tht,9.5mm barrier,2,"32A barrier terminal, coil + aux-bank connections (pulse path)","Wurth REDCUBE M4 (hand-install, not LCSC)"
 fuse_aux,Littelfuse,0997030.WXN,C207030,hand,MINI blade,1,"30A 58VDC MINI blade fuse, aux-bank feed; holder Keystone 3568","ATO 0287030.PXCN (C142686, 32V - marginal)"
-boost_ctrl,onsemi,UC3843BD1R2G,C16414,ext,SOIC-8,1,"Current-mode boost controller, 24V->24.5..60V @ ~0.5A, Vcc from +12V rail",LM3481MMX/NOPB (C543002; needs custom symbol)
+boost_ctrl,onsemi,UC3843BD1R2G,C16414,ext,SOIC-8,1,"Current-mode boost controller, 24.5-55V operating (63V-rated bank) @ ~0.5A, Vcc from +12V rail",LM3481MMX/NOPB (C543002; needs custom symbol)
 boost_fet,AOS,AOD66923,C485687,ext,TO-252,1,100V 11mOhm boost switch,UMW 15N10 (C359106)
 boost_diode,MDD,SS510,C65010,ext,SMA,1,"100V 5A Schottky, boost rectifier","SS510B (C7420368, SMB, preferred-class)"
 boost_ind,YJYCOIN,YSPI1365-470M,C497913,ext,1265,1,47uH 5A/7Asat shielded power inductor,APH1265T470M (C5349639)

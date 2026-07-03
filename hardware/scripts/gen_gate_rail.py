@@ -54,7 +54,8 @@ def main():
                  nets={"1": "+5V", "2": "GND",
                        "3": "SIG1", "4": "SIG2", "5": "SIG3",
                        "6": "SIG4", "7": "SIG5", "8": "SIG6",
-                       "9": "SIG_SPARE", "10": "GND"})
+                       "9": "SIG_SPARE", "10": "GND"},
+                 extra_fields={"Variant": "COMMON"})
     # SIG_SPARE terminates on a test pad (unused on the rail itself)
     s.add_symbol("Connector:TestPoint", "TP1", "SIG_SPARE", (80, 60),
                  footprint="TestPoint:TestPoint_Pad_1.5x1.5mm",

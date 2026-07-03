@@ -84,7 +84,7 @@ CHARGER = {
     "i_charge_a": 0.5,      # boost average output current limit
     "v_floor": 24.5,        # boost cannot regulate below Vin
 }
-BLEED_R_OHM = 6_800.0       # permanent bleed (0.53W at 60V -> 2W part)
+BLEED_R_OHM = 6_800.0       # permanent bleed (0.44W at 55V -> 2W part)
 DUMP_R_OHM = 200.0          # MCU dump: 2x 100R/10W cement in series
 PRECHARGE_R_OHM = 47.0
 
@@ -97,7 +97,7 @@ DIVIDER = {"top": 100_000.0, "bottom": 5_100.0}   # V_bank sense (E24/JLC-basic 
 BOOST_FB = {"rt": 100_000.0, "rb": 10_000.0, "rj": 9_100.0, "vref": 2.5}
 BOOST_FLOOR_V = 24.5     # boost cannot regulate below Vin
 
-# Hardware OVP: TL431A (2.495V +/-1%) + 1% divider pulls UC3843 COMP low
+# Hardware OVP: CJ431 (2.495V +/-0.5%) + 1% divider pulls UC3843 COMP low
 OVP = {"top": 100_000.0, "bottom": 4_300.0, "vref": 2.495,
        "r_tol": 0.01, "ref_tol": 0.005}  # CJ431 is +/-0.5%
 
@@ -343,7 +343,7 @@ def main():
           f"Coil model: L={COIL['L_uH']}uH, R_total={COIL['R_total_ohm']}Ohm "
           f"(same values the simulation uses).",
           "",
-          "## Pulse envelope by bank option (at 60V)",
+          f"## Pulse envelope by bank option (at {V_BANK_MAX:.0f}V)",
           "",
           "| Bank | regime | zeta | I_pk | t_pk | pulse | E | I2t | FET dTj (shared/fault) | pour dT |",
           "|------|--------|------|------|------|-------|---|-----|------------------------|---------|"]
@@ -370,7 +370,7 @@ def main():
            f"- ADC full scale {worst['i_fullscale']:.0f}A at {ADC_VREF}V ref, "
            f"LSB {worst['lsb_amps']:.2f}A ({ADC_BITS}-bit)",
            f"- V_bank divider {DIVIDER['top']/1000:.0f}k/{DIVIDER['bottom']/1000:.2f}k "
-           f"-> {V_BANK_MAX*DIVIDER['bottom']/(DIVIDER['top']+DIVIDER['bottom']):.2f}V at 60V, "
+           f"-> {V_BANK_MAX*DIVIDER['bottom']/(DIVIDER['top']+DIVIDER['bottom']):.2f}V at {V_BANK_MAX:.0f}V, "
            f"standing drain {V_BANK_MAX/(DIVIDER['top']+DIVIDER['bottom'])*1000:.2f} mA",
            "",
            "## Charger / discharge",
@@ -388,7 +388,7 @@ def main():
            f"{BOOST_FB['rt']/1e3:.0f}k / {BOOST_FB['rb']/1e3:.0f}k / {BOOST_FB['rj']/1e3:.1f}k",
            f"- PWM=0 (fail state) -> {vboost(0.0):.1f}V; PWM=100% -> {vboost(3.3):.1f}V (< {BOOST_FLOOR_V}V floor, idle)",
            f"- Ladder: operating {V_BANK_MAX:.0f}V < OVP {trip_lo:.1f}..{trip_hi:.1f}V "
-           f"(TL431A 1% + 1% divider) < capacitor rating {V_BANK_ABS:.0f}V",
+           f"(CJ431 +/-0.5% + 1% divider) < capacitor rating {V_BANK_ABS:.0f}V",
            "- Boost enable is fail-safe INHIBITED (pull-up holds COMP low; MCU"
            " must drive BOOST_EN_N low to charge)",
            "- Relay sequencing: charge relay closes only after precharge"

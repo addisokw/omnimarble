@@ -195,13 +195,13 @@ def build_power_input(sch):
 
 
 # ---------------------------------------------------------------------------
-# Sheet 2: boost charger (UC3843 current-mode boost 24V -> 24.5..60V)
+# Sheet 2: boost charger (UC3843 boost, 24.5-55V operating, 63V-rated bank)
 # ---------------------------------------------------------------------------
 
 
 def build_boost_charger(sch):
     s, c = sch, GLOBAL_COUNTER
-    s.text("Boost charger 24V->60V, OVP, charge/dump relays, bleed", (30, 20), 3)
+    s.text("Boost charger 24V -> 55V operating (63V-rated bank), OVP, relays, bleed", (30, 20), 3)
 
     u = "U4"
     s.add_symbol("Regulator_Controller:UC3843_SOIC8", u, "UC3843B", (60, 70),
@@ -240,7 +240,8 @@ def build_boost_charger(sch):
     # and asserted in calcs.py):
     #   VBOOST = 2.5 + Rt*(2.5/Rb - (VSET-2.5)/Rj)
     #   VSET=0V   -> 55.0V  (= commanded MAX; PWM-stuck-low is a SAFE state,
-    #                        below the 57.2V worst-case OVP floor)
+    #                        below the worst-case OVP trip floor asserted in
+    #                        calcs.py's protection-ladder checks)
     #   VSET=3.3V -> 18.7V  (below the ~24.5V boost floor -> converter idles)
     # NOTE the summing topology is inherently inverting (PWM duty UP ->
     # voltage DOWN); firmware maps duty = f(target) accordingly.
@@ -253,8 +254,8 @@ def build_boost_charger(sch):
     C_(s, c, "1u", (190, 100), "VSET_FLT", "GND")
 
     # Hardware OVP: CJ431 (+/-0.5%) + 1% divider trips 60.5V nominal
-    # (59.1-62.0V across tolerances, asserted in calcs.py: above the 55.0V
-    # commanded max, below the 63V capacitor rating) and yanks COMP low,
+    # (band + ladder ordering asserted in calcs.py against the same
+    # constants: above the commanded max, below the cap rating); yanks COMP low,
     # independent of the MCU.
     R(s, c, "100k", (210, 60), "VBOOST", "OVP_REF")
     R(s, c, "4.3k", (210, 80), "OVP_REF", "GND")

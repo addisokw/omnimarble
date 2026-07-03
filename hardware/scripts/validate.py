@@ -66,6 +66,13 @@ def footprint_exists(fp):
 
 
 def main():
+    import argparse
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--production", action="store_true",
+                    help="fab/assembly-export gate: ORDER-REVIEW placeholder "
+                         "LCSC values become failures instead of warnings")
+    args = ap.parse_args()
+
     failures = []
     all_syms = {"driver": [], "rail": []}
     for key, proj in PROJECTS.items():
@@ -99,6 +106,13 @@ def main():
                     seen_lcsc_fail.add(tag)
                     failures.append(f"{key}: missing LCSC: {s['ref']} "
                                     f"({s['value']}, {s['footprint']})")
+            if s["lcsc"] == "ORDER-REVIEW" and not s["dnp"]:
+                msg = (f"{key}: ORDER-REVIEW placeholder: {s['ref']} "
+                       f"({s['value']}) - resolve C-number before ordering")
+                if args.production:
+                    failures.append(msg)
+                else:
+                    print(f"  [WARN] {msg}")
         # duplicate refs (multi-unit shares are same lib_id+ref = OK)
         by_ref = {}
         for s in syms:
@@ -122,7 +136,8 @@ def main():
     bom_dir.mkdir(exist_ok=True)
     for variant in ("EMIT", "RECV"):
         rows = [s for s in all_syms["rail"]
-                if s["variant"] == variant and not s["ref"].startswith("#")]
+                if s["variant"] in (variant, "COMMON")
+                and not s["ref"].startswith("#")]
         out = bom_dir / f"bom_rail_{variant.lower()}.csv"
         with open(out, "w", newline="", encoding="utf-8") as f:
             w = csv.writer(f)
