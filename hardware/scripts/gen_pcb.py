@@ -245,12 +245,20 @@ def build_zones(board, nets):
                           add_zone(board, nets[name], layer, pts,
                                    clearance=1.0, min_thick=0.5,
                                    priority=prio)))
-    # Full-board GND planes on inner layers
+    # Full-board GND: solid planes on the inner layers, plus low-priority
+    # GND pours on F/B that flood around the pulse pours (higher priority)
+    # and the routed signal traces. SMD GND pads connect straight to the F/B
+    # pour, and the pour is stitched to the inner planes by stitch_zone /
+    # gnd_via_drops -- so GND connectivity no longer depends on threading a
+    # via into every congested fine-pitch pad.
     frame = [(2, 2), (BOARD_W - 2, 2), (BOARD_W - 2, BOARD_H - 2),
              (2, BOARD_H - 2)]
     for layer in (pcbnew.In1_Cu, pcbnew.In2_Cu):
         add_zone(board, nets["GND"], layer, frame, clearance=0.3,
                  priority=0)
+    for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
+        add_zone(board, nets["GND"], layer, frame, clearance=0.3,
+                 min_thick=0.25, priority=0)
     return zones
 
 
@@ -943,6 +951,59 @@ def route_stragglers(board, g, nets, misses, zone_by_net):
     return failed
 
 
+def _seg_pt_dist2(px, py, ax, ay, bx, by):
+    vx, vy = bx - ax, by - ay
+    L2 = vx * vx + vy * vy
+    if L2 <= 1e-12:
+        return (px - ax) ** 2 + (py - ay) ** 2
+    t = max(0.0, min(1.0, ((px - ax) * vx + (py - ay) * vy) / L2))
+    cx, cy = ax + t * vx, ay + t * vy
+    return (px - cx) ** 2 + (py - cy) ** 2
+
+
+def via_clear_of_foreign(board, px, py, net, radius):
+    """True iff no foreign-net track/via/THT-pad copper lies within `radius`
+    mm of (px,py). Real geometry (not the coarse routing grid), so it is safe
+    for via-in-pad on fine-pitch parts where the grid aliases."""
+    r2 = radius * radius
+    for t in board.GetTracks():
+        if t.GetNetname() == net:
+            continue
+        if t.GetClass() == "PCB_VIA":
+            vp = t.GetPosition()
+            try:
+                hw = pcbnew.ToMM(t.GetWidth(pcbnew.F_Cu)) / 2
+            except Exception:
+                hw = 0.3
+            if (pcbnew.ToMM(vp.x) - px) ** 2 + (pcbnew.ToMM(vp.y) - py) ** 2 \
+                    < (radius + hw) ** 2:
+                return False
+        else:
+            a, b = t.GetStart(), t.GetEnd()
+            hw = pcbnew.ToMM(t.GetWidth()) / 2
+            if _seg_pt_dist2(px, py, pcbnew.ToMM(a.x), pcbnew.ToMM(a.y),
+                             pcbnew.ToMM(b.x), pcbnew.ToMM(b.y)) \
+                    < (radius + hw) ** 2:
+                return False
+    for fp in board.Footprints():
+        for pad in fp.Pads():
+            if pad.GetNetname() == net:
+                continue
+            pp = pad.GetPosition()
+            sz = pad.GetSize()
+            reach = radius + max(pcbnew.ToMM(sz.x), pcbnew.ToMM(sz.y)) / 2
+            if (pcbnew.ToMM(pp.x) - px) ** 2 + (pcbnew.ToMM(pp.y) - py) ** 2 \
+                    < reach * reach:
+                # cheap bbox refine
+                bb = pad.GetBoundingBox()
+                if (pcbnew.ToMM(bb.GetLeft()) - radius <= px
+                        <= pcbnew.ToMM(bb.GetRight()) + radius
+                        and pcbnew.ToMM(bb.GetTop()) - radius <= py
+                        <= pcbnew.ToMM(bb.GetBottom()) + radius):
+                    return False
+    return True
+
+
 def gnd_via_drops(board, g, nets):
     gnd = nets["GND"]
     added = 0
@@ -957,7 +1018,52 @@ def gnd_via_drops(board, g, nets):
                 continue
             pos = pad.GetPosition()
             px, py = pcbnew.ToMM(pos.x), pcbnew.ToMM(pos.y)
+            # via-in-pad first: a small GND via (0.45/0.25) at the pad centre
+            # is inside GND copper (cannot short, same net) and always lands in
+            # the full In1/In2 GND plane. The grid free-check is skipped here
+            # on purpose -- at the 0.5mm grid a fine-pitch pad aliases onto a
+            # neighbour's cell and falsely reads blocked. We instead trust the
+            # pad and only reject a real hole-to-hole conflict with an existing
+            # THT pad / via within 0.5mm. This closes the congested IC/cap GND
+            # pads (U9/U11/C5/C11...) the >=1.4mm offsets can't reach.
             done = False
+            vix = int(round(px / GRID))
+            viy = int(round(py / GRID))
+            # via 0.45mm + 0.2mm clearance -> foreign copper must clear 0.425mm;
+            # and my 0.25 drill needs >=0.25mm edge clearance to any other hole
+            # (0.125 + other_r + 0.25 centre distance).
+            hole_ok = True
+            for t in board.GetTracks():
+                if t.GetClass() != "PCB_VIA":
+                    continue
+                vp = t.GetPosition()
+                if (pcbnew.ToMM(vp.x) - px) ** 2 + (pcbnew.ToMM(vp.y) - py) ** 2 \
+                        < (0.125 + 0.15 + 0.25) ** 2:
+                    hole_ok = False
+                    break
+            if hole_ok:
+                for fp2 in board.Footprints():
+                    for pad2 in fp2.Pads():
+                        if pad2.GetAttribute() == pcbnew.PAD_ATTRIB_SMD:
+                            continue
+                        dr = pad2.GetDrillSize()
+                        if dr.x <= 0:
+                            continue
+                        pp = pad2.GetPosition()
+                        need = 0.125 + pcbnew.ToMM(dr.x) / 2 + 0.25
+                        if (pcbnew.ToMM(pp.x) - px) ** 2 \
+                                + (pcbnew.ToMM(pp.y) - py) ** 2 < need * need:
+                            hole_ok = False
+                            break
+                    if not hole_ok:
+                        break
+            if hole_ok and via_ok(vix, viy, "GND") \
+                    and via_clear_of_foreign(board, px, py, "GND", 0.425):
+                add_via(board, g, nets, "GND", px, py, drill=0.25, size=0.45)
+                added += 1
+                done = True
+            if done:
+                continue
             for ddx, ddy in [(0, 1.4), (0, -1.4), (1.4, 0), (-1.4, 0),
                              (1.2, 1.2), (-1.2, 1.2), (1.2, -1.2),
                              (-1.2, -1.2), (0, 2.2), (0, -2.2),
@@ -1459,6 +1565,18 @@ def build_preroute():
     if missing:
         print(f"UNPLACED refs: {missing}")
 
+    # schematic-parity: DNP on the unpopulated bank positions, BOM-exclude on
+    # the test point + Kelvin net-ties (match the schematic; else kicad-cli
+    # --schematic-parity flags 6 attribute mismatches on every regen).
+    dnp_refs = {"C92", "C93", "C94"}
+    exbom_refs = {"TP1", "NT1", "NT2"}
+    for fp in board.Footprints():
+        ref = fp.GetReference()
+        if ref in dnp_refs:
+            fp.SetDNP(True)
+        if ref in exbom_refs:
+            fp.SetExcludedFromBOM(True)
+
     boxes = []
     for fp in board.Footprints():
         bb = fp.GetBoundingBox(False)
@@ -1697,6 +1815,13 @@ def main_import_ses():
     misses = check_pulse_pads(board, zlist)
     strag_failed = route_stragglers(board, g, nets, misses, zone_by_net)
     print(f"straggler failures: {strag_failed}")
+
+    # drop GND vias for SMD ground pads freerouting left to the plane, then
+    # purge any boundary-touch shorts before saving
+    nvias = gnd_via_drops(board, g, nets)
+    print(f"GND via drops: {nvias}")
+    purged = purge_track_shorts(board)
+    print(f"purged {purged} shorting segments")
 
     finish(board, "freerouted")
 

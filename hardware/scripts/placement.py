@@ -179,3 +179,51 @@ NET_WIDTHS = {
 }
 
 PULSE_NETS = {"VBANK", "COIL_HI", "SW_DRAIN", "SHUNT_HI"}
+
+# ---------------------------------------------------------------------------
+# Autorouting strategy (freerouting/DeepPCB pivot) — net taxonomy.
+#
+# PLANE_NETS: exist only as copper pours/planes. Removed from the DSN routing
+#   set entirely (their pins are already tied to the plane by preroute copper),
+#   so the autorouter has no airwires to maze-route (this is what blew
+#   freerouting up to ~700GB). Their (plane ...) polygons + stitching stay.
+# CRITICAL_NETS: authored deterministically in preroute, then locked
+#   (type route -> type fix) in the DSN so the autorouter treats them as
+#   immovable and routes only around them.
+# Everything else is noncritical and free for the autorouter.
+# ---------------------------------------------------------------------------
+PLANE_NETS = PULSE_NETS | {"GND"}
+
+CRITICAL_NETS = {
+    # gate drive (tight loop, source-referenced)
+    "QG1", "QG2", "QG3", "DRV1", "DRV2", "DRV3",
+    # Kelvin / shunt sense
+    "ISNS_P", "ISNS_N",
+    # boost sense / feedback / drive
+    "BST_CS", "BST_CS_HI", "BST_FB", "BST_COMP", "BST_DRV", "BST_G", "BST_SW",
+    # safety interlock
+    "MCU_FIRE", "FIRE_GATED", "ARM_SENSE", "ESTOP_SENSE",
+    "RLY_CHARGE", "RLY_DUMP",
+    # fat rails (high current, keep short/wide)
+    "AUX_BANK", "VBOOST", "DUMP_R", "DUMP_MID",
+}
+
+
+def netclass_rules():
+    """Group NET_WIDTHS into DSN net classes (one width per class).
+
+    Returns [(class_name, width_mm, clearance_mm, [nets_sorted])]. Nets not in
+    NET_WIDTHS fall through to the DSN's default class (0.2/0.2). Wider rails
+    get a touch more clearance. This is the single source that dsn_fixup.py
+    turns into (class ...) blocks so the autorouter honours real widths.
+    """
+    from collections import defaultdict
+    by_w = defaultdict(list)
+    for net, w in NET_WIDTHS.items():
+        by_w[w].append(net)
+    rules = []
+    for w in sorted(by_w, reverse=True):
+        name = "w" + str(w).replace(".", "p")
+        clr = 0.3 if w >= 1.0 else 0.2
+        rules.append((name, w, clr, sorted(by_w[w])))
+    return rules
