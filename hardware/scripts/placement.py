@@ -220,6 +220,10 @@ CRITICAL_NETS = {
     "RLY_CHARGE", "RLY_DUMP",
     # fat rails (high current, keep short/wide)
     "AUX_BANK", "VBOOST", "DUMP_R", "DUMP_MID",
+    # 3V3: only U10's authored fine-pitch escape copper is on this net; locking
+    # it keeps that escape fixed. The rest of 3V3 has no authored wires, so the
+    # router still routes the bulk of the net freely.
+    "3V3",
 }
 
 

@@ -1639,6 +1639,48 @@ def route_signals(board, g, nets, escapes):
 # Main
 # --------------------------------------------------------------------------
 
+def author_u10_escape(board, g, nets):
+    """U10 (VSSOP-8, 0.35mm pads) fine-pitch power/GND escape.
+
+    Both freerouting and DeepPCB fail to fan U10's four corner power pins
+    (1,7 = 3V3; 5,8 = GND) out past its SPI signal pins -- the 3V3/GND copper
+    is 3-6mm away with no channel through the fine pitch. We author it, like the
+    Kelvin ties: the GND pins drop a pad-fitted via straight to the inner GND
+    plane; the two 3V3 pins drop pad-fitted vias to B.Cu and link there to the
+    U10 bypass cap C28. DeepPCB is then left only the four easy F.Cu signal pins
+    (2,3,4,6). Locked in the DSN via 3V3 in CRITICAL_NETS + GND in PLANE_NETS.
+    """
+    u10 = board.FindFootprintByReference("U10")
+    if u10 is None:
+        return
+    pad = {p.GetNumber(): p for p in u10.Pads()}
+
+    def xy(p):
+        pos = p.GetPosition()
+        return pcbnew.ToMM(pos.x), pcbnew.ToMM(pos.y)
+
+    # Dogbone fan-out with 0.2mm stubs (0.3mm > 0.5mm pitch would grip the
+    # neighbour pads). Each pin exits straight out past the pad row first, then
+    # the two outer right pins (8,5) stagger up/down to vias at distinct radii
+    # so no via sits at pad pitch. GND vias tie straight to the inner GND plane;
+    # the 3V3 vias are open-space anchors the router finishes to the net (C28 is
+    # just right of pin7). Paths are (dx,dy)-from-pad waypoints, last = via.
+    paths = [
+        ("1", "3V3", [(-1.9, 0.0)]),               # left, clear
+        ("7", "3V3", [(1.25, 0.0)]),               # straight right
+        ("8", "GND", [(1.05, 0.0), (1.65, -0.9)]),  # out, then up
+        ("5", "GND", [(1.05, 0.0), (1.65, 0.9)]),   # out, then down
+    ]
+    for num, net, waypts in paths:
+        px, py = xy(pad[num])
+        cx, cy = px, py
+        for dx, dy in waypts:
+            nx, ny = px + dx, py + dy
+            add_track(board, g, nets, net, 0, cx, cy, nx, ny, 0.2)
+            cx, cy = nx, ny
+        add_via(board, g, nets, net, cx, cy, drill=0.3, size=0.45)
+
+
 def build_preroute(gnd_drops=True):
     """Board with placement, pulse copper, Kelvin, GND drops - no signals.
 
@@ -1723,6 +1765,8 @@ def build_preroute(gnd_drops=True):
                 add_via(board, g, nets, net,
                         cx + (ix - (nx - 1) / 2) * pitch,
                         cy + (iy - (ny - 1) / 2) * pitch, drill, size)
+
+    author_u10_escape(board, g, nets)
 
     # NOTE: route_critical() (deterministic A* authoring of the critical nets)
     # is intentionally NOT called here. Emitting astar-generated critical
