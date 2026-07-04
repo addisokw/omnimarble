@@ -256,6 +256,53 @@ def add_edge_keepout(board, margin=1.5):
         board.Add(z)
 
 
+# Fine-pitch ICs the full-board F/B GND pour boxes in, blocking signal-pad
+# escape (DeepPCB flagged U10/U11/U12/U4/U1 pins as physically unroutable).
+POUR_KEEPOUT_ICS = ["U10", "U11", "U12", "U4", "U1", "U9", "U2"]
+
+
+def add_pour_keepouts(board, refs, margin=0.8):
+    """Rule areas that keep the F/B GND pour OFF the listed ICs (tracks + vias
+    still allowed) so signal pads can escape. Only F.Cu/B.Cu -- the inner GND
+    planes stay solid, so each IC's GND pad still connects via an inner-plane
+    via."""
+    ls = pcbnew.LSET()
+    ls.AddLayer(pcbnew.F_Cu)
+    ls.AddLayer(pcbnew.B_Cu)
+    for ref in refs:
+        fp = board.FindFootprintByReference(ref)
+        if fp is None:
+            continue
+        bb = fp.GetBoundingBox(False)
+        x0 = pcbnew.ToMM(bb.GetLeft()) - margin
+        x1 = pcbnew.ToMM(bb.GetRight()) + margin
+        y0 = pcbnew.ToMM(bb.GetTop()) - margin
+        y1 = pcbnew.ToMM(bb.GetBottom()) + margin
+        z = pcbnew.ZONE(board)
+        z.SetIsRuleArea(True)
+        z.SetDoNotAllowZoneFills(True)
+        z.SetDoNotAllowTracks(False)
+        z.SetDoNotAllowVias(False)
+        z.SetLayerSet(ls)
+        o = z.Outline()
+        o.NewOutline()
+        for x, y in [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]:
+            o.Append(MM(x), MM(y))
+        board.Add(z)
+
+
+def add_fb_gnd_pours(board, nets):
+    """Full-board F/B GND flood, added AFTER routing so it pours around the
+    finished traces (thermal-connecting GND pads) instead of boxing fine-pitch
+    IC signal pads before they are routed. The inner In1/In2 GND planes carry
+    the return; these outer pours add shielding + short GND-pad connections."""
+    frame = [(2, 2), (BOARD_W - 2, 2), (BOARD_W - 2, BOARD_H - 2),
+             (2, BOARD_H - 2)]
+    for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
+        add_zone(board, nets["GND"], layer, frame, clearance=0.2,
+                 min_thick=0.13, priority=0)
+
+
 def build_zones(board, nets):
     add_edge_keepout(board)
     zones = []
@@ -267,22 +314,15 @@ def build_zones(board, nets):
                           add_zone(board, nets[name], layer, pts,
                                    clearance=1.0, min_thick=0.5,
                                    priority=prio)))
-    # Full-board GND: solid planes on the inner layers, plus low-priority
-    # GND pours on F/B that flood around the pulse pours (higher priority)
-    # and the routed signal traces. SMD GND pads connect straight to the F/B
-    # pour, and the pour is stitched to the inner planes by stitch_zone /
-    # gnd_via_drops -- so GND connectivity no longer depends on threading a
-    # via into every congested fine-pitch pad.
+    # Inner layers: solid GND planes (the return path). The OUTER F/B GND
+    # flood is NOT poured here -- pouring it before routing boxes fine-pitch IC
+    # signal pads. It is added after the route lands (add_fb_gnd_pours, called
+    # from import-clean) so it flows around the finished traces instead.
     frame = [(2, 2), (BOARD_W - 2, 2), (BOARD_W - 2, BOARD_H - 2),
              (2, BOARD_H - 2)]
     for layer in (pcbnew.In1_Cu, pcbnew.In2_Cu):
         add_zone(board, nets["GND"], layer, frame, clearance=0.3,
                  priority=0)
-    for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
-        # tight clearance + thin min-thickness so the pour flows into narrow
-        # necks between routed traces and reaches otherwise-isolated GND pads
-        add_zone(board, nets["GND"], layer, frame, clearance=0.2,
-                 min_thick=0.13, priority=0)
     return zones
 
 
@@ -2027,6 +2067,14 @@ def main_import_clean():
     ses = PROJ / "omnimarble-driver.ses"
     ok = pcbnew.ImportSpecctraSES(board, str(ses))
     print(f"SES import: {ok}")
+    # outer F/B GND flood added AFTER the route (pours around finished traces)
+    nets = {}
+    for fp in board.Footprints():
+        for pad in fp.Pads():
+            n = pad.GetNetname()
+            if n and n not in nets:
+                nets[n] = pad.GetNet()
+    add_fb_gnd_pours(board, nets)
     tent_vias(board)
     dedup_vias(board)
     remove_degenerate_tracks(board)
