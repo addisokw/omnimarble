@@ -404,7 +404,7 @@ def build_pulse_switch(sch):
     # DRV_SPARE terminates on a test point so the net isn't single-ended
     s.add_symbol("Connector:TestPoint", "TP1", "DRV_SPARE", (215, 150),
                  footprint="TestPoint:TestPoint_Pad_1.5x1.5mm",
-                 nets={"1": "DRV_SPARE"})
+                 nets={"1": "DRV_SPARE"}, in_bom=False)
 
     # 3x pulse FET with per-gate R, pulldown, zener clamp
     for i in range(3):
@@ -472,9 +472,11 @@ def build_flyback(sch):
                  footprint=FP["SHUNT5930"], lcsc=PARTS["shunt"]["lcsc"],
                  nets={"1": "SHUNT_HI", "2": "GND"})
     s.add_symbol("Device:NetTie_2", "NT1", "NetTie", (95, 140),
-                 footprint=FP["NETTIE"], nets={"1": "SHUNT_HI", "2": "ISNS_P"})
+                 footprint=FP["NETTIE"], nets={"1": "SHUNT_HI", "2": "ISNS_P"},
+                 in_bom=False)
     s.add_symbol("Device:NetTie_2", "NT2", "NetTie", (95, 165),
-                 footprint=FP["NETTIE"], nets={"1": "GND", "2": "ISNS_N"})
+                 footprint=FP["NETTIE"], nets={"1": "GND", "2": "ISNS_N"},
+                 in_bom=False)
     GNDsym(s, c, (170, 150))
 
 

@@ -44,11 +44,11 @@ header{border-bottom:1px solid var(--line);padding-bottom:28px;margin-bottom:32p
 h1{font-size:clamp(26px,4vw,40px);font-weight:680;letter-spacing:-.02em;margin:10px 0 6px}
 .sub{color:var(--ink-soft);font-size:16px;max-width:64ch}
 .verdict{display:flex;align-items:center;gap:12px;margin-top:20px;
-  background:var(--pass-bg);border:1px solid color-mix(in srgb,var(--pass) 40%,transparent);
+  background:var(--warn-bg);border:1px solid color-mix(in srgb,var(--warn) 40%,transparent);
   border-radius:10px;padding:14px 18px}
-.verdict .dot{width:10px;height:10px;border-radius:50%;background:var(--pass);flex:none;
-  box-shadow:0 0 0 4px color-mix(in srgb,var(--pass) 22%,transparent)}
-.verdict b{color:var(--pass)}
+.verdict .dot{width:10px;height:10px;border-radius:50%;background:var(--warn);flex:none;
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--warn) 22%,transparent)}
+.verdict b{color:var(--warn)}
 .verdict span{color:var(--ink);font-size:15px}
 section{margin-top:44px}
 .h-row{display:flex;align-items:baseline;gap:14px;margin-bottom:18px}
@@ -65,6 +65,7 @@ h2{font-size:20px;font-weight:640;letter-spacing:-.01em}
 .card .stripe{position:absolute;left:0;top:0;bottom:0;width:4px}
 .s-pass .v{color:var(--pass)} .s-pass .stripe{background:var(--pass)}
 .s-warn .v{color:var(--warn)} .s-warn .stripe{background:var(--warn)}
+.s-crit .v{color:var(--crit)} .s-crit .stripe{background:var(--crit)}
 .renders{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 @media(max-width:760px){.renders{grid-template-columns:1fr}}
 figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;
@@ -84,6 +85,7 @@ td.num{text-align:right;font-family:ui-monospace,monospace;font-variant-numeric:
   font-size:11.5px;padding:2px 9px;border-radius:20px;font-weight:600}
 .t-pass{background:var(--pass-bg);color:var(--pass)}
 .t-warn{background:var(--warn-bg);color:var(--warn)}
+.t-crit{background:var(--crit-bg);color:var(--crit)}
 .t-info{background:var(--panel-2);color:var(--ink-soft)}
 .journey{display:grid;grid-template-columns:1fr;gap:0;background:var(--panel);
   border:1px solid var(--line);border-radius:12px;overflow:hidden}
@@ -123,12 +125,14 @@ code{font-family:ui-monospace,monospace;background:var(--panel-2);padding:1px 6p
   <div class="eyebrow">Fab-gate review · pause for feedback</div>
   <h1>OmniMarble Driver PCB — Layout Review</h1>
   <p class="sub">55&nbsp;V SELV coilgun pulse driver for the sim-to-real loop. Autorouted with a
-  purpose-built parallel PathFinder engine, DRC-gated to zero copper shorts. Below is the honest
-  state of the board before we spend hours on final finishing or fab exports.</p>
-  <div class="verdict">
+  purpose-built parallel PathFinder engine, DRC-gated to zero copper shorts. This is an honest
+  <b>iteration checkpoint</b> — shorts and parity are clean, but clearance and connectivity are
+  not, and the pulse section still needs manual review. It is not fab-ready.</p>
+  <div class="verdict warn">
     <span class="dot"></span>
-    <span><b>Copper is electrically legal.</b> 0 shorts · 0 crossings across 178 parts,
-    4,390 tracks, 696 vias. Remaining work is connectivity finishing and cosmetics, all visible and enumerated.</span>
+    <span><b>Iteration checkpoint — not fab-ready.</b> 0 shorts · 0 crossings · 0 schematic-parity,
+    but <b>59 real clearance errors</b> (near-shorts down to 0.010&nbsp;mm on fail-safe/gate/E-stop nets)
+    and <b>118 unconnected</b> (34 on safety/control/analog nets). Close both to zero before any fab export.</span>
   </div>
 </header>
 
@@ -138,10 +142,10 @@ code{font-family:ui-monospace,monospace;background:var(--panel-2);padding:1px 6p
       <div class="v">0</div><div class="d">was 199 · every net isolated</div></div>
     <div class="card s-pass"><div class="stripe"></div><div class="k">Tracks crossing</div>
       <div class="v">0</div><div class="d">was 25 · no illegal overlaps</div></div>
-    <div class="card s-warn"><div class="stripe"></div><div class="k">Clearance</div>
-      <div class="v">59</div><div class="d">was 499 · tight passes near pads</div></div>
-    <div class="card s-warn"><div class="stripe"></div><div class="k">Unconnected</div>
-      <div class="v">118</div><div class="d">honest airwires · worklist below</div></div>
+    <div class="card s-crit"><div class="stripe"></div><div class="k">Clearance</div>
+      <div class="v">59</div><div class="d">BLOCKER · down to 0.010 mm on safety/gate nets</div></div>
+    <div class="card s-crit"><div class="stripe"></div><div class="k">Unconnected</div>
+      <div class="v">118</div><div class="d">BLOCKER · 34 on safety/control/analog nets</div></div>
   </div>
 </section>
 
@@ -178,10 +182,11 @@ code{font-family:ui-monospace,monospace;background:var(--panel-2);padding:1px 6p
     <tbody>
       <tr><td>shorting_items</td><td class="num">0</td><td><span class="tag t-pass">pass</span></td><td>Copper legal — hard gate met</td></tr>
       <tr><td>tracks_crossing</td><td class="num">0</td><td><span class="tag t-pass">pass</span></td><td>No same-net or foreign crossings</td></tr>
+      <tr><td>schematic_parity</td><td class="num">0</td><td><span class="tag t-pass">pass</span></td><td>Fixed: C92–94 DNP, TP1/NT1/NT2 BOM-exclude</td></tr>
       <tr><td>silk_overlap</td><td class="num">199</td><td><span class="tag t-info">cosmetic</span></td><td>Footprint outlines / refdes — fab-prep</td></tr>
       <tr><td>silk_over_copper</td><td class="num">199</td><td><span class="tag t-info">cosmetic</span></td><td>Body silk over pads — fab-prep</td></tr>
       <tr><td>track_dangling</td><td class="num">119</td><td><span class="tag t-warn">finishing</span></td><td>Stubs from purged/failed nets — cleared as nets close</td></tr>
-      <tr><td>clearance</td><td class="num">59</td><td><span class="tag t-warn">finishing</span></td><td>Tight passes; re-route or nudge</td></tr>
+      <tr><td>clearance</td><td class="num">59</td><td><span class="tag t-crit">blocker</span></td><td>Near-shorts to 0.010 mm on FIRE_GATED, +5V/GATE*, BOOST_EN_N, ESTOP</td></tr>
       <tr><td>hole_to_hole / co-located</td><td class="num">32</td><td><span class="tag t-warn">finishing</span></td><td>Via-farm spacing near dense pins</td></tr>
       <tr><td>via_dangling</td><td class="num">5</td><td><span class="tag t-warn">finishing</span></td><td>Orphan stitch vias — auto-removable</td></tr>
     </tbody>
@@ -232,19 +237,25 @@ code{font-family:ui-monospace,monospace;background:var(--panel-2);padding:1px 6p
 
 <section>
   <div class="q">
-    <h3>&gt; DECISIONS I NEED FROM YOU</h3>
+    <h3>&gt; AGREED NEXT GATE (external review, accepted)</h3>
     <ol>
-      <li>Push the 118 unconnected to zero automatically (more repair/channel passes), or hand-finish
-        the hard cross-board signals yourself in the GUI?</li>
-      <li>Proceed to fab exports (gerbers / drill / pick-place / JLC BOM+CPL) on the current copper,
-        or close connectivity first?</li>
-      <li>Silkscreen: accept deferral to fab-prep, or want a batched-subprocess pass attempted now?</li>
+      <li><b>0 unconnected</b> — including every safety/control/analog net; none waived.</li>
+      <li><b>0 clearance</b> — the 0.010 mm gaps on fail-safe/gate nets are real defect risk.</li>
+      <li><b>0 schematic parity</b> — <b>done this revision.</b></li>
+      <li>Then <b>manual power-loop / Kelvin / boost review</b> with net-highlighted screenshots
+        proving symmetric FET drain/source copper, intentional thermal reliefs on pulse pads, and
+        true Kelvin pickup at the shunt.</li>
     </ol>
+    <p style="margin:14px 0 0;font-size:14px;color:var(--ink)"><b>Approach:</b> pulse loop, gate
+    drive, boost sense/feedback, Kelvin, and safety-interlock nets get hand-routed as reviewed
+    short/fat traces and <b>locked</b> before the autorouter runs on the remaining low-speed
+    interconnect. DRC-clean copper is necessary, not sufficient — this board is not fab-adjacent
+    until the power-loop review passes.</p>
   </div>
 </section>
 
 <div class="foot">
-  <span>omnimarble-driver.kicad_pcb · commit e64fb78</span>
-  <span>DRC via kicad-cli 10.0.4 · 0 shorts / 0 crossings</span>
+  <span>omnimarble-driver.kicad_pcb · board sha256 ed02f3b…</span>
+  <span>kicad-cli 10.0.4 --schematic-parity · 0 shorts / 0 crossings / 0 parity · 59 clearance · 118 unconnected</span>
 </div>
 </div>

@@ -1,7 +1,7 @@
 {
     "$schema": "https://schemas.kicad.org/drc.v1.json",
     "coordinate_units": "mm",
-    "date": "2026-07-04T07:36:23",
+    "date": "2026-07-04T09:42:41",
     "ignored_checks": [
         {
             "description": "Footprint has no courtyard defined",
@@ -82,20 +82,20 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Pad 3 [BST_CS] of U4 on F.Cu",
-                    "pos": {
-                        "x": 57.95,
-                        "y": 117.195
-                    },
-                    "uuid": "761ecb77-9bb9-4a30-ba23-fc1c259d92e1"
-                },
-                {
                     "description": "Track [BST_CS] on B.Cu, length 0.2013 mm",
                     "pos": {
                         "x": 57.95,
                         "y": 117.195
                     },
                     "uuid": "3bc403f9-3db9-4e49-96c1-61f6c8673be6"
+                },
+                {
+                    "description": "Pad 3 [BST_CS] of U4 on F.Cu",
+                    "pos": {
+                        "x": 57.95,
+                        "y": 117.195
+                    },
+                    "uuid": "761ecb77-9bb9-4a30-ba23-fc1c259d92e1"
                 }
             ],
             "severity": "error",
@@ -504,12 +504,12 @@
                     "uuid": "0086d122-650c-4aae-955c-baeb886e799f"
                 },
                 {
-                    "description": "Track [GND] on F.Cu, length 1.5476 mm",
+                    "description": "Via [GND] on F.Cu - B.Cu",
                     "pos": {
-                        "x": 113.089999,
-                        "y": 87.455
+                        "x": 113.0,
+                        "y": 89.0
                     },
-                    "uuid": "0273c1ba-a725-4618-8d94-0c8ad95bcc8a"
+                    "uuid": "6efdfdfb-f13e-4260-b27a-5b3bbfc834cf"
                 }
             ],
             "severity": "error",
@@ -634,20 +634,20 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Pad 3 [+5V] of U11 on F.Cu",
-                    "pos": {
-                        "x": 118.919999,
-                        "y": 102.19
-                    },
-                    "uuid": "b3924d72-0578-4165-98c5-b401bceee944"
-                },
-                {
                     "description": "Track [+5V] on B.Cu, length 0.2062 mm",
                     "pos": {
                         "x": 118.919999,
                         "y": 102.19
                     },
                     "uuid": "58ff90df-92a1-469d-847a-e55b0f1758bd"
+                },
+                {
+                    "description": "Pad 3 [+5V] of U11 on F.Cu",
+                    "pos": {
+                        "x": 118.919999,
+                        "y": 102.19
+                    },
+                    "uuid": "b3924d72-0578-4165-98c5-b401bceee944"
                 }
             ],
             "severity": "error",
@@ -726,20 +726,20 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Track [+5V] on B.Cu, length 3.5000 mm",
-                    "pos": {
-                        "x": 201.5,
-                        "y": 132.0
-                    },
-                    "uuid": "81d157f1-d768-489a-9da6-9234a58caa14"
-                },
-                {
                     "description": "Track [+5V] on F.Cu, length 5.5000 mm",
                     "pos": {
                         "x": 207.0,
                         "y": 132.0
                     },
                     "uuid": "332bb3e2-cc30-4c7f-8725-58ebc41ec89b"
+                },
+                {
+                    "description": "Track [+5V] on B.Cu, length 6.0000 mm",
+                    "pos": {
+                        "x": 201.5,
+                        "y": 126.0
+                    },
+                    "uuid": "729ca8fe-48ea-439f-a474-6d647c2278e5"
                 }
             ],
             "severity": "error",
@@ -754,7 +754,7 @@
                         "x": 9.3,
                         "y": 88.0
                     },
-                    "uuid": "405d5842-54f4-465b-b4d8-7610b3050900"
+                    "uuid": "c93ecb68-0490-452c-b5a5-65e8c87d64be"
                 },
                 {
                     "description": "Track [+24V] on B.Cu, length 13.0000 mm",
@@ -772,20 +772,20 @@
             "description": "Missing connection between items",
             "items": [
                 {
+                    "description": "Track [+24V] on B.Cu, length 0.1677 mm",
+                    "pos": {
+                        "x": 10.074999,
+                        "y": 102.65
+                    },
+                    "uuid": "bb573504-79df-4a08-90dc-9d56ac51db61"
+                },
+                {
                     "description": "Track [+24V] on F.Cu, length 0.1677 mm",
                     "pos": {
                         "x": 10.074999,
                         "y": 102.65
                     },
-                    "uuid": "e69cc59d-77f7-4dfb-99c9-00a7ef4fdab4"
-                },
-                {
-                    "description": "Track [+24V] on B.Cu, length 3.0000 mm",
-                    "pos": {
-                        "x": 10.0,
-                        "y": 105.5
-                    },
-                    "uuid": "618a6da0-c8df-4014-b687-12aeb86078a0"
+                    "uuid": "6b39a47f-6dfb-4b81-8833-3e1b8092d101"
                 }
             ],
             "severity": "error",
@@ -795,12 +795,12 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Track [+24V] on B.Cu, length 1.0000 mm",
+                    "description": "Track [+24V] on B.Cu, length 0.1237 mm",
                     "pos": {
-                        "x": 13.0,
-                        "y": 106.5
+                        "x": 13.88,
+                        "y": 106.47
                     },
-                    "uuid": "b99a1562-e909-4d1a-a9bd-dc2e50340cbd"
+                    "uuid": "ca25e3e5-c41d-476a-9c96-2dad0387dd3b"
                 },
                 {
                     "description": "Pad 1 [+24V] of L2 on F.Cu",
@@ -864,20 +864,20 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Pad 3 [+24V] of U2 on F.Cu",
-                    "pos": {
-                        "x": 129.564999,
-                        "y": 117.8
-                    },
-                    "uuid": "cc372e70-5bd6-422d-bcc2-081f4a6b749f"
-                },
-                {
                     "description": "Track [+24V] on B.Cu, length 0.2103 mm",
                     "pos": {
                         "x": 129.564999,
                         "y": 117.8
                     },
                     "uuid": "d0f6afdf-a31b-4e81-a0d1-416a7c9b9bbe"
+                },
+                {
+                    "description": "Pad 3 [+24V] of U2 on F.Cu",
+                    "pos": {
+                        "x": 129.564999,
+                        "y": 117.8
+                    },
+                    "uuid": "cc372e70-5bd6-422d-bcc2-081f4a6b749f"
                 }
             ],
             "severity": "error",
@@ -956,20 +956,20 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Pad 5 [CIN5] of U12 on F.Cu",
-                    "pos": {
-                        "x": 132.179999,
-                        "y": 104.73
-                    },
-                    "uuid": "ae1232d2-5aba-410f-b316-980abd9a1a67"
-                },
-                {
                     "description": "Track [CIN5] on B.Cu, length 0.2921 mm",
                     "pos": {
                         "x": 132.179999,
                         "y": 104.73
                     },
                     "uuid": "0cac5aff-399b-4450-8bdf-d6ffb9deaca8"
+                },
+                {
+                    "description": "Pad 5 [CIN5] of U12 on F.Cu",
+                    "pos": {
+                        "x": 132.179999,
+                        "y": 104.73
+                    },
+                    "uuid": "ae1232d2-5aba-410f-b316-980abd9a1a67"
                 }
             ],
             "severity": "error",
@@ -979,12 +979,12 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Pad 2 [GATE5] of R65 on F.Cu",
+                    "description": "Track [GATE5] on F.Cu, length 1.2000 mm",
                     "pos": {
                         "x": 133.999999,
                         "y": 127.255
                     },
-                    "uuid": "c7481907-6c50-4864-92a3-42a7731f9de9"
+                    "uuid": "229e958c-ed36-48fe-a155-cfa27cd04e1b"
                 },
                 {
                     "description": "Pad 2 [GATE5] of U12 on F.Cu",
@@ -1025,20 +1025,20 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Pad 6 [+12V_SW] of U7 on F.Cu",
-                    "pos": {
-                        "x": 94.9,
-                        "y": 90.195
-                    },
-                    "uuid": "1093fa71-582d-4f3d-adeb-36de5a1e764c"
-                },
-                {
                     "description": "Track [+12V_SW] on B.Cu, length 0.2191 mm",
                     "pos": {
                         "x": 94.9,
                         "y": 90.195
                     },
                     "uuid": "40453e45-1c4f-4eb4-ba4c-cdae775fb445"
+                },
+                {
+                    "description": "Pad 6 [+12V_SW] of U7 on F.Cu",
+                    "pos": {
+                        "x": 94.9,
+                        "y": 90.195
+                    },
+                    "uuid": "1093fa71-582d-4f3d-adeb-36de5a1e764c"
                 }
             ],
             "severity": "error",
@@ -1048,12 +1048,12 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Track [+12V_SW] on B.Cu, length 3.0000 mm",
+                    "description": "Track [+12V_SW] on F.Cu, length 0.5000 mm",
                     "pos": {
-                        "x": 93.5,
+                        "x": 96.5,
                         "y": 87.5
                     },
-                    "uuid": "75c19c06-bea9-47af-96a0-8ad1b450b1fb"
+                    "uuid": "9b6912f2-3a7b-4736-9694-2d6502ecf7ef"
                 },
                 {
                     "description": "Pad 1 [+12V_SW] of C21 on F.Cu",
@@ -1094,20 +1094,20 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Pad 6 [+12V_SW] of U8 on F.Cu",
-                    "pos": {
-                        "x": 108.159999,
-                        "y": 90.195
-                    },
-                    "uuid": "75703f50-47c9-4218-b348-4e6e190b7f19"
-                },
-                {
                     "description": "Track [+12V_SW] on B.Cu, length 0.2522 mm",
                     "pos": {
                         "x": 108.159999,
                         "y": 90.195
                     },
                     "uuid": "5139bff7-f437-4b10-8c20-3df9f9983ca4"
+                },
+                {
+                    "description": "Pad 6 [+12V_SW] of U8 on F.Cu",
+                    "pos": {
+                        "x": 108.159999,
+                        "y": 90.195
+                    },
+                    "uuid": "75703f50-47c9-4218-b348-4e6e190b7f19"
                 }
             ],
             "severity": "error",
@@ -1116,14 +1116,6 @@
         {
             "description": "Missing connection between items",
             "items": [
-                {
-                    "description": "Track [+12V_SW] on F.Cu, length 0.2000 mm",
-                    "pos": {
-                        "x": 145.3,
-                        "y": 90.0
-                    },
-                    "uuid": "0d53434f-039d-44bf-9d9e-35726fa8044a"
-                },
                 {
                     "description": "Track [+12V_SW] on B.Cu, length 0.2000 mm",
                     "pos": {
@@ -1131,6 +1123,14 @@
                         "y": 90.0
                     },
                     "uuid": "b901b09d-8d0e-4ed5-951f-8e0f6e17e1da"
+                },
+                {
+                    "description": "Track [+12V_SW] on F.Cu, length 0.2000 mm",
+                    "pos": {
+                        "x": 145.3,
+                        "y": 90.0
+                    },
+                    "uuid": "9e7479b8-74d5-44b2-8fe1-04d81a61c11d"
                 }
             ],
             "severity": "error",
@@ -1140,20 +1140,20 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Track [MCU_FIRE] on F.Cu, length 0.1200 mm",
+                    "description": "Track [MCU_FIRE] on B.Cu, length 0.1200 mm",
                     "pos": {
                         "x": 204.0,
                         "y": 73.62
                     },
-                    "uuid": "51266cd7-e883-4466-a4a7-11b318be9e94"
+                    "uuid": "17c2a4ea-f617-416b-b7e2-45a2d9cf1447"
                 },
                 {
-                    "description": "Track [MCU_FIRE] on B.Cu, length 0.5000 mm",
+                    "description": "Track [MCU_FIRE] on F.Cu, length 2.0000 mm",
                     "pos": {
-                        "x": 203.5,
+                        "x": 206.0,
                         "y": 73.5
                     },
-                    "uuid": "9fc7bff8-7b02-47d4-8c63-dbbef95d7775"
+                    "uuid": "11725624-2d91-418e-8154-0b20578c3854"
                 }
             ],
             "severity": "error",
@@ -1162,14 +1162,6 @@
         {
             "description": "Missing connection between items",
             "items": [
-                {
-                    "description": "Pad 2 [ARM_SENSE] of U6 on F.Cu",
-                    "pos": {
-                        "x": 115.857499,
-                        "y": 88.04
-                    },
-                    "uuid": "63d6a240-5f20-4cdf-ad46-ba26cf689e95"
-                },
                 {
                     "description": "Track [ARM_SENSE] on B.Cu, length 0.1480 mm",
                     "pos": {
@@ -1177,6 +1169,14 @@
                         "y": 88.04
                     },
                     "uuid": "24a8203f-22c6-4b11-a40c-c66afd1f5d3f"
+                },
+                {
+                    "description": "Pad 2 [ARM_SENSE] of U6 on F.Cu",
+                    "pos": {
+                        "x": 115.857499,
+                        "y": 88.04
+                    },
+                    "uuid": "63d6a240-5f20-4cdf-ad46-ba26cf689e95"
                 }
             ],
             "severity": "error",
@@ -1186,20 +1186,20 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Track [BOOST_EN_N] on F.Cu, length 0.2236 mm",
-                    "pos": {
-                        "x": 201.6,
-                        "y": 78.7
-                    },
-                    "uuid": "91a6bf6e-f68e-4663-bd30-8dc42030d4ea"
-                },
-                {
                     "description": "Track [BOOST_EN_N] on B.Cu, length 0.2236 mm",
                     "pos": {
                         "x": 201.6,
                         "y": 78.7
                     },
                     "uuid": "fde1465d-9f28-473b-889f-5152f2f27aba"
+                },
+                {
+                    "description": "Track [BOOST_EN_N] on F.Cu, length 4.4000 mm",
+                    "pos": {
+                        "x": 206.0,
+                        "y": 78.7
+                    },
+                    "uuid": "0e408009-df7a-44b8-a85b-6a597b38b797"
                 }
             ],
             "severity": "error",
@@ -1263,12 +1263,12 @@
                     "uuid": "17372750-7e3e-442a-a9a4-6be453f82133"
                 },
                 {
-                    "description": "Track [SIG3] on B.Cu, length 0.2154 mm",
+                    "description": "Track [SIG3] on B.Cu, length 0.5000 mm",
                     "pos": {
-                        "x": 188.92,
-                        "y": 141.2
+                        "x": 188.5,
+                        "y": 141.0
                     },
-                    "uuid": "1720709d-3e23-4baf-bbdd-a50aeb24a56d"
+                    "uuid": "df98e3d6-77c8-42be-ac43-b64d895a1582"
                 }
             ],
             "severity": "error",
@@ -1277,14 +1277,6 @@
         {
             "description": "Missing connection between items",
             "items": [
-                {
-                    "description": "Pad 11 [CIN3] of U11 on F.Cu",
-                    "pos": {
-                        "x": 123.869999,
-                        "y": 103.46
-                    },
-                    "uuid": "68b23b4d-8d7a-4021-8e91-85880b3a5b09"
-                },
                 {
                     "description": "Track [CIN3] on B.Cu, length 0.1360 mm",
                     "pos": {
@@ -1292,6 +1284,14 @@
                         "y": 103.46
                     },
                     "uuid": "e7102ab1-62e7-48f4-8c90-925097c791a2"
+                },
+                {
+                    "description": "Pad 11 [CIN3] of U11 on F.Cu",
+                    "pos": {
+                        "x": 123.869999,
+                        "y": 103.46
+                    },
+                    "uuid": "68b23b4d-8d7a-4021-8e91-85880b3a5b09"
                 }
             ],
             "severity": "error",
@@ -1300,14 +1300,6 @@
         {
             "description": "Missing connection between items",
             "items": [
-                {
-                    "description": "Track [SIG5] on B.Cu, length 0.1200 mm",
-                    "pos": {
-                        "x": 186.38,
-                        "y": 140.0
-                    },
-                    "uuid": "1d4b3219-4828-440c-8ac9-3bd248ae95ed"
-                },
                 {
                     "description": "Track [SIG5] on F.Cu, length 5.0000 mm",
                     "pos": {
@@ -1315,6 +1307,14 @@
                         "y": 140.0
                     },
                     "uuid": "6dfb66f7-c237-48ac-a6ad-33fdbedfefc8"
+                },
+                {
+                    "description": "Track [SIG5] on B.Cu, length 9.0000 mm",
+                    "pos": {
+                        "x": 177.5,
+                        "y": 140.0
+                    },
+                    "uuid": "1135d425-6f39-4b80-870e-4bae3d9ff6df"
                 }
             ],
             "severity": "error",
@@ -1323,6 +1323,14 @@
         {
             "description": "Missing connection between items",
             "items": [
+                {
+                    "description": "Track [+12V] on B.Cu, length 0.1250 mm",
+                    "pos": {
+                        "x": 62.9,
+                        "y": 115.925
+                    },
+                    "uuid": "3467efdc-ae6f-4fe9-b572-83188e1a3308"
+                },
                 {
                     "description": "Pad 7 [+12V] of U4 on F.Cu",
                     "pos": {
@@ -1330,14 +1338,6 @@
                         "y": 115.925
                     },
                     "uuid": "e2b3563e-8457-4888-b6a0-3819aa848d9b"
-                },
-                {
-                    "description": "Track [+12V] on B.Cu, length 0.1250 mm",
-                    "pos": {
-                        "x": 62.9,
-                        "y": 115.925
-                    },
-                    "uuid": "1d178554-81df-4a01-9ec0-67d16a5b52f7"
                 }
             ],
             "severity": "error",
@@ -1346,14 +1346,6 @@
         {
             "description": "Missing connection between items",
             "items": [
-                {
-                    "description": "Pad 1 [+12V] of U2 on F.Cu",
-                    "pos": {
-                        "x": 129.564999,
-                        "y": 114.8
-                    },
-                    "uuid": "fe7a95fe-c654-44a9-b67f-1950aa6057aa"
-                },
                 {
                     "description": "Track [+12V] on B.Cu, length 0.2103 mm",
                     "pos": {
@@ -1361,6 +1353,14 @@
                         "y": 114.8
                     },
                     "uuid": "a22b5c55-f92e-4f8b-b1dd-22f340516c58"
+                },
+                {
+                    "description": "Pad 1 [+12V] of U2 on F.Cu",
+                    "pos": {
+                        "x": 129.564999,
+                        "y": 114.8
+                    },
+                    "uuid": "fe7a95fe-c654-44a9-b67f-1950aa6057aa"
                 }
             ],
             "severity": "error",
@@ -1370,12 +1370,12 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Track [BST_RC] on F.Cu, length 0.2524 mm",
+                    "description": "Track [BST_RC] on F.Cu, length 1.2000 mm",
                     "pos": {
-                        "x": 56.75,
+                        "x": 57.95,
                         "y": 118.465
                     },
-                    "uuid": "24dc054f-2588-4a23-a891-0b4745858889"
+                    "uuid": "213f75b9-7f46-43ee-8165-05bf1205930b"
                 },
                 {
                     "description": "Track [BST_RC] on B.Cu, length 0.2524 mm",
@@ -1416,20 +1416,20 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Track [BST_FB] on F.Cu, length 0.1531 mm",
-                    "pos": {
-                        "x": 55.38,
-                        "y": 122.405
-                    },
-                    "uuid": "6f29fe36-c56b-4ff6-a243-43fdc768b9f3"
-                },
-                {
                     "description": "Track [BST_FB] on B.Cu, length 0.1531 mm",
                     "pos": {
                         "x": 55.38,
                         "y": 122.405
                     },
                     "uuid": "006c9a1c-c96f-4848-a81a-98d6a0b31fb6"
+                },
+                {
+                    "description": "Track [BST_FB] on F.Cu, length 2.0000 mm",
+                    "pos": {
+                        "x": 55.5,
+                        "y": 122.5
+                    },
+                    "uuid": "06845ad5-5bd6-4637-a727-5229dcd72273"
                 }
             ],
             "severity": "error",
@@ -1462,12 +1462,12 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Pad 6 [VTH_GATE] of U11 on F.Cu",
+                    "description": "Track [VTH_GATE] on F.Cu, length 2.0000 mm",
                     "pos": {
                         "x": 118.919999,
                         "y": 106.0
                     },
-                    "uuid": "489052c8-da4e-427c-a13e-a99869fb88b7"
+                    "uuid": "5ee30080-f85d-4f22-bca8-f0aefdcf92ad"
                 },
                 {
                     "description": "Pad 4 [VTH_GATE] of U11 on F.Cu",
@@ -1516,12 +1516,12 @@
                     "uuid": "1044cfa8-facf-4736-b78b-2a842dcb1890"
                 },
                 {
-                    "description": "Pad 6 [VTH_GATE] of U11 on F.Cu",
+                    "description": "Track [VTH_GATE] on F.Cu, length 2.0000 mm",
                     "pos": {
                         "x": 118.919999,
                         "y": 106.0
                     },
-                    "uuid": "489052c8-da4e-427c-a13e-a99869fb88b7"
+                    "uuid": "5ee30080-f85d-4f22-bca8-f0aefdcf92ad"
                 }
             ],
             "severity": "error",
@@ -1530,14 +1530,6 @@
         {
             "description": "Missing connection between items",
             "items": [
-                {
-                    "description": "Pad 10 [VTH_GATE] of U11 on F.Cu",
-                    "pos": {
-                        "x": 123.869999,
-                        "y": 104.73
-                    },
-                    "uuid": "de802a55-390a-4200-bee7-dbc6e8ddacbd"
-                },
                 {
                     "description": "Track [VTH_GATE] on B.Cu, length 0.2642 mm",
                     "pos": {
@@ -1545,6 +1537,14 @@
                         "y": 104.73
                     },
                     "uuid": "5cbd0ece-bb5e-4012-aba9-df1be0f9d84a"
+                },
+                {
+                    "description": "Pad 10 [VTH_GATE] of U11 on F.Cu",
+                    "pos": {
+                        "x": 123.869999,
+                        "y": 104.73
+                    },
+                    "uuid": "de802a55-390a-4200-bee7-dbc6e8ddacbd"
                 }
             ],
             "severity": "error",
@@ -1553,14 +1553,6 @@
         {
             "description": "Missing connection between items",
             "items": [
-                {
-                    "description": "Pad 4 [VTH_GATE] of U12 on F.Cu",
-                    "pos": {
-                        "x": 132.179999,
-                        "y": 103.46
-                    },
-                    "uuid": "0d485a74-041b-4d2d-8e85-f101587fbd06"
-                },
                 {
                     "description": "Track [VTH_GATE] on B.Cu, length 0.1844 mm",
                     "pos": {
@@ -1568,6 +1560,14 @@
                         "y": 103.46
                     },
                     "uuid": "64cade33-c2d7-4d03-8344-d66cab004c72"
+                },
+                {
+                    "description": "Pad 4 [VTH_GATE] of U12 on F.Cu",
+                    "pos": {
+                        "x": 132.179999,
+                        "y": 103.46
+                    },
+                    "uuid": "0d485a74-041b-4d2d-8e85-f101587fbd06"
                 }
             ],
             "severity": "error",
@@ -1577,20 +1577,20 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Track [SIG4] on F.Cu, length 0.2147 mm",
+                    "description": "Track [SIG4] on B.Cu, length 0.2147 mm",
                     "pos": {
                         "x": 190.19,
                         "y": 140.6
                     },
-                    "uuid": "3017eaa8-fe29-4fbf-b36d-bfbb1ee1a3f4"
+                    "uuid": "7c04e715-52bc-4e51-a92b-8ad7607fd9b0"
                 },
                 {
-                    "description": "Track [SIG4] on B.Cu, length 0.5000 mm",
+                    "description": "Track [SIG4] on F.Cu, length 4.5000 mm",
                     "pos": {
                         "x": 190.0,
-                        "y": 140.0
+                        "y": 140.5
                     },
-                    "uuid": "8c6d61ba-6ed0-4256-a469-d8f6c6300ed6"
+                    "uuid": "49b74d70-a45a-4417-a258-6f48ded8f3eb"
                 }
             ],
             "severity": "error",
@@ -1646,20 +1646,20 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Pad 7 [3V3] of U10 on F.Cu",
-                    "pos": {
-                        "x": 110.955,
-                        "y": 99.89
-                    },
-                    "uuid": "d27bca89-8a46-4566-a328-258d19d1228a"
-                },
-                {
                     "description": "Track [3V3] on B.Cu, length 0.1188 mm",
                     "pos": {
                         "x": 110.955,
                         "y": 99.89
                     },
                     "uuid": "0d66a365-807f-41f8-b178-47584bfceb1e"
+                },
+                {
+                    "description": "Pad 7 [3V3] of U10 on F.Cu",
+                    "pos": {
+                        "x": 110.955,
+                        "y": 99.89
+                    },
+                    "uuid": "d27bca89-8a46-4566-a328-258d19d1228a"
                 }
             ],
             "severity": "error",
@@ -1669,12 +1669,12 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Track [3V3] on F.Cu, length 0.1147 mm",
+                    "description": "Track [3V3] on F.Cu, length 2.0000 mm",
                     "pos": {
-                        "x": 119.532499,
+                        "x": 117.532499,
                         "y": 87.39
                     },
-                    "uuid": "37a5883a-8b41-44bf-ac00-86f1ac638e30"
+                    "uuid": "45cd26ce-3941-4c79-8574-7e48f573d4d2"
                 },
                 {
                     "description": "Pad 1 [3V3] of C20 on F.Cu",
@@ -1691,14 +1691,6 @@
         {
             "description": "Missing connection between items",
             "items": [
-                {
-                    "description": "Pad 1 [3V3] of C20 on F.Cu",
-                    "pos": {
-                        "x": 120.299999,
-                        "y": 87.455
-                    },
-                    "uuid": "da2c56d1-ab47-410b-a874-c9c3e45f71a8"
-                },
                 {
                     "description": "Track [3V3] on B.Cu, length 0.2050 mm",
                     "pos": {
@@ -1706,6 +1698,14 @@
                         "y": 87.455
                     },
                     "uuid": "d246bd75-473f-4e07-889e-63b51d5a447d"
+                },
+                {
+                    "description": "Pad 1 [3V3] of C20 on F.Cu",
+                    "pos": {
+                        "x": 120.299999,
+                        "y": 87.455
+                    },
+                    "uuid": "da2c56d1-ab47-410b-a874-c9c3e45f71a8"
                 }
             ],
             "severity": "error",
@@ -1723,12 +1723,12 @@
                     "uuid": "e72e30df-bb05-443a-b7a4-691509ac3eb2"
                 },
                 {
-                    "description": "Track [3V3] on F.Cu, length 2.0000 mm",
+                    "description": "Track [3V3] on F.Cu, length 0.2522 mm",
                     "pos": {
                         "x": 127.939999,
-                        "y": 127.255
+                        "y": 129.255
                     },
-                    "uuid": "aa820c57-9bb6-495c-9305-771c60ad6441"
+                    "uuid": "022cc9dc-cf98-4883-8f1a-7241f02b02e6"
                 }
             ],
             "severity": "error",
@@ -1743,7 +1743,7 @@
                         "x": 137.129999,
                         "y": 104.73
                     },
-                    "uuid": "85d74bfa-3169-482e-84f2-36288d267067"
+                    "uuid": "2e39e859-04ad-4aa3-a672-ffb548f9158b"
                 },
                 {
                     "description": "Pad 10 [3V3] of U12 on F.Cu",
@@ -1761,20 +1761,20 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Pad 1 [3V3] of C17 on F.Cu",
-                    "pos": {
-                        "x": 140.279999,
-                        "y": 47.455
-                    },
-                    "uuid": "da1b1e9e-7f1e-4317-a40a-e74d0d339b49"
-                },
-                {
                     "description": "Track [3V3] on B.Cu, length 0.2246 mm",
                     "pos": {
                         "x": 140.279999,
                         "y": 47.455
                     },
                     "uuid": "02765977-fc91-41f7-a9d2-6318657641d4"
+                },
+                {
+                    "description": "Pad 1 [3V3] of C17 on F.Cu",
+                    "pos": {
+                        "x": 140.279999,
+                        "y": 47.455
+                    },
+                    "uuid": "da1b1e9e-7f1e-4317-a40a-e74d0d339b49"
                 }
             ],
             "severity": "error",
@@ -1876,20 +1876,20 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Pad 2 [GATE1] of U11 on F.Cu",
-                    "pos": {
-                        "x": 118.919999,
-                        "y": 100.92
-                    },
-                    "uuid": "f345dc54-5822-4ceb-9bc9-ac75045952dd"
-                },
-                {
                     "description": "Track [GATE1] on B.Cu, length 0.1131 mm",
                     "pos": {
                         "x": 118.919999,
                         "y": 100.92
                     },
                     "uuid": "fb4b2bff-e209-475a-899d-b3cde0cb58a7"
+                },
+                {
+                    "description": "Pad 2 [GATE1] of U11 on F.Cu",
+                    "pos": {
+                        "x": 118.919999,
+                        "y": 100.92
+                    },
+                    "uuid": "f345dc54-5822-4ceb-9bc9-ac75045952dd"
                 }
             ],
             "severity": "error",
@@ -1907,12 +1907,12 @@
                     "uuid": "3ac41a83-963e-4700-acd5-f09adabfc12c"
                 },
                 {
-                    "description": "Pad 2 [BST_G] of R6 on F.Cu",
+                    "description": "Track [BST_G] on F.Cu, length 1.2000 mm",
                     "pos": {
                         "x": 53.825,
                         "y": 116.0
                     },
-                    "uuid": "26e3c009-e874-4d42-8fbe-273c4f43b9dd"
+                    "uuid": "b9e49c49-ca9c-41d8-a6ad-565f440f5884"
                 }
             ],
             "severity": "error",
@@ -1945,20 +1945,20 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Track [GATE6] on B.Cu, length 0.1868 mm",
+                    "description": "Track [GATE6] on F.Cu, length 0.1868 mm",
                     "pos": {
                         "x": 132.179999,
                         "y": 98.05
                     },
-                    "uuid": "546775bb-8c5c-439b-8f8e-504b1a802865"
+                    "uuid": "9cbf2cb6-109e-4f98-89a4-45af793efd16"
                 },
                 {
-                    "description": "Track [GATE6] on F.Cu, length 0.5000 mm",
+                    "description": "Track [GATE6] on B.Cu, length 4.5000 mm",
                     "pos": {
                         "x": 132.0,
-                        "y": 98.0
+                        "y": 102.5
                     },
-                    "uuid": "3e90968e-7b48-4674-85eb-56b44df2be6b"
+                    "uuid": "86567311-08ca-45ed-9121-3f31169dc700"
                 }
             ],
             "severity": "error",
@@ -1991,20 +1991,20 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Track [VBOOST] on B.Cu, length 0.5000 mm",
+                    "description": "Track [VBOOST] on F.Cu, length 0.5000 mm",
                     "pos": {
                         "x": 59.5,
                         "y": 103.5
                     },
-                    "uuid": "754e8733-7e16-4676-9be7-ae5479196e62"
+                    "uuid": "efbc5eec-3c58-46bb-9386-89b66c9ca576"
                 },
                 {
-                    "description": "Track [VBOOST] on F.Cu, length 1.5000 mm",
+                    "description": "Track [VBOOST] on B.Cu, length 9.5000 mm",
                     "pos": {
-                        "x": 59.5,
-                        "y": 104.0
+                        "x": 69.0,
+                        "y": 103.5
                     },
-                    "uuid": "1bd286c7-c641-4390-935f-dd3afdf5be83"
+                    "uuid": "5d007030-18b3-42a1-b625-81c02fac66d3"
                 }
             ],
             "severity": "error",
@@ -2037,12 +2037,12 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Pad 1 [VBOOST] of C13 on F.Cu",
+                    "description": "Track [VBOOST] on F.Cu, length 0.2483 mm",
                     "pos": {
                         "x": 74.395,
                         "y": 104.225
                     },
-                    "uuid": "e267a390-ebc0-4b18-851b-f93d5713f5d3"
+                    "uuid": "65d26cf7-9929-48f8-aeb7-507234474dff"
                 },
                 {
                     "description": "Track [VBOOST] on F.Cu, length 1.2000 mm",
@@ -2060,12 +2060,12 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Pad 1 [VBOOST] of R15 on F.Cu",
+                    "description": "Track [VBOOST] on F.Cu, length 1.2000 mm",
                     "pos": {
                         "x": 83.839999,
                         "y": 122.405
                     },
-                    "uuid": "b7590375-0ea5-4a87-b8a9-87a74d68928c"
+                    "uuid": "a661da6a-9e8e-42ff-a762-b24119739e57"
                 },
                 {
                     "description": "Track [VBOOST] on F.Cu, length 1.2000 mm",
@@ -2091,12 +2091,12 @@
                     "uuid": "ea3e4fb5-2d19-4902-90da-21e681e96956"
                 },
                 {
-                    "description": "Pad 1 [VBOOST] of R9 on F.Cu",
+                    "description": "Track [VBOOST] on F.Cu, length 1.2000 mm",
                     "pos": {
                         "x": 125.329999,
                         "y": 122.405
                     },
-                    "uuid": "63d9092e-f16d-49b5-81e2-ba72e369e769"
+                    "uuid": "77d633aa-dd35-42d1-9ce5-83eb3ad5bce0"
                 }
             ],
             "severity": "error",
@@ -2114,12 +2114,12 @@
                     "uuid": "0a17dd9c-52cc-42da-81d0-c9c13a1e4351"
                 },
                 {
-                    "description": "Pad 1 [VBOOST] of R10 on F.Cu",
+                    "description": "Track [VBOOST] on F.Cu, length 1.2000 mm",
                     "pos": {
                         "x": 153.509999,
                         "y": 114.455
                     },
-                    "uuid": "78dcf1f8-c0c5-4834-a992-0de6847dcda4"
+                    "uuid": "ea3e4fb5-2d19-4902-90da-21e681e96956"
                 }
             ],
             "severity": "error",
@@ -2129,20 +2129,20 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Track [RLY_DUMP] on F.Cu, length 0.2263 mm",
-                    "pos": {
-                        "x": 212.34,
-                        "y": 76.16
-                    },
-                    "uuid": "04d698ff-0402-4d71-953f-65c86830b3c3"
-                },
-                {
                     "description": "Track [RLY_DUMP] on B.Cu, length 0.2263 mm",
                     "pos": {
                         "x": 212.34,
                         "y": 76.16
                     },
                     "uuid": "cc1ffa1e-97ac-4336-ad4c-383281eb18f1"
+                },
+                {
+                    "description": "Track [RLY_DUMP] on F.Cu, length 0.2263 mm",
+                    "pos": {
+                        "x": 212.34,
+                        "y": 76.16
+                    },
+                    "uuid": "04d698ff-0402-4d71-953f-65c86830b3c3"
                 }
             ],
             "severity": "error",
@@ -2229,12 +2229,12 @@
                     "uuid": "1300d3c0-b070-4e5f-b736-0bd557614a67"
                 },
                 {
-                    "description": "PTH pad 6 [GATE3] of J9",
+                    "description": "Track [GATE3] on F.Cu, length 3.2000 mm",
                     "pos": {
                         "x": 166.0,
                         "y": 72.7
                     },
-                    "uuid": "66ed9166-2799-4e45-a5e0-102ccebe60c0"
+                    "uuid": "cb93b0e7-3188-4d63-be74-9951fa91d2c2"
                 }
             ],
             "severity": "error",
@@ -2244,20 +2244,20 @@
             "description": "Missing connection between items",
             "items": [
                 {
+                    "description": "Track [GATE3] on F.Cu, length 0.2040 mm",
+                    "pos": {
+                        "x": 202.8,
+                        "y": 68.54
+                    },
+                    "uuid": "1913dfe7-a9b9-4072-8ed9-583fe9957e41"
+                },
+                {
                     "description": "Track [GATE3] on B.Cu, length 0.2040 mm",
                     "pos": {
                         "x": 202.8,
                         "y": 68.54
                     },
                     "uuid": "b0a049e0-1be9-4027-90d9-1ac45b7b4d19"
-                },
-                {
-                    "description": "Track [GATE3] on F.Cu, length 3.0000 mm",
-                    "pos": {
-                        "x": 206.0,
-                        "y": 68.5
-                    },
-                    "uuid": "90a2335b-3bea-4c5e-b74f-b7b188163a64"
                 }
             ],
             "severity": "error",
@@ -2298,12 +2298,12 @@
                     "uuid": "d602fbed-ead8-4088-af6e-84255c85506d"
                 },
                 {
-                    "description": "Pad 1 [IMON_F] of C27 on F.Cu",
+                    "description": "Track [IMON_F] on F.Cu, length 0.0832 mm",
                     "pos": {
                         "x": 103.569999,
                         "y": 99.455
                     },
-                    "uuid": "3425f798-2ed0-4478-8a2e-c8f6923b815c"
+                    "uuid": "2d61fc0a-ef59-45f6-a16d-5f5a0c44e3e1"
                 }
             ],
             "severity": "error",
@@ -2312,14 +2312,6 @@
         {
             "description": "Missing connection between items",
             "items": [
-                {
-                    "description": "Pad 2 [FIRE_GATED] of U7 on F.Cu",
-                    "pos": {
-                        "x": 89.95,
-                        "y": 88.925
-                    },
-                    "uuid": "7bea4638-499f-405e-b020-d1295695fdac"
-                },
                 {
                     "description": "Track [FIRE_GATED] on B.Cu, length 0.0901 mm",
                     "pos": {
@@ -2327,6 +2319,14 @@
                         "y": 88.925
                     },
                     "uuid": "62e68e08-20c3-48d5-a15a-708c2d9b1190"
+                },
+                {
+                    "description": "Pad 2 [FIRE_GATED] of U7 on F.Cu",
+                    "pos": {
+                        "x": 89.95,
+                        "y": 88.925
+                    },
+                    "uuid": "7bea4638-499f-405e-b020-d1295695fdac"
                 }
             ],
             "severity": "error",
@@ -2335,14 +2335,6 @@
         {
             "description": "Missing connection between items",
             "items": [
-                {
-                    "description": "Pad 2 [FIRE_GATED] of U8 on F.Cu",
-                    "pos": {
-                        "x": 103.209999,
-                        "y": 88.925
-                    },
-                    "uuid": "f64ded3e-c205-47df-92d1-f6c6e365486f"
-                },
                 {
                     "description": "Track [FIRE_GATED] on B.Cu, length 0.2230 mm",
                     "pos": {
@@ -2350,6 +2342,14 @@
                         "y": 88.925
                     },
                     "uuid": "31656ddb-d97c-4749-8f7b-6599599aa7c8"
+                },
+                {
+                    "description": "Pad 2 [FIRE_GATED] of U8 on F.Cu",
+                    "pos": {
+                        "x": 103.209999,
+                        "y": 88.925
+                    },
+                    "uuid": "f64ded3e-c205-47df-92d1-f6c6e365486f"
                 }
             ],
             "severity": "error",
@@ -2358,14 +2358,6 @@
         {
             "description": "Missing connection between items",
             "items": [
-                {
-                    "description": "Pad 1 [QG1] of Q10 on F.Cu",
-                    "pos": {
-                        "x": 73.8,
-                        "y": 71.75
-                    },
-                    "uuid": "7d6cc398-166c-43ef-a756-ee4fb271143e"
-                },
                 {
                     "description": "Track [QG1] on B.Cu, length 0.3202 mm",
                     "pos": {
@@ -2373,6 +2365,14 @@
                         "y": 71.75
                     },
                     "uuid": "14d58238-e013-4e5c-bfdd-3aba0ba6d15d"
+                },
+                {
+                    "description": "Pad 1 [QG1] of Q10 on F.Cu",
+                    "pos": {
+                        "x": 73.8,
+                        "y": 71.75
+                    },
+                    "uuid": "7d6cc398-166c-43ef-a756-ee4fb271143e"
                 }
             ],
             "severity": "error",
@@ -2382,12 +2382,12 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Pad 2 [ISNS_P] of NT1 on F.Cu",
+                    "description": "Track [ISNS_P] on F.Cu, length 1.2000 mm",
                     "pos": {
                         "x": 126.5,
                         "y": 83.0
                     },
-                    "uuid": "aa8070cc-476e-4f52-8385-ab7b0b0f8ed0"
+                    "uuid": "d0e89146-d36b-4be7-86ef-47a23eeb5c42"
                 },
                 {
                     "description": "Pad 2 [ISNS_P] of U9 on F.Cu",
@@ -2405,12 +2405,12 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Track [BST_COMP] on F.Cu, length 0.2157 mm",
+                    "description": "Track [BST_COMP] on F.Cu, length 1.5000 mm",
                     "pos": {
-                        "x": 56.35,
-                        "y": 114.655
+                        "x": 56.5,
+                        "y": 114.5
                     },
-                    "uuid": "6f4fa2b1-3287-46e6-b8ca-feb426bb3786"
+                    "uuid": "555ca750-cb56-44f3-a497-8a94c09505b5"
                 },
                 {
                     "description": "Track [BST_COMP] on B.Cu, length 1.0000 mm",
@@ -2566,20 +2566,20 @@
             "description": "Missing connection between items",
             "items": [
                 {
+                    "description": "Track [LIVE_LED] on B.Cu, length 0.0950 mm",
+                    "pos": {
+                        "x": 191.499999,
+                        "y": 51.405
+                    },
+                    "uuid": "8316eb7c-db0d-425f-9f95-0e940fa91211"
+                },
+                {
                     "description": "Track [LIVE_LED] on F.Cu, length 1.0000 mm",
                     "pos": {
                         "x": 191.5,
                         "y": 51.5
                     },
                     "uuid": "a4d0f3be-35d6-4854-9ca7-2af3bc1ad1a6"
-                },
-                {
-                    "description": "Track [LIVE_LED] on B.Cu, length 3.5000 mm",
-                    "pos": {
-                        "x": 195.0,
-                        "y": 51.5
-                    },
-                    "uuid": "baab0358-0267-436a-a128-8d1b680175f3"
                 }
             ],
             "severity": "error",
@@ -2612,20 +2612,20 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Pad 1 [DRV_SPARE] of TP1 on F.Cu",
-                    "pos": {
-                        "x": 144.0,
-                        "y": 80.0
-                    },
-                    "uuid": "acd92ba8-93af-4dc2-99ff-f7a690602936"
-                },
-                {
                     "description": "Track [DRV_SPARE] on B.Cu, length 9.0000 mm",
                     "pos": {
                         "x": 144.0,
                         "y": 89.0
                     },
                     "uuid": "22b22619-b143-48c3-85ca-6fe69f80bd54"
+                },
+                {
+                    "description": "Pad 1 [DRV_SPARE] of TP1 on F.Cu",
+                    "pos": {
+                        "x": 144.0,
+                        "y": 80.0
+                    },
+                    "uuid": "acd92ba8-93af-4dc2-99ff-f7a690602936"
                 }
             ],
             "severity": "error",
@@ -2634,14 +2634,6 @@
         {
             "description": "Missing connection between items",
             "items": [
-                {
-                    "description": "Track [DRV2] on B.Cu, length 0.0750 mm",
-                    "pos": {
-                        "x": 92.0,
-                        "y": 84.925
-                    },
-                    "uuid": "533fb1c4-65f1-4c33-a3e3-ba579fa9160e"
-                },
                 {
                     "description": "Track [DRV2] on F.Cu, length 1.6000 mm",
                     "pos": {
@@ -2649,6 +2641,14 @@
                         "y": 83.325
                     },
                     "uuid": "c6a80d18-e5a4-4e24-8ef3-e34283011686"
+                },
+                {
+                    "description": "Track [DRV2] on B.Cu, length 0.0750 mm",
+                    "pos": {
+                        "x": 92.0,
+                        "y": 84.925
+                    },
+                    "uuid": "533fb1c4-65f1-4c33-a3e3-ba579fa9160e"
                 }
             ],
             "severity": "error",
@@ -2658,20 +2658,20 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Track [BUZZ_DRV] on F.Cu, length 0.2538 mm",
-                    "pos": {
-                        "x": 192.742499,
-                        "y": 38.425
-                    },
-                    "uuid": "0326e27d-fd07-46c2-aa18-3c9246f402cc"
-                },
-                {
                     "description": "Track [BUZZ_DRV] on B.Cu, length 0.2538 mm",
                     "pos": {
                         "x": 192.742499,
                         "y": 38.425
                     },
                     "uuid": "91926e72-3c95-4b10-abe6-1def5afa01cd"
+                },
+                {
+                    "description": "Track [BUZZ_DRV] on F.Cu, length 1.2000 mm",
+                    "pos": {
+                        "x": 191.5425,
+                        "y": 38.425
+                    },
+                    "uuid": "b82e7cc6-d37f-4308-92ee-05d7768ded51"
                 }
             ],
             "severity": "error",
@@ -2749,29 +2749,6 @@
     ],
     "violations": [
         {
-            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1600 mm)",
-            "items": [
-                {
-                    "description": "Track [K1_B] on F.Cu, length 0.0602 mm",
-                    "pos": {
-                        "x": 159.54,
-                        "y": 99.455
-                    },
-                    "uuid": "23747971-fd44-4862-8269-fcf9980fa535"
-                },
-                {
-                    "description": "Track [GATE6] on F.Cu, length 4.0000 mm",
-                    "pos": {
-                        "x": 160.0,
-                        "y": 97.5
-                    },
-                    "uuid": "aa79339b-d171-48a3-a97f-8bea5ee71b6b"
-                }
-            ],
-            "severity": "error",
-            "type": "clearance"
-        },
-        {
             "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1850 mm)",
             "items": [
                 {
@@ -2795,23 +2772,46 @@
             "type": "clearance"
         },
         {
+            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1600 mm)",
+            "items": [
+                {
+                    "description": "Track [K1_B] on F.Cu, length 0.0602 mm",
+                    "pos": {
+                        "x": 159.54,
+                        "y": 99.455
+                    },
+                    "uuid": "23747971-fd44-4862-8269-fcf9980fa535"
+                },
+                {
+                    "description": "Track [GATE6] on F.Cu, length 4.0000 mm",
+                    "pos": {
+                        "x": 160.0,
+                        "y": 97.5
+                    },
+                    "uuid": "aa79339b-d171-48a3-a97f-8bea5ee71b6b"
+                }
+            ],
+            "severity": "error",
+            "type": "clearance"
+        },
+        {
             "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1100 mm)",
             "items": [
                 {
-                    "description": "Track [GATE1] on F.Cu, length 1.2000 mm",
-                    "pos": {
-                        "x": 149.029999,
-                        "y": 122.405
-                    },
-                    "uuid": "3cfaed2f-0785-496a-b687-1c738261fcc9"
-                },
-                {
                     "description": "Track [+5V] on F.Cu, length 1.2000 mm",
                     "pos": {
-                        "x": 151.789999,
-                        "y": 122.405
+                        "x": 136.759999,
+                        "y": 127.255
                     },
-                    "uuid": "60c17254-6080-4c1e-9e44-30eebf4a1a2e"
+                    "uuid": "18260f3a-ece4-465b-856d-ff9a33829c5b"
+                },
+                {
+                    "description": "Track [GATE5] on F.Cu, length 1.2000 mm",
+                    "pos": {
+                        "x": 133.999999,
+                        "y": 127.255
+                    },
+                    "uuid": "229e958c-ed36-48fe-a155-cfa27cd04e1b"
                 }
             ],
             "severity": "error",
@@ -2844,43 +2844,20 @@
             "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1100 mm)",
             "items": [
                 {
+                    "description": "Track [GATE1] on F.Cu, length 1.2000 mm",
+                    "pos": {
+                        "x": 149.029999,
+                        "y": 122.405
+                    },
+                    "uuid": "3cfaed2f-0785-496a-b687-1c738261fcc9"
+                },
+                {
                     "description": "Track [+5V] on F.Cu, length 1.2000 mm",
                     "pos": {
-                        "x": 136.759999,
-                        "y": 127.255
+                        "x": 151.789999,
+                        "y": 122.405
                     },
-                    "uuid": "18260f3a-ece4-465b-856d-ff9a33829c5b"
-                },
-                {
-                    "description": "Track [GATE5] on F.Cu, length 1.2000 mm",
-                    "pos": {
-                        "x": 133.999999,
-                        "y": 127.255
-                    },
-                    "uuid": "229e958c-ed36-48fe-a155-cfa27cd04e1b"
-                }
-            ],
-            "severity": "error",
-            "type": "clearance"
-        },
-        {
-            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.0850 mm)",
-            "items": [
-                {
-                    "description": "Track [GATE3] on F.Cu, length 1.2000 mm",
-                    "pos": {
-                        "x": 89.899999,
-                        "y": 127.255
-                    },
-                    "uuid": "1a011cc3-e77a-44cc-8b42-a27028434a67"
-                },
-                {
-                    "description": "Track [+5V] on F.Cu, length 0.2482 mm",
-                    "pos": {
-                        "x": 91.459999,
-                        "y": 127.255
-                    },
-                    "uuid": "76b0a994-e5d9-4f62-a505-0da8577f666a"
+                    "uuid": "60c17254-6080-4c1e-9e44-30eebf4a1a2e"
                 }
             ],
             "severity": "error",
@@ -2913,43 +2890,20 @@
             "description": "Clearance violation ( clearance 0.2000 mm; actual 0.0850 mm)",
             "items": [
                 {
-                    "description": "Track [+5V] on F.Cu, length 0.1379 mm",
+                    "description": "Track [GATE3] on F.Cu, length 1.2000 mm",
                     "pos": {
-                        "x": 110.899999,
-                        "y": 122.405
-                    },
-                    "uuid": "8d98c7e2-faf0-407f-b189-715e13e632f5"
-                },
-                {
-                    "description": "Track [BSTINH_B] on F.Cu, length 1.2000 mm",
-                    "pos": {
-                        "x": 109.339999,
-                        "y": 122.405
-                    },
-                    "uuid": "a98f1a16-eef9-4788-a899-72f89c2e11f1"
-                }
-            ],
-            "severity": "error",
-            "type": "clearance"
-        },
-        {
-            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.0850 mm)",
-            "items": [
-                {
-                    "description": "Track [GATE4] on F.Cu, length 0.2873 mm",
-                    "pos": {
-                        "x": 113.149999,
+                        "x": 89.899999,
                         "y": 127.255
                     },
-                    "uuid": "7b096b57-3e0d-4740-87d5-516dfd24e1ab"
+                    "uuid": "1a011cc3-e77a-44cc-8b42-a27028434a67"
                 },
                 {
-                    "description": "Track [+5V] on F.Cu, length 1.2000 mm",
+                    "description": "Track [+5V] on F.Cu, length 0.2482 mm",
                     "pos": {
-                        "x": 114.709999,
+                        "x": 91.459999,
                         "y": 127.255
                     },
-                    "uuid": "ae72a7ef-62a7-44ca-b173-dacd72fb6501"
+                    "uuid": "76b0a994-e5d9-4f62-a505-0da8577f666a"
                 }
             ],
             "severity": "error",
@@ -2979,23 +2933,23 @@
             "type": "clearance"
         },
         {
-            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1100 mm)",
+            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.0850 mm)",
             "items": [
                 {
-                    "description": "Track [BSTINH_B] on F.Cu, length 1.2000 mm",
+                    "description": "Track [GATE4] on F.Cu, length 0.2873 mm",
                     "pos": {
-                        "x": 109.339999,
-                        "y": 122.405
+                        "x": 113.149999,
+                        "y": 127.255
                     },
-                    "uuid": "a98f1a16-eef9-4788-a899-72f89c2e11f1"
+                    "uuid": "7b096b57-3e0d-4740-87d5-516dfd24e1ab"
                 },
                 {
                     "description": "Track [+5V] on F.Cu, length 1.2000 mm",
                     "pos": {
-                        "x": 112.099999,
-                        "y": 122.405
+                        "x": 114.709999,
+                        "y": 127.255
                     },
-                    "uuid": "eae124b1-7dbb-41c5-8993-08d856ca2b94"
+                    "uuid": "ae72a7ef-62a7-44ca-b173-dacd72fb6501"
                 }
             ],
             "severity": "error",
@@ -3025,6 +2979,52 @@
             "type": "clearance"
         },
         {
+            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1100 mm)",
+            "items": [
+                {
+                    "description": "Track [BSTINH_B] on F.Cu, length 1.2000 mm",
+                    "pos": {
+                        "x": 109.339999,
+                        "y": 122.405
+                    },
+                    "uuid": "a98f1a16-eef9-4788-a899-72f89c2e11f1"
+                },
+                {
+                    "description": "Track [+5V] on F.Cu, length 1.2000 mm",
+                    "pos": {
+                        "x": 112.099999,
+                        "y": 122.405
+                    },
+                    "uuid": "eae124b1-7dbb-41c5-8993-08d856ca2b94"
+                }
+            ],
+            "severity": "error",
+            "type": "clearance"
+        },
+        {
+            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.0850 mm)",
+            "items": [
+                {
+                    "description": "Track [+5V] on F.Cu, length 0.1379 mm",
+                    "pos": {
+                        "x": 110.899999,
+                        "y": 122.405
+                    },
+                    "uuid": "8d98c7e2-faf0-407f-b189-715e13e632f5"
+                },
+                {
+                    "description": "Track [BSTINH_B] on F.Cu, length 1.2000 mm",
+                    "pos": {
+                        "x": 109.339999,
+                        "y": 122.405
+                    },
+                    "uuid": "a98f1a16-eef9-4788-a899-72f89c2e11f1"
+                }
+            ],
+            "severity": "error",
+            "type": "clearance"
+        },
+        {
             "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1650 mm)",
             "items": [
                 {
@@ -3042,6 +3042,29 @@
                         "y": 85.0
                     },
                     "uuid": "a87d9692-2de1-4e50-8000-84681208d4d6"
+                }
+            ],
+            "severity": "error",
+            "type": "clearance"
+        },
+        {
+            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1973 mm)",
+            "items": [
+                {
+                    "description": "Track [BOOST_EN_N] on F.Cu, length 0.0955 mm",
+                    "pos": {
+                        "x": 106.489999,
+                        "y": 122.405
+                    },
+                    "uuid": "3ff8b6ab-664e-4f72-9699-3fcd28d43b63"
+                },
+                {
+                    "description": "Track [BSTINH_B] on F.Cu, length 1.5000 mm",
+                    "pos": {
+                        "x": 106.0,
+                        "y": 124.0
+                    },
+                    "uuid": "8fd98529-9354-4f50-a0bb-a76c99c08ce7"
                 }
             ],
             "severity": "error",
@@ -3088,52 +3111,6 @@
                         "y": 122.5
                     },
                     "uuid": "769399ee-b1c9-4d21-9ad5-febf5500cc53"
-                }
-            ],
-            "severity": "error",
-            "type": "clearance"
-        },
-        {
-            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1973 mm)",
-            "items": [
-                {
-                    "description": "Track [BOOST_EN_N] on F.Cu, length 0.0955 mm",
-                    "pos": {
-                        "x": 106.489999,
-                        "y": 122.405
-                    },
-                    "uuid": "3ff8b6ab-664e-4f72-9699-3fcd28d43b63"
-                },
-                {
-                    "description": "Track [BSTINH_B] on F.Cu, length 1.5000 mm",
-                    "pos": {
-                        "x": 106.0,
-                        "y": 124.0
-                    },
-                    "uuid": "8fd98529-9354-4f50-a0bb-a76c99c08ce7"
-                }
-            ],
-            "severity": "error",
-            "type": "clearance"
-        },
-        {
-            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1600 mm)",
-            "items": [
-                {
-                    "description": "Track [CIN1] on B.Cu, length 4.0000 mm",
-                    "pos": {
-                        "x": 124.5,
-                        "y": 103.0
-                    },
-                    "uuid": "479085d0-39f4-45fe-83d9-018908322180"
-                },
-                {
-                    "description": "Track [CIN3] on B.Cu, length 0.1360 mm",
-                    "pos": {
-                        "x": 123.869999,
-                        "y": 103.46
-                    },
-                    "uuid": "e7102ab1-62e7-48f4-8c90-925097c791a2"
                 }
             ],
             "severity": "error",
@@ -3209,29 +3186,6 @@
             "type": "clearance"
         },
         {
-            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.0850 mm)",
-            "items": [
-                {
-                    "description": "Track [GATE3] on F.Cu, length 0.3100 mm",
-                    "pos": {
-                        "x": 86.689999,
-                        "y": 127.255
-                    },
-                    "uuid": "08931706-9a91-4c1a-a8e7-3cdea1069aa5"
-                },
-                {
-                    "description": "Track [CIN3] on F.Cu, length 1.2000 mm",
-                    "pos": {
-                        "x": 88.249999,
-                        "y": 127.255
-                    },
-                    "uuid": "e5c2bb6f-4b61-4992-9232-df55c8a5e353"
-                }
-            ],
-            "severity": "error",
-            "type": "clearance"
-        },
-        {
             "description": "Clearance violation ( clearance 0.2000 mm; actual 0.0100 mm)",
             "items": [
                 {
@@ -3255,23 +3209,184 @@
             "type": "clearance"
         },
         {
-            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1359 mm)",
+            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.0850 mm)",
             "items": [
                 {
-                    "description": "Track [SIG4] on F.Cu, length 2.8398 mm",
+                    "description": "Track [GATE3] on F.Cu, length 0.3100 mm",
                     "pos": {
-                        "x": 188.92,
-                        "y": 147.54
+                        "x": 86.689999,
+                        "y": 127.255
                     },
-                    "uuid": "8b133124-dcfc-4b9f-aef7-135c764c4723"
+                    "uuid": "08931706-9a91-4c1a-a8e7-3cdea1069aa5"
                 },
                 {
-                    "description": "PTH pad 5 [SIG3] of J7",
+                    "description": "Track [CIN3] on F.Cu, length 1.2000 mm",
                     "pos": {
-                        "x": 188.92,
-                        "y": 145.0
+                        "x": 88.249999,
+                        "y": 127.255
                     },
-                    "uuid": "e0520346-2283-4de8-8617-a02ccb4d7cb2"
+                    "uuid": "e5c2bb6f-4b61-4992-9232-df55c8a5e353"
+                }
+            ],
+            "severity": "error",
+            "type": "clearance"
+        },
+        {
+            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1600 mm)",
+            "items": [
+                {
+                    "description": "Track [CIN1] on B.Cu, length 4.0000 mm",
+                    "pos": {
+                        "x": 124.5,
+                        "y": 103.0
+                    },
+                    "uuid": "479085d0-39f4-45fe-83d9-018908322180"
+                },
+                {
+                    "description": "Track [CIN3] on B.Cu, length 0.1360 mm",
+                    "pos": {
+                        "x": 123.869999,
+                        "y": 103.46
+                    },
+                    "uuid": "e7102ab1-62e7-48f4-8c90-925097c791a2"
+                }
+            ],
+            "severity": "error",
+            "type": "clearance"
+        },
+        {
+            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.0850 mm)",
+            "items": [
+                {
+                    "description": "Track [VSET_PWM] on F.Cu, length 1.2000 mm",
+                    "pos": {
+                        "x": 66.199999,
+                        "y": 122.405
+                    },
+                    "uuid": "315f3cd4-5dcb-4159-9226-250d2da1f7ff"
+                },
+                {
+                    "description": "Track [BST_FB] on F.Cu, length 0.1692 mm",
+                    "pos": {
+                        "x": 64.64,
+                        "y": 122.405
+                    },
+                    "uuid": "39b8ced6-4ed9-4641-9a03-f09f07c292ee"
+                }
+            ],
+            "severity": "error",
+            "type": "clearance"
+        },
+        {
+            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.0850 mm)",
+            "items": [
+                {
+                    "description": "Track [VSET_PWM] on F.Cu, length 1.2000 mm",
+                    "pos": {
+                        "x": 66.199999,
+                        "y": 122.405
+                    },
+                    "uuid": "315f3cd4-5dcb-4159-9226-250d2da1f7ff"
+                },
+                {
+                    "description": "Track [BST_FB] on F.Cu, length 0.1692 mm",
+                    "pos": {
+                        "x": 64.64,
+                        "y": 122.405
+                    },
+                    "uuid": "7ec4fce9-76d1-44b2-80dd-a4a4e0220c1c"
+                }
+            ],
+            "severity": "error",
+            "type": "clearance"
+        },
+        {
+            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1100 mm)",
+            "items": [
+                {
+                    "description": "Track [VSET_PWM] on F.Cu, length 1.2000 mm",
+                    "pos": {
+                        "x": 66.199999,
+                        "y": 122.405
+                    },
+                    "uuid": "315f3cd4-5dcb-4159-9226-250d2da1f7ff"
+                },
+                {
+                    "description": "Track [BST_FB] on F.Cu, length 1.2000 mm",
+                    "pos": {
+                        "x": 63.44,
+                        "y": 122.405
+                    },
+                    "uuid": "b18915f1-972a-4cc8-b27d-3c3d3cf2dd2b"
+                }
+            ],
+            "severity": "error",
+            "type": "clearance"
+        },
+        {
+            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.0400 mm)",
+            "items": [
+                {
+                    "description": "Track [ESTOP_SENSE] on B.Cu, length 7.0000 mm",
+                    "pos": {
+                        "x": 212.0,
+                        "y": 88.5
+                    },
+                    "uuid": "1d187dc4-5460-47fe-bbb2-6f30dbb16bd9"
+                },
+                {
+                    "description": "Track [ADC_CS] on B.Cu, length 0.2720 mm",
+                    "pos": {
+                        "x": 212.34,
+                        "y": 83.78
+                    },
+                    "uuid": "2071ddb1-4119-444d-a5c5-2b0e51a5c28a"
+                }
+            ],
+            "severity": "error",
+            "type": "clearance"
+        },
+        {
+            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1441 mm)",
+            "items": [
+                {
+                    "description": "Track [VSET_PWM] on F.Cu, length 0.5000 mm",
+                    "pos": {
+                        "x": 212.0,
+                        "y": 81.5
+                    },
+                    "uuid": "72161e3c-df0f-4f29-8a18-2eecef5bbed6"
+                },
+                {
+                    "description": "Track [ESTOP_SENSE] on F.Cu, length 0.2778 mm",
+                    "pos": {
+                        "x": 211.14,
+                        "y": 81.24
+                    },
+                    "uuid": "e1e817ed-16c7-4689-b87b-0125bfe974ee"
+                }
+            ],
+            "severity": "error",
+            "type": "clearance"
+        },
+        {
+            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1441 mm)",
+            "items": [
+                {
+                    "description": "Track [ESTOP_SENSE] on F.Cu, length 2.6000 mm",
+                    "pos": {
+                        "x": 208.54,
+                        "y": 81.24
+                    },
+                    "uuid": "710af062-3618-4234-83b8-82602f8dbc61"
+                },
+                {
+                    "description": "Track [VSET_PWM] on F.Cu, length 0.5000 mm",
+                    "pos": {
+                        "x": 212.0,
+                        "y": 81.5
+                    },
+                    "uuid": "72161e3c-df0f-4f29-8a18-2eecef5bbed6"
                 }
             ],
             "severity": "error",
@@ -3301,15 +3416,15 @@
             "type": "clearance"
         },
         {
-            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.0800 mm)",
+            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1359 mm)",
             "items": [
                 {
-                    "description": "Track [SIG4] on F.Cu, length 4.5000 mm",
+                    "description": "Track [SIG4] on F.Cu, length 2.8398 mm",
                     "pos": {
-                        "x": 190.0,
-                        "y": 140.5
+                        "x": 188.92,
+                        "y": 147.54
                     },
-                    "uuid": "49b74d70-a45a-4417-a258-6f48ded8f3eb"
+                    "uuid": "8b133124-dcfc-4b9f-aef7-135c764c4723"
                 },
                 {
                     "description": "PTH pad 5 [SIG3] of J7",
@@ -3347,184 +3462,23 @@
             "type": "clearance"
         },
         {
-            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1100 mm)",
+            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.0800 mm)",
             "items": [
                 {
-                    "description": "Track [VSET_PWM] on F.Cu, length 1.2000 mm",
+                    "description": "Track [SIG4] on F.Cu, length 4.5000 mm",
                     "pos": {
-                        "x": 66.199999,
-                        "y": 122.405
+                        "x": 190.0,
+                        "y": 140.5
                     },
-                    "uuid": "315f3cd4-5dcb-4159-9226-250d2da1f7ff"
+                    "uuid": "49b74d70-a45a-4417-a258-6f48ded8f3eb"
                 },
                 {
-                    "description": "Track [BST_FB] on F.Cu, length 1.2000 mm",
+                    "description": "PTH pad 5 [SIG3] of J7",
                     "pos": {
-                        "x": 63.44,
-                        "y": 122.405
+                        "x": 188.92,
+                        "y": 145.0
                     },
-                    "uuid": "b18915f1-972a-4cc8-b27d-3c3d3cf2dd2b"
-                }
-            ],
-            "severity": "error",
-            "type": "clearance"
-        },
-        {
-            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.0850 mm)",
-            "items": [
-                {
-                    "description": "Track [VSET_PWM] on F.Cu, length 1.2000 mm",
-                    "pos": {
-                        "x": 66.199999,
-                        "y": 122.405
-                    },
-                    "uuid": "315f3cd4-5dcb-4159-9226-250d2da1f7ff"
-                },
-                {
-                    "description": "Track [BST_FB] on F.Cu, length 0.1692 mm",
-                    "pos": {
-                        "x": 64.64,
-                        "y": 122.405
-                    },
-                    "uuid": "7ec4fce9-76d1-44b2-80dd-a4a4e0220c1c"
-                }
-            ],
-            "severity": "error",
-            "type": "clearance"
-        },
-        {
-            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1441 mm)",
-            "items": [
-                {
-                    "description": "Track [ESTOP_SENSE] on F.Cu, length 2.6000 mm",
-                    "pos": {
-                        "x": 208.54,
-                        "y": 81.24
-                    },
-                    "uuid": "710af062-3618-4234-83b8-82602f8dbc61"
-                },
-                {
-                    "description": "Track [VSET_PWM] on F.Cu, length 0.5000 mm",
-                    "pos": {
-                        "x": 212.0,
-                        "y": 81.5
-                    },
-                    "uuid": "72161e3c-df0f-4f29-8a18-2eecef5bbed6"
-                }
-            ],
-            "severity": "error",
-            "type": "clearance"
-        },
-        {
-            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.0850 mm)",
-            "items": [
-                {
-                    "description": "Track [VSET_PWM] on F.Cu, length 1.2000 mm",
-                    "pos": {
-                        "x": 66.199999,
-                        "y": 122.405
-                    },
-                    "uuid": "315f3cd4-5dcb-4159-9226-250d2da1f7ff"
-                },
-                {
-                    "description": "Track [BST_FB] on F.Cu, length 0.1692 mm",
-                    "pos": {
-                        "x": 64.64,
-                        "y": 122.405
-                    },
-                    "uuid": "39b8ced6-4ed9-4641-9a03-f09f07c292ee"
-                }
-            ],
-            "severity": "error",
-            "type": "clearance"
-        },
-        {
-            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1441 mm)",
-            "items": [
-                {
-                    "description": "Track [VSET_PWM] on F.Cu, length 0.5000 mm",
-                    "pos": {
-                        "x": 212.0,
-                        "y": 81.5
-                    },
-                    "uuid": "72161e3c-df0f-4f29-8a18-2eecef5bbed6"
-                },
-                {
-                    "description": "Track [ESTOP_SENSE] on F.Cu, length 0.2778 mm",
-                    "pos": {
-                        "x": 211.14,
-                        "y": 81.24
-                    },
-                    "uuid": "e1e817ed-16c7-4689-b87b-0125bfe974ee"
-                }
-            ],
-            "severity": "error",
-            "type": "clearance"
-        },
-        {
-            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.0400 mm)",
-            "items": [
-                {
-                    "description": "Track [ESTOP_SENSE] on B.Cu, length 7.0000 mm",
-                    "pos": {
-                        "x": 212.0,
-                        "y": 88.5
-                    },
-                    "uuid": "1d187dc4-5460-47fe-bbb2-6f30dbb16bd9"
-                },
-                {
-                    "description": "Track [ADC_CS] on B.Cu, length 0.2720 mm",
-                    "pos": {
-                        "x": 212.34,
-                        "y": 83.78
-                    },
-                    "uuid": "2071ddb1-4119-444d-a5c5-2b0e51a5c28a"
-                }
-            ],
-            "severity": "error",
-            "type": "clearance"
-        },
-        {
-            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1600 mm)",
-            "items": [
-                {
-                    "description": "Track [GATE1] on B.Cu, length 8.5000 mm",
-                    "pos": {
-                        "x": 148.0,
-                        "y": 119.0
-                    },
-                    "uuid": "507331d1-92fd-4aed-97be-5b64dd5bd308"
-                },
-                {
-                    "description": "Track [V24_DIV] on B.Cu, length 0.0602 mm",
-                    "pos": {
-                        "x": 147.539999,
-                        "y": 114.455
-                    },
-                    "uuid": "5fc3c9e3-74cf-4deb-83b0-c1feca62f49c"
-                }
-            ],
-            "severity": "error",
-            "type": "clearance"
-        },
-        {
-            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.0200 mm)",
-            "items": [
-                {
-                    "description": "Track [LED_ARMED] on F.Cu, length 2.0000 mm",
-                    "pos": {
-                        "x": 212.0,
-                        "y": 86.0
-                    },
-                    "uuid": "9c219891-3c1e-4606-88c8-2b68c390a6f9"
-                },
-                {
-                    "description": "Track [VBANK_SENSE] on F.Cu, length 5.0000 mm",
-                    "pos": {
-                        "x": 208.54,
-                        "y": 86.32
-                    },
-                    "uuid": "f1fe6b8a-0a5b-4800-a67f-0e1145e2a9c8"
+                    "uuid": "e0520346-2283-4de8-8617-a02ccb4d7cb2"
                 }
             ],
             "severity": "error",
@@ -3554,6 +3508,52 @@
             "type": "clearance"
         },
         {
+            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.0200 mm)",
+            "items": [
+                {
+                    "description": "Track [LED_ARMED] on F.Cu, length 2.0000 mm",
+                    "pos": {
+                        "x": 212.0,
+                        "y": 86.0
+                    },
+                    "uuid": "9c219891-3c1e-4606-88c8-2b68c390a6f9"
+                },
+                {
+                    "description": "Track [VBANK_SENSE] on F.Cu, length 5.0000 mm",
+                    "pos": {
+                        "x": 208.54,
+                        "y": 86.32
+                    },
+                    "uuid": "f1fe6b8a-0a5b-4800-a67f-0e1145e2a9c8"
+                }
+            ],
+            "severity": "error",
+            "type": "clearance"
+        },
+        {
+            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1600 mm)",
+            "items": [
+                {
+                    "description": "Track [GATE1] on B.Cu, length 8.5000 mm",
+                    "pos": {
+                        "x": 148.0,
+                        "y": 119.0
+                    },
+                    "uuid": "507331d1-92fd-4aed-97be-5b64dd5bd308"
+                },
+                {
+                    "description": "Track [V24_DIV] on B.Cu, length 0.0602 mm",
+                    "pos": {
+                        "x": 147.539999,
+                        "y": 114.455
+                    },
+                    "uuid": "5fc3c9e3-74cf-4deb-83b0-c1feca62f49c"
+                }
+            ],
+            "severity": "error",
+            "type": "clearance"
+        },
+        {
             "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1200 mm)",
             "items": [
                 {
@@ -3571,6 +3571,29 @@
                         "y": 100.92
                     },
                     "uuid": "bf253677-0df8-4ddf-b05d-e2d99aa254e1"
+                }
+            ],
+            "severity": "error",
+            "type": "clearance"
+        },
+        {
+            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.0617 mm)",
+            "items": [
+                {
+                    "description": "Track [LED_CHG] on F.Cu, length 2.0000 mm",
+                    "pos": {
+                        "x": 183.0,
+                        "y": 51.5
+                    },
+                    "uuid": "b9616cdf-9b28-4312-9f28-6dac24f903dc"
+                },
+                {
+                    "description": "Track [LEDC_K] on F.Cu, length 0.1527 mm",
+                    "pos": {
+                        "x": 182.642499,
+                        "y": 51.445
+                    },
+                    "uuid": "e85da032-31e6-4e1c-8e92-9b263097aaac"
                 }
             ],
             "severity": "error",
@@ -3617,29 +3640,6 @@
                         "y": 147.54
                     },
                     "uuid": "b52b6b79-0a79-4fc5-8733-5d4f32db8f7c"
-                }
-            ],
-            "severity": "error",
-            "type": "clearance"
-        },
-        {
-            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.0617 mm)",
-            "items": [
-                {
-                    "description": "Track [LED_CHG] on F.Cu, length 2.0000 mm",
-                    "pos": {
-                        "x": 183.0,
-                        "y": 51.5
-                    },
-                    "uuid": "b9616cdf-9b28-4312-9f28-6dac24f903dc"
-                },
-                {
-                    "description": "Track [LEDC_K] on F.Cu, length 0.1527 mm",
-                    "pos": {
-                        "x": 182.642499,
-                        "y": 51.445
-                    },
-                    "uuid": "e85da032-31e6-4e1c-8e92-9b263097aaac"
                 }
             ],
             "severity": "error",
@@ -3738,29 +3738,6 @@
             "type": "clearance"
         },
         {
-            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.0350 mm)",
-            "items": [
-                {
-                    "description": "Track [DRV_SPARE] on F.Cu, length 7.5000 mm",
-                    "pos": {
-                        "x": 110.5,
-                        "y": 91.0
-                    },
-                    "uuid": "20b35534-a6f8-4b73-b451-e36ce275ea3e"
-                },
-                {
-                    "description": "Track [FIRE_GATED] on F.Cu, length 2.0000 mm",
-                    "pos": {
-                        "x": 117.532499,
-                        "y": 88.69
-                    },
-                    "uuid": "2913d5b5-d367-475f-a681-5ef1a6c4f8d7"
-                }
-            ],
-            "severity": "error",
-            "type": "clearance"
-        },
-        {
             "description": "Clearance violation ( clearance 0.2000 mm; actual 0.0100 mm)",
             "items": [
                 {
@@ -3778,6 +3755,29 @@
                         "y": 91.0
                     },
                     "uuid": "20b35534-a6f8-4b73-b451-e36ce275ea3e"
+                }
+            ],
+            "severity": "error",
+            "type": "clearance"
+        },
+        {
+            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.0350 mm)",
+            "items": [
+                {
+                    "description": "Track [DRV_SPARE] on F.Cu, length 7.5000 mm",
+                    "pos": {
+                        "x": 110.5,
+                        "y": 91.0
+                    },
+                    "uuid": "20b35534-a6f8-4b73-b451-e36ce275ea3e"
+                },
+                {
+                    "description": "Track [FIRE_GATED] on F.Cu, length 2.0000 mm",
+                    "pos": {
+                        "x": 117.532499,
+                        "y": 88.69
+                    },
+                    "uuid": "2913d5b5-d367-475f-a681-5ef1a6c4f8d7"
                 }
             ],
             "severity": "error",
@@ -3853,29 +3853,6 @@
             "type": "clearance"
         },
         {
-            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1359 mm)",
-            "items": [
-                {
-                    "description": "Track [SIG2] on F.Cu, length 2.8398 mm",
-                    "pos": {
-                        "x": 191.46,
-                        "y": 147.54
-                    },
-                    "uuid": "4a5d31ef-f92d-4d9b-88cc-4f1ac9e01cd1"
-                },
-                {
-                    "description": "PTH pad 3 [SIG1] of J7",
-                    "pos": {
-                        "x": 191.46,
-                        "y": 145.0
-                    },
-                    "uuid": "eb7e514b-0c53-4e61-9ad4-7dc13dc70730"
-                }
-            ],
-            "severity": "error",
-            "type": "clearance"
-        },
-        {
             "description": "Clearance violation ( clearance 0.2000 mm; actual 0.0400 mm)",
             "items": [
                 {
@@ -3922,6 +3899,29 @@
             "type": "clearance"
         },
         {
+            "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1359 mm)",
+            "items": [
+                {
+                    "description": "Track [SIG2] on F.Cu, length 2.8398 mm",
+                    "pos": {
+                        "x": 191.46,
+                        "y": 147.54
+                    },
+                    "uuid": "4a5d31ef-f92d-4d9b-88cc-4f1ac9e01cd1"
+                },
+                {
+                    "description": "PTH pad 3 [SIG1] of J7",
+                    "pos": {
+                        "x": 191.46,
+                        "y": 145.0
+                    },
+                    "uuid": "eb7e514b-0c53-4e61-9ad4-7dc13dc70730"
+                }
+            ],
+            "severity": "error",
+            "type": "clearance"
+        },
+        {
             "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1250 mm)",
             "items": [
                 {
@@ -3948,20 +3948,20 @@
             "description": "Clearance violation ( clearance 0.2000 mm; actual 0.1500 mm)",
             "items": [
                 {
-                    "description": "Pad 2 [ADC_SCK] of U10 on F.Cu",
-                    "pos": {
-                        "x": 108.155,
-                        "y": 99.89
-                    },
-                    "uuid": "22feb188-91c6-47bc-a061-eaaff6c438d1"
-                },
-                {
                     "description": "Pad 1 [3V3] of U10 on F.Cu",
                     "pos": {
                         "x": 108.155,
                         "y": 99.39
                     },
                     "uuid": "cae528e9-2e13-44e6-aad7-b82f24d7fa4d"
+                },
+                {
+                    "description": "Pad 2 [ADC_SCK] of U10 on F.Cu",
+                    "pos": {
+                        "x": 108.155,
+                        "y": 99.89
+                    },
+                    "uuid": "22feb188-91c6-47bc-a061-eaaff6c438d1"
                 }
             ],
             "severity": "error",

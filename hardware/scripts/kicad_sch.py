@@ -264,7 +264,7 @@ class Schematic:
 
     def add_symbol(self, lib_id, ref, value, at, footprint="", lcsc="",
                    unit=1, nets=None, no_connect=(), dnp=False,
-                   extra_fields=None):
+                   extra_fields=None, in_bom=True):
         """Place a symbol and label its pins.
 
         nets: {pin_number: net_name} — each listed pin gets a wire stub +
@@ -286,7 +286,7 @@ class Schematic:
                 [Sym("at"), x0, y0, 0],
                 [Sym("unit"), unit],
                 [Sym("exclude_from_sim"), Sym("no")],
-                [Sym("in_bom"), Sym("yes")],
+                [Sym("in_bom"), Sym("yes") if in_bom else Sym("no")],
                 [Sym("on_board"), Sym("yes")],
                 [Sym("dnp"), Sym("yes") if dnp else Sym("no")],
                 [Sym("uuid"), uid()],
