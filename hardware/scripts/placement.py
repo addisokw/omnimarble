@@ -183,6 +183,9 @@ NET_WIDTHS = {
     "VBOOST": 0.7, "BST_SW": 1.5, "BST_CS_HI": 0.7,
     "AUX_BANK": 2.5, "DUMP_R": 2.0, "DUMP_MID": 2.0,
     "VBANK": 0.7, "LIVE_LED": 0.4, "GND": 0.3,
+    # pulse pour nets: carry current in the polygon; the width shapes only any
+    # routed tap (DeepPCB flagged them at the 0.2mm default)
+    "COIL_HI": 0.5, "SW_DRAIN": 0.5, "SHUNT_HI": 0.5,
     "QG1": 0.5, "QG2": 0.5, "QG3": 0.5,
     "DRV1": 0.5, "DRV2": 0.5, "DRV3": 0.5,
     "ISNS_P": 0.3, "ISNS_N": 0.3,

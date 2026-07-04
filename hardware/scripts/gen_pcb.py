@@ -1630,8 +1630,14 @@ def route_signals(board, g, nets, escapes):
 # Main
 # --------------------------------------------------------------------------
 
-def build_preroute():
-    """Board with placement, pulse copper, Kelvin, GND drops - no signals."""
+def build_preroute(gnd_drops=True):
+    """Board with placement, pulse copper, Kelvin, GND drops - no signals.
+
+    gnd_drops=False (DeepPCB flow): skip the GND via-in-pad pass. Those
+    0.45mm vias land in 0.35mm fine-pitch IC GND pads (U10 etc.), which
+    physically blocks the router; DeepPCB connects GND to the inner planes
+    itself, so the drops are unneeded and harmful there.
+    """
     comps, netlist_nets, padnet, meta = load_netlist()
     board = new_board()
     add_outline(board)
@@ -1728,8 +1734,9 @@ def build_preroute():
     strag_failed = route_stragglers(board, g, nets, misses, zone_by_net)
     print(f"straggler failures: {strag_failed}")
 
-    nvias = gnd_via_drops(board, g, nets)
-    print(f"GND via drops: {nvias}")
+    if gnd_drops:
+        nvias = gnd_via_drops(board, g, nets)
+        print(f"GND via drops: {nvias}")
 
     add_text(board, "DANGER - STORED ENERGY", 100, 6, 2.5)
     add_text(board, "CAPACITORS MAY BE CHARGED - CHECK LIVE LED", 100, 10, 1.5)
@@ -1924,7 +1931,9 @@ def main_scripted():
 
 
 def main_preroute():
-    board, g, nets, misses, strag_failed = build_preroute()
+    # DeepPCB flow: no GND via-in-pad (it blocks fine-pitch IC pads; DeepPCB
+    # connects GND to the inner planes itself)
+    board, g, nets, misses, strag_failed = build_preroute(gnd_drops=False)
     board.SetLayerType(pcbnew.In1_Cu, pcbnew.LT_POWER)
     board.SetLayerType(pcbnew.In2_Cu, pcbnew.LT_POWER)
     unconn = finish(board, "preroute")
