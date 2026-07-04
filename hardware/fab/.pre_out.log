@@ -1,5 +1,6 @@
 pulse pads outside zones: 8 (straggler-routed)
 straggler failures: []
-GND via drops: 72
-SAVED (preroute): unconnected=267
+   GND drop FAILED: U8.3 at (103.2,90.2)
+GND via drops: 71
+SAVED (preroute): unconnected=269
 DSN export: True -> C:\Users\kaddi\Documents\Projects\omnimarble\hardware\omnimarble-driver\omnimarble-driver.dsn

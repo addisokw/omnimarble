@@ -15,3 +15,107 @@
 2026-07-03 18:35:30.088 [Thread-29] INFO  Starting route optimization on 1 thread...
 2026-07-03 18:36:06.796 [Thread-29] INFO  Route optimization was completed in 36.71 seconds.
 2026-07-03 18:36:06.815 [Thread-29] INFO  Saving 'omnimarble-driver.ses'...
+2026-07-03 18:44:45.748 [main] INFO  Freerouting v1.9.0 (build-date: 2023-10-30)
+2026-07-03 18:44:45.794 [main] INFO  Settings were loaded from freerouting.json
+2026-07-03 18:44:46.978 [main] INFO  Opening 'omnimarble-driver.dsn'...
+2026-07-03 18:44:47.223 [ForkJoinPool.commonPool-worker-1] INFO  New version available: v2.2.4
+2026-07-03 18:44:47.489 [main] WARN  Multiple vias skipped at (960000, -1245000)
+2026-07-03 18:50:37.189 [Thread-28] INFO  Starting auto-routing...
+2026-07-03 18:52:41.999 [main] INFO  Freerouting v1.9.0 (build-date: 2023-10-30)
+2026-07-03 18:52:42.050 [main] INFO  Settings were loaded from freerouting.json
+2026-07-03 18:52:43.262 [main] INFO  Opening 'C:/Users/kaddi/Documents/Projects/omnimarble/hardware/omnimarble-driver/omnimarble-driver.dsn'...
+2026-07-03 18:52:43.567 [ForkJoinPool.commonPool-worker-1] INFO  New version available: v2.2.4
+2026-07-03 18:52:43.783 [main] WARN  Multiple vias skipped at (960000, -1245000)
+2026-07-03 18:54:50.056 [Thread-29] INFO  Starting auto-routing...
+2026-07-03 18:55:42.997 [AWT-EventQueue-0] ERROR Cannot invoke "app.freerouting.interactive.InteractiveActionThread.addListener(app.freerouting.interactive.ThreadActionListener)" because "thread" is null
+java.lang.NullPointerException: Cannot invoke "app.freerouting.interactive.InteractiveActionThread.addListener(app.freerouting.interactive.ThreadActionListener)" because "thread" is null
+	at app.freerouting.gui.BoardToolbar.lambda$new$6(BoardToolbar.java:117) ~[freerouting-1.9.0.jar:unspecified]
+	at javax.swing.AbstractButton.fireActionPerformed(AbstractButton.java:1972) ~[?:?]
+	at javax.swing.AbstractButton$Handler.actionPerformed(AbstractButton.java:2314) ~[?:?]
+	at javax.swing.DefaultButtonModel.fireActionPerformed(DefaultButtonModel.java:407) ~[?:?]
+	at javax.swing.DefaultButtonModel.setPressed(DefaultButtonModel.java:262) ~[?:?]
+	at javax.swing.plaf.basic.BasicButtonListener.mouseReleased(BasicButtonListener.java:279) ~[?:?]
+	at java.awt.AWTEventMulticaster.mouseReleased(AWTEventMulticaster.java:297) ~[?:?]
+	at java.awt.Component.processMouseEvent(Component.java:6621) ~[?:?]
+	at javax.swing.JComponent.processMouseEvent(JComponent.java:3398) ~[?:?]
+	at java.awt.Component.processEvent(Component.java:6386) ~[?:?]
+	at java.awt.Container.processEvent(Container.java:2266) ~[?:?]
+	at java.awt.Component.dispatchEventImpl(Component.java:4996) ~[?:?]
+	at java.awt.Container.dispatchEventImpl(Container.java:2324) ~[?:?]
+	at java.awt.Component.dispatchEvent(Component.java:4828) ~[?:?]
+	at java.awt.LightweightDispatcher.retargetMouseEvent(Container.java:4948) ~[?:?]
+	at java.awt.LightweightDispatcher.processMouseEvent(Container.java:4575) ~[?:?]
+	at java.awt.LightweightDispatcher.dispatchEvent(Container.java:4516) ~[?:?]
+	at java.awt.Container.dispatchEventImpl(Container.java:2310) ~[?:?]
+	at java.awt.Window.dispatchEventImpl(Window.java:2780) ~[?:?]
+	at java.awt.Component.dispatchEvent(Component.java:4828) ~[?:?]
+	at java.awt.EventQueue.dispatchEventImpl(EventQueue.java:775) ~[?:?]
+	at java.awt.EventQueue$4.run(EventQueue.java:720) ~[?:?]
+	at java.awt.EventQueue$4.run(EventQueue.java:714) ~[?:?]
+	at java.security.AccessController.doPrivileged(AccessController.java:400) ~[?:?]
+	at java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(ProtectionDomain.java:87) ~[?:?]
+	at java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(ProtectionDomain.java:98) ~[?:?]
+	at java.awt.EventQueue$5.run(EventQueue.java:747) ~[?:?]
+	at java.awt.EventQueue$5.run(EventQueue.java:745) ~[?:?]
+	at java.security.AccessController.doPrivileged(AccessController.java:400) ~[?:?]
+	at java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(ProtectionDomain.java:87) ~[?:?]
+	at java.awt.EventQueue.dispatchEvent(EventQueue.java:744) ~[?:?]
+	at java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:203) [?:?]
+	at java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:124) [?:?]
+	at java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:113) [?:?]
+	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:109) [?:?]
+	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:101) [?:?]
+	at java.awt.EventDispatchThread.run(EventDispatchThread.java:90) [?:?]
+2026-07-03 18:56:03.130 [AWT-EventQueue-0] ERROR Cannot invoke "app.freerouting.interactive.InteractiveActionThread.addListener(app.freerouting.interactive.ThreadActionListener)" because "thread" is null
+java.lang.NullPointerException: Cannot invoke "app.freerouting.interactive.InteractiveActionThread.addListener(app.freerouting.interactive.ThreadActionListener)" because "thread" is null
+	at app.freerouting.gui.BoardToolbar.lambda$new$6(BoardToolbar.java:117) ~[freerouting-1.9.0.jar:unspecified]
+	at javax.swing.AbstractButton.fireActionPerformed(AbstractButton.java:1972) ~[?:?]
+	at javax.swing.AbstractButton$Handler.actionPerformed(AbstractButton.java:2314) ~[?:?]
+	at javax.swing.DefaultButtonModel.fireActionPerformed(DefaultButtonModel.java:407) ~[?:?]
+	at javax.swing.DefaultButtonModel.setPressed(DefaultButtonModel.java:262) ~[?:?]
+	at javax.swing.plaf.basic.BasicButtonListener.mouseReleased(BasicButtonListener.java:279) ~[?:?]
+	at java.awt.AWTEventMulticaster.mouseReleased(AWTEventMulticaster.java:297) ~[?:?]
+	at java.awt.Component.processMouseEvent(Component.java:6621) ~[?:?]
+	at javax.swing.JComponent.processMouseEvent(JComponent.java:3398) ~[?:?]
+	at java.awt.Component.processEvent(Component.java:6386) ~[?:?]
+	at java.awt.Container.processEvent(Container.java:2266) ~[?:?]
+	at java.awt.Component.dispatchEventImpl(Component.java:4996) ~[?:?]
+	at java.awt.Container.dispatchEventImpl(Container.java:2324) ~[?:?]
+	at java.awt.Component.dispatchEvent(Component.java:4828) ~[?:?]
+	at java.awt.LightweightDispatcher.retargetMouseEvent(Container.java:4948) ~[?:?]
+	at java.awt.LightweightDispatcher.processMouseEvent(Container.java:4575) ~[?:?]
+	at java.awt.LightweightDispatcher.dispatchEvent(Container.java:4516) ~[?:?]
+	at java.awt.Container.dispatchEventImpl(Container.java:2310) ~[?:?]
+	at java.awt.Window.dispatchEventImpl(Window.java:2780) ~[?:?]
+	at java.awt.Component.dispatchEvent(Component.java:4828) ~[?:?]
+	at java.awt.EventQueue.dispatchEventImpl(EventQueue.java:775) ~[?:?]
+	at java.awt.EventQueue$4.run(EventQueue.java:720) ~[?:?]
+	at java.awt.EventQueue$4.run(EventQueue.java:714) ~[?:?]
+	at java.security.AccessController.doPrivileged(AccessController.java:400) ~[?:?]
+	at java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(ProtectionDomain.java:87) ~[?:?]
+	at java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(ProtectionDomain.java:98) ~[?:?]
+	at java.awt.EventQueue$5.run(EventQueue.java:747) ~[?:?]
+	at java.awt.EventQueue$5.run(EventQueue.java:745) ~[?:?]
+	at java.security.AccessController.doPrivileged(AccessController.java:400) ~[?:?]
+	at java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(ProtectionDomain.java:87) ~[?:?]
+	at java.awt.EventQueue.dispatchEvent(EventQueue.java:744) ~[?:?]
+	at java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:203) [?:?]
+	at java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:124) [?:?]
+	at java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:113) [?:?]
+	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:109) [?:?]
+	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:101) [?:?]
+	at java.awt.EventDispatchThread.run(EventDispatchThread.java:90) [?:?]
+2026-07-03 19:00:53.130 [main] INFO  Freerouting v1.9.0 (build-date: 2023-10-30)
+2026-07-03 19:00:53.175 [main] INFO  Settings were loaded from freerouting.json
+2026-07-03 19:00:54.353 [main] INFO  Opening 'C:/Users/kaddi/Documents/Projects/omnimarble/hardware/omnimarble-driver/omnimarble-driver.dsn'...
+2026-07-03 19:00:54.672 [ForkJoinPool.commonPool-worker-1] INFO  New version available: v2.2.4
+2026-07-03 19:00:54.876 [main] WARN  Multiple vias skipped at (960000, -1245000)
+2026-07-03 19:01:53.277 [Thread-29] INFO  Starting auto-routing...
+2026-07-03 19:07:12.229 [AWT-EventQueue-0] INFO  Saving 'omnimarble-driver.ses'...
+2026-07-03 19:07:44.619 [AWT-EventQueue-0] INFO  Saving 'omnimarble-driver-2.dsn'...
+2026-07-03 19:08:06.149 [AWT-EventQueue-0] INFO  Saving 'omnimarble-driver-2.dsn'...
+2026-07-03 19:08:16.135 [AWT-EventQueue-0] INFO  Saving 'omnimarble-driver.ses'...
+2026-07-03 19:08:49.145 [Thread-29] INFO  Auto-routing was completed in 6 minute(s) 55.87 seconds.
+2026-07-03 19:08:49.246 [Thread-29] INFO  Starting route optimization on 1 thread...
+2026-07-03 19:08:49.252 [Thread-29] INFO  Route optimization was completed in 0.01 seconds.
+2026-07-03 19:08:49.297 [Thread-29] INFO  Saving 'C:/Users/kaddi/Documents/Projects/omnimarble/hardware/omnimarble-driver/omnimarble-driver.ses'...

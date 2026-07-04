@@ -35,10 +35,11 @@ PULSE_ZONES = [
                (8, 66), (8, 34)]),
     # COIL_HI: main island + arm down to J5.1
     ("COIL_HI", [(27.1, 42), (48, 42), (48, 68), (27.1, 68)]),
-    ("COIL_HI", [(27, 68), (38, 68), (38, 84), (27, 84)]),
+    ("COIL_HI", [(27, 66), (38, 66), (38, 84), (27, 84)]),
     # SW_DRAIN: main bus + link column + low arm to J5.2
     ("SW_DRAIN", [(50.05, 42), (126, 42), (126, 68), (50.05, 68)]),
-    ("SW_DRAIN", [(42, 70), (50.05, 70), (50.05, 98), (42, 98)]),
+    ("SW_DRAIN", [(42, 70), (50.05, 70), (50.05, 66), (52, 66),
+                  (52, 98), (42, 98)]),
     ("SW_DRAIN", [(27, 86), (50.05, 86), (50.05, 94), (27, 94)]),
     # SHUNT_HI strip (FET anchor y=66.5: leads 70.35..73.15)
     ("SHUNT_HI", [(66, 69.5), (131.5, 69.5), (131.5, 79), (66, 79)]),
@@ -63,7 +64,7 @@ P["RS1"] = (134, 74, 0)      # pad1->SHUNT_HI, pad2->GND patch
 P["NT1"] = (126, 83, 0)      # Kelvin ties (explicit KELVIN_TRACKS)
 P["NT2"] = (142, 83, 0)
 P["D13"] = (14, 48, 90)      # bank clamp: tab->VBANK col, leads south->GND
-P["R24"] = (11, 64, 270)     # 6.8k bleed: pad1 in col, pad2->GND track
+P["R24"] = (18, 64, 270)     # 6.8k bleed: pad1 in col, pad2->GND cluster
 
 GATE_RG = ["R34", "R37", "R40"]
 GATE_RPD = ["R35", "R38", "R41"]
@@ -157,12 +158,13 @@ KELVIN_TRACKS = [
 # Manual fat tracks: (ref, pad, to_xy, width, layer)
 MANUAL_TRACKS = [
     ("D13", "2", (14, 59), 3.0, 0),    # clamp anodes -> GND via cluster
-    ("R24", "2", (14, 60), 2.0, 0),    # bleed GND end -> same cluster
+    ("R24", "2", (18, 68.5), 0.8, 0),  # bleed GND end -> its own cluster
 ]
 
 # Extra via clusters (net, cx, cy, nx, ny, pitch, drill, size)
 VIA_CLUSTERS = [
     ("GND", 14, 60, 3, 2, 1.8, 0.6, 1.2),   # clamp surge return to planes
+    ("GND", 18, 68.5, 2, 1, 1.8, 0.4, 0.8),  # bleed return
 ]
 
 NET_WIDTHS = {

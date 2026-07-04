@@ -12,6 +12,7 @@ straddlers) -> GND via-drops -> grid-router for signal nets -> zone fill
 
 import json
 import math
+import random
 import sys
 from pathlib import Path
 
@@ -46,10 +47,20 @@ def V(x, y):
 def load_netlist():
     tree = parse(NETLIST.read_text(encoding="utf-8"))[0]
     comps = {}
+    meta = {}
     for c in find_all(find(tree, Sym("components")), Sym("comp")):
         ref = str(find(c, Sym("ref"))[1])
         fp = find(c, Sym("footprint"))
         comps[ref] = str(fp[1]) if fp else ""
+        val = find(c, Sym("value"))
+        lcsc = ""
+        fields = find(c, Sym("fields"))
+        if fields:
+            for f in find_all(fields, Sym("field")):
+                nm = find(f, Sym("name"))
+                if nm and str(nm[1]) == "LCSC" and len(f) > 2:
+                    lcsc = str(f[2])
+        meta[ref] = (str(val[1]) if val else "", lcsc)
     nets = {}
     padnet = {}
     for n in find_all(find(tree, Sym("nets")), Sym("net")):
@@ -59,7 +70,7 @@ def load_netlist():
             pin = str(find(node, Sym("pin"))[1])
             nets.setdefault(name, []).append((ref, pin))
             padnet[(ref, pin)] = name
-    return comps, nets, padnet
+    return comps, nets, padnet, meta
 
 
 # --------------------------------------------------------------------------
@@ -109,7 +120,7 @@ def load_footprint(fpid):
     raise RuntimeError(f"footprint not found: {fpid}")
 
 
-def place_all(board, comps, padnet):
+def place_all(board, comps, padnet, meta=None):
     nets = {}
 
     def netinfo(name):
@@ -132,6 +143,21 @@ def place_all(board, comps, padnet):
             continue
         fp = load_footprint(fpid)
         fp.SetReference(ref)
+        # schematic-parity metadata: correct LIB_ID, symbol value, LCSC field
+        lib_nick, fp_name = fpid.split(":", 1)
+        try:
+            fp.SetFPID(pcbnew.LIB_ID(lib_nick, fp_name))
+        except Exception:
+            pass
+        if meta and ref in meta:
+            val, lcsc = meta[ref]
+            if val:
+                fp.SetValue(val)
+            if lcsc:
+                try:
+                    fp.SetField("LCSC", lcsc)
+                except Exception:
+                    pass
         for pad in fp.Pads():
             key = (ref, pad.GetNumber())
             if key in padnet:
@@ -176,6 +202,11 @@ def place_all(board, comps, padnet):
     for i, (x, y) in enumerate(MOUNT_HOLES):
         fp = load_footprint(
             "MountingHole:MountingHole_3.2mm_M3_Pad")
+        try:
+            fp.SetExcludedFromBOM(True)
+            fp.SetBoardOnly(True)
+        except Exception:
+            pass
         fp.SetReference(f"H{i + 1}")
         fp.SetPosition(V(x, y))
         board.Add(fp)
@@ -223,8 +254,9 @@ def build_zones(board, nets):
     return zones
 
 
-def stitch_zone(board, netinfo, pts, pitch=5.0):
-    """Via-stitch a pulse zone polygon interior (F<->B<->planes)."""
+def stitch_zone(board, g, nets, name, pts, pitch=5.0):
+    """Via-stitch a pulse zone polygon interior (F<->B<->planes),
+    skipping lattice points that collide with foreign copper."""
     xs = [p[0] for p in pts]
     ys = [p[1] for p in pts]
     added = 0
@@ -233,14 +265,13 @@ def stitch_zone(board, netinfo, pts, pitch=5.0):
         x = min(xs) + 2.0
         while x < max(xs) - 1.0:
             if point_in_poly(x, y, pts):
-                via = pcbnew.PCB_VIA(board)
-                via.SetPosition(V(x, y))
-                via.SetDrill(MM(0.6))
-                via.SetWidth(MM(1.2))
-                via.SetViaType(pcbnew.VIATYPE_THROUGH)
-                via.SetNet(netinfo)
-                board.Add(via)
-                added += 1
+                ix, iy = int(round(x / GRID)), int(round(y / GRID))
+                ok = all(g.is_free(l, ix + dx, iy + dy, name)
+                         for l in (0, 1)
+                         for dx in (-1, 0, 1) for dy in (-1, 0, 1))
+                if ok:
+                    add_via(board, g, nets, name, x, y, 0.6, 1.2)
+                    added += 1
             x += pitch
         y += pitch
     return added
@@ -356,6 +387,10 @@ def gnd_via_drops(board, nets, occupied):
 
 GRID = 0.5  # mm
 
+# owner sentinel for cells claimed by two different-net pads: blocked for
+# every net and never whitelisted by filter_extra
+CONTESTED = "__x__"
+
 
 class Grid:
     def __init__(self, w, h):
@@ -449,7 +484,7 @@ def build_grid(board):
                     g.block_cell(0, ix, iy, name)
                     g.block_cell(1, ix, iy, name)
     # pads: world-space bounding boxes + clearance
-    clr = 0.30
+    clr = 0.45
     for fp in board.Footprints():
         for pad in fp.Pads():
             bb = pad.GetBoundingBox()
@@ -463,7 +498,24 @@ def build_grid(board):
             else:
                 layers = [0, 1]
             for layer in layers:
-                g.block_rect(layer, x0, y0, x1, y1, net)
+                ix0 = max(0, int(x0 / GRID))
+                ix1 = min(g.nx - 1, int(math.ceil(x1 / GRID)))
+                iy0 = max(0, int(y0 / GRID))
+                iy1 = min(g.ny - 1, int(math.ceil(y1 / GRID)))
+                for ix in range(ix0, ix1 + 1):
+                    for iy in range(iy0, iy1 + 1):
+                        i = g.idx(ix, iy)
+                        prev = (g.owner[layer].get(i)
+                                if g.blocked[layer][i] else None)
+                        if prev is not None and prev != net:
+                            # cell inside the clearance ring of TWO
+                            # different-net pads: hard for everyone --
+                            # a single-owner cell would let the later
+                            # pad's net route over the earlier pad's
+                            # copper (top DRC short mechanism)
+                            g.block_cell(layer, ix, iy, CONTESTED)
+                        else:
+                            g.block_cell(layer, ix, iy, net)
     return g
 
 
@@ -495,20 +547,38 @@ def pad_cells(pad):
     return cells
 
 
+def filter_extra(g, net, cells):
+    """Trim an endpoint whitelist: reaching your own pad through its own
+    clearance ring is fine, but the inflated pad bbox must not open a
+    corridor through a NEIGHBORING pad's copper (same-package sibling
+    pads and fine-pitch/THT neighbors were the top DRC short source)."""
+    keep = set()
+    for (l, ix, iy) in cells:
+        if 0 <= ix < g.nx and 0 <= iy < g.ny:
+            own = g.owner[l].get(ix * g.ny + iy)
+            if own is None or own == net:
+                keep.add((l, ix, iy))
+    return keep
+
+
 def mark_swath(g, layer, x0, y0, x1, y1, net, width):
     # 0.3mm tracks land exactly on the 0.5mm grid: neighbours at 0.5 pitch
     # leave a legal 0.2mm gap. Wider tracks must reserve clearance for a
-    # worst-case 0.3mm neighbour.
+    # worst-case 0.3mm neighbour.  Distances are measured from the TRUE
+    # (possibly off-grid) centerline so a straddling stub/tie marks every
+    # cell its copper touches, not just the rounded-center cell.
     half = width / 2 + (0.15 if width <= 0.31 else 0.36)
     steps = max(1, int(max(abs(x1 - x0), abs(y1 - y0)) / GRID))
+    r = int(math.ceil(half / GRID)) + 1
     for i in range(steps + 1):
         x = x0 + (x1 - x0) * i / steps
         y = y0 + (y1 - y0) * i / steps
-        r = int(math.ceil(half / GRID))
         cix, ciy = int(round(x / GRID)), int(round(y / GRID))
         for dx in range(-r, r + 1):
             for dy in range(-r, r + 1):
-                if (dx * GRID) ** 2 + (dy * GRID) ** 2 <= half * half:
+                ex = (cix + dx) * GRID - x
+                ey = (ciy + dy) * GRID - y
+                if ex * ex + ey * ey <= half * half:
                     g.block_cell(layer, cix + dx, ciy + dy, net)
 
 
@@ -589,10 +659,17 @@ def fanout_escapes(board, g, nets):
                 for k in range(steps + 1):
                     x = a[0] + (b[0] - a[0]) * k / steps
                     y = a[1] + (b[1] - a[1]) * k / steps
+                    ix = int(round(x / GRID))
+                    iy = int(round(y / GRID))
                     if abs(x - px) < 1.0 and abs(y - py) < 1.0:
-                        continue  # own pad vicinity
-                    if not g.is_free(0, int(round(x / GRID)),
-                                     int(round(y / GRID)), net):
+                        # own pad vicinity: pad geometry is legal by
+                        # construction, but a neighbour's already-emitted
+                        # STUB here is real copper -- never cross it
+                        own2 = g.owner[0].get(ix * g.ny + iy)
+                        if own2 in (None, net, CONTESTED):
+                            continue
+                        return False
+                    if not g.is_free(0, ix, iy, net):
                         return False
                 return True
 
@@ -626,24 +703,95 @@ def fanout_escapes(board, g, nets):
             pos = pad.GetPosition()
             px, py = pcbnew.ToMM(pos.x), pcbnew.ToMM(pos.y)
             dx, dy = px - cx, py - cy
-            if abs(dx) >= abs(dy):
-                ux, uy = (1 if dx >= 0 else -1), 0
-            else:
-                ux, uy = 0, (1 if dy >= 0 else -1)
+            xdir = ((1 if dx >= 0 else -1), 0)
+            ydir = (0, (1 if dy >= 0 else -1))
+            # dominant axis first, other axis as fallback: a corner pin's
+            # dominant axis can run ALONG the pin column, and an unchecked
+            # stub there plows through the neighbouring pads
+            dirs = (xdir, ydir) if abs(dx) >= abs(dy) else (ydir, xdir)
+
+            def stub_ok(ex, ey):
+                # whole stub body must be clear, not just the tip; near
+                # the own pad allow only own/contested/unowned cells -- a
+                # neighbour's already-emitted stub is real copper
+                steps = max(1, int(max(abs(ex - px), abs(ey - py)) / GRID))
+                for k in range(steps + 1):
+                    x = px + (ex - px) * k / steps
+                    y = py + (ey - py) * k / steps
+                    ix = int(round(x / GRID))
+                    iy = int(round(y / GRID))
+                    if abs(x - px) <= 0.6 and abs(y - py) <= 0.6:
+                        own2 = g.owner[0].get(ix * g.ny + iy)
+                        if own2 in (None, net, CONTESTED):
+                            continue
+                        return False
+                    if not g.is_free(0, ix, iy, net):
+                        return False
+                return True
+
             base = (1.2, 1.6, 2.0, 2.5, 3.0)
             smd_idx = sum(ord(ch) for ch in net) % 3
-            for dist in base[smd_idx:] + base[:smd_idx]:
-                ex, ey = px + ux * dist, py + uy * dist
-                eix, eiy = int(round(ex / GRID)), int(round(ey / GRID))
-                if g.is_free(0, eix, eiy, net):
-                    add_track(board, g, nets, net, 0, px, py, ex, ey, 0.25)
-                    escapes[(fp.GetReference(), pad.GetNumber())] = (ex, ey)
+            done = False
+            for ux, uy in dirs:
+                for dist in base[smd_idx:] + base[:smd_idx]:
+                    ex, ey = px + ux * dist, py + uy * dist
+                    eix, eiy = int(round(ex / GRID)), int(round(ey / GRID))
+                    if g.is_free(0, eix, eiy, net) and stub_ok(ex, ey):
+                        add_track(board, g, nets, net, 0, px, py, ex, ey,
+                                  0.25)
+                        escapes[(fp.GetReference(), pad.GetNumber())] = (ex,
+                                                                         ey)
+                        done = True
+                        break
+                if done:
                     break
     return escapes
 
 
-def astar(g, net, start, goal, extra):
+_HARD_DISC = {}
+
+
+def hard_disc(width):
+    """Off-center swath offsets a track of `width` needs free around its
+    centerline (same footprint mark_swath will block on emit).  Empty for
+    0.3mm tracks, which fit the 0.5mm grid exactly."""
+    offs = _HARD_DISC.get(width)
+    if offs is None:
+        half = width / 2 + (0.15 if width <= 0.31 else 0.36)
+        r = int(math.ceil(half / GRID))
+        offs = [(dx, dy) for dx in range(-r, r + 1)
+                for dy in range(-r, r + 1)
+                if (dx * GRID) ** 2 + (dy * GRID) ** 2 <= half * half
+                and (dx, dy) != (0, 0)]
+        _HARD_DISC[width] = offs
+    return offs
+
+
+def seg_free(g, layer, x0, y0, x1, y1, net, width, extra=frozenset()):
+    """True if a straight track's whole swath is free (or own-net).
+    Distances are measured from the TRUE (possibly off-grid) centerline
+    so a straddling stub/tie is checked against every cell its copper
+    touches, not just the rounded-center cell."""
+    half = width / 2 + (0.15 if width <= 0.31 else 0.36)
+    r = int(math.ceil(half / GRID)) + 1
+    steps = max(1, int(max(abs(x1 - x0), abs(y1 - y0)) / GRID))
+    for k in range(steps + 1):
+        x = x0 + (x1 - x0) * k / steps
+        y = y0 + (y1 - y0) * k / steps
+        ix, iy = int(round(x / GRID)), int(round(y / GRID))
+        for dx in range(-r, r + 1):
+            for dy in range(-r, r + 1):
+                ex = (ix + dx) * GRID - x
+                ey = (iy + dy) * GRID - y
+                if ex * ex + ey * ey <= half * half and \
+                        not g.is_free(layer, ix + dx, iy + dy, net, extra):
+                    return False
+    return True
+
+
+def astar(g, net, start, goal, extra, width=0.3):
     import heapq
+    hoffs = hard_disc(width)
     sx, sy = int(round(start[0] / GRID)), int(round(start[1] / GRID))
     gx, gy = int(round(goal[0] / GRID)), int(round(goal[1] / GRID))
     startn = (0, sx, sy)
@@ -664,23 +812,37 @@ def astar(g, net, start, goal, extra):
             return path[::-1]
         layer, ix, iy = node
         for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            nn = (layer, ix + dx, iy + dy)
-            if not g.is_free(layer, ix + dx, iy + dy, net, extra):
+            nix, niy = ix + dx, iy + dy
+            if not g.is_free(layer, nix, niy, net, extra):
                 continue
+            # wide tracks: the whole swath must be free, not just the
+            # centerline (a 2mm track physically overlaps copper up to
+            # ~1.4mm from its centerline)
+            if hoffs and not all(g.is_free(layer, nix + hx, niy + hy,
+                                           net, extra)
+                                 for hx, hy in hoffs):
+                continue
+            nn = (layer, nix, niy)
             nc = cost[node] + 1
             if nc < cost.get(nn, 1 << 30):
                 cost[nn] = nc
                 came[nn] = node
-                heapq.heappush(openq, (nc + abs(ix + dx - gx)
-                                       + abs(iy + dy - gy), nn))
+                heapq.heappush(openq, (nc + abs(nix - gx)
+                                       + abs(niy - gy), nn))
         ol = 1 - layer
-        if g.is_free(ol, ix, iy, net, extra) and via_ok(ix, iy, net):
-            nn = (ol, ix, iy)
-            nc = cost[node] + VIA_COST
-            if nc < cost.get(nn, 1 << 30):
-                cost[nn] = nc
-                came[nn] = node
-                heapq.heappush(openq, (nc + abs(ix - gx) + abs(iy - gy), nn))
+        if g.is_free(ol, ix, iy, net, extra) and via_ok(ix, iy, net) \
+                and all(g.is_free(ll, ix + vdx, iy + vdy, net, extra)
+                        for ll in (layer, ol)
+                        for vdx, vdy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+            if not hoffs or all(g.is_free(ol, ix + hx, iy + hy, net, extra)
+                                for hx, hy in hoffs):
+                nn = (ol, ix, iy)
+                nc = cost[node] + VIA_COST
+                if nc < cost.get(nn, 1 << 30):
+                    cost[nn] = nc
+                    came[nn] = node
+                    heapq.heappush(openq, (nc + abs(ix - gx)
+                                           + abs(iy - gy), nn))
     return None
 
 
@@ -690,6 +852,13 @@ def emit_tie(board, g, nets, name, exact, node, width):
     if abs(ex - cx) < 0.01 and abs(ey - cy) < 0.01:
         return
     lm = {0: pcbnew.F_Cu, 1: pcbnew.B_Cu}
+    import math as _m
+    if _m.hypot(ex - cx, ey - cy) > 1.6:
+        return False  # blind tie too long - crossing risk; caller treats edge as failed
+    # the tie is off-grid and was never seen by the router: refuse it if
+    # its swath crosses foreign copper (caller treats the edge as failed)
+    if not seg_free(g, node[0], ex, ey, cx, cy, name, min(width, 0.3)):
+        return False
     t = pcbnew.PCB_TRACK(board)
     t.SetStart(V(ex, ey))
     t.SetEnd(V(cx, cy))
@@ -697,6 +866,10 @@ def emit_tie(board, g, nets, name, exact, node, width):
     t.SetLayer(lm[node[0]])
     t.SetNet(nets[name])
     board.Add(t)
+    # mark it: ties were invisible to everything emitted later, which
+    # produced tie-vs-track overlaps
+    mark_swath(g, node[0], ex, ey, cx, cy, name, min(width, 0.3))
+    return True
 
 
 def emit_path(board, g, nets, name, path, width):
@@ -747,7 +920,21 @@ def route_stragglers(board, g, nets, misses, zone_by_net):
         for pad in fp.Pads():
             if pad.GetNumber() == padnum:
                 extra |= pad_cells(pad)
-        path = astar(g, net, (px, py), (best[1], best[2]), frozenset(extra))
+        fextra = frozenset(filter_extra(g, net, extra))
+        # width ladder: these are sense taps / zone feeds -- a narrower
+        # connection beats a missing one when no fat corridor exists
+        path = None
+        for w_try in (width, 1.0, 0.4):
+            if w_try > width:
+                continue
+            path = astar(g, net, (px, py), (best[1], best[2]), fextra,
+                         width=w_try)
+            if path is not None:
+                if w_try < width:
+                    print(f"   straggler {net} {ref}.{padnum}: "
+                          f"narrowed {width} -> {w_try}")
+                width = w_try
+                break
         if path is None:
             failed.append((net, ref, padnum))
             continue
@@ -776,15 +963,31 @@ def gnd_via_drops(board, g, nets):
                              (-1.2, -1.2), (0, 2.2), (0, -2.2),
                              (2.2, 0), (-2.2, 0), (0, 3.0), (0, -3.0),
                              (3.0, 0), (-3.0, 0), (2.2, 2.2),
-                             (-2.2, 2.2), (2.2, -2.2), (-2.2, -2.2)]:
-                vx, vy = px + ddx, py + ddy
-                vix, viy = int(round(vx / GRID)), int(round(vy / GRID))
-                if not (g.is_free(0, vix, viy, "GND")
-                        and g.is_free(1, vix, viy, "GND")
-                        and via_ok(vix, viy, "GND")):
+                             (-2.2, 2.2), (2.2, -2.2), (-2.2, -2.2),
+                             # far ring: safe now that the stub swath is
+                             # checked against foreign copper (seg_free)
+                             (0, 3.8), (0, -3.8), (3.8, 0), (-3.8, 0),
+                             (3.0, 3.0), (-3.0, 3.0), (3.0, -3.0),
+                             (-3.0, -3.0), (0, 4.6), (0, -4.6),
+                             (4.6, 0), (-4.6, 0)]:
+                vix = int(round((px + ddx) / GRID))
+                viy = int(round((py + ddy) / GRID))
+                vx, vy = vix * GRID, viy * GRID   # snapped exactly on-grid
+                # center + orthogonal cells (<=0.5mm) can short a 0.6mm
+                # via; diagonal cells (0.707mm) geometrically cannot --
+                # requiring the full 3x3 starves dense areas of drops
+                free = all(g.is_free(l, vix + dx, viy + dy, "GND")
+                           for l in (0, 1)
+                           for dx, dy in ((0, 0), (1, 0), (-1, 0),
+                                          (0, 1), (0, -1)))
+                if not (free and via_ok(vix, viy, "GND")):
+                    continue
+                # the pad-to-via stub must not cross foreign copper either
+                # (0.3mm stub is grid-legal: centerline check suffices)
+                if not seg_free(g, 0, px, py, vx, vy, "GND", 0.3):
                     continue
                 add_via(board, g, nets, "GND", vx, vy)
-                add_track(board, g, nets, "GND", 0, px, py, vx, vy, 0.4)
+                add_track(board, g, nets, "GND", 0, px, py, vx, vy, 0.3)
                 added += 1
                 done = True
                 break
@@ -794,12 +997,127 @@ def gnd_via_drops(board, g, nets):
     return added
 
 
+def purge_track_shorts(board):
+    """Geometric safety net: delete the shorter of any two touching
+    different-net tracks on the same outer layer.  Every upstream check
+    works on the 0.5mm grid; off-grid ties/stubs can still produce
+    boundary touches at the 0.05mm scale.  A deleted segment shows up as
+    honest unconnected copper instead of a short."""
+    from collections import defaultdict
+
+    def seg_pt_d2(px, py, ax, ay, bx, by):
+        vx, vy = bx - ax, by - ay
+        L2 = vx * vx + vy * vy
+        if L2 <= 1e-12:
+            dx, dy = px - ax, py - ay
+            return dx * dx + dy * dy
+        t = max(0.0, min(1.0, ((px - ax) * vx + (py - ay) * vy) / L2))
+        dx, dy = px - (ax + t * vx), py - (ay + t * vy)
+        return dx * dx + dy * dy
+
+    def ccw(x1, y1, x2, y2, x3, y3):
+        return (y3 - y1) * (x2 - x1) - (y2 - y1) * (x3 - x1)
+
+    def seg_seg_dist(a, b):
+        ax, ay, bx, by = a
+        cx, cy, dx, dy = b
+        d1 = ccw(ax, ay, bx, by, cx, cy)
+        d2 = ccw(ax, ay, bx, by, dx, dy)
+        d3 = ccw(cx, cy, dx, dy, ax, ay)
+        d4 = ccw(cx, cy, dx, dy, bx, by)
+        if ((d1 > 0) != (d2 > 0)) and ((d3 > 0) != (d4 > 0)):
+            return 0.0
+        return math.sqrt(min(
+            seg_pt_d2(cx, cy, ax, ay, bx, by),
+            seg_pt_d2(dx, dy, ax, ay, bx, by),
+            seg_pt_d2(ax, ay, cx, cy, dx, dy),
+            seg_pt_d2(bx, by, cx, cy, dx, dy)))
+
+    # net-tie fences: tracks of two different nets legally meet there
+    nt_zones = []
+    for fp in board.Footprints():
+        if fp.GetReference().startswith("NT"):
+            c = fp.GetPosition()
+            nt_zones.append((pcbnew.ToMM(c.x), pcbnew.ToMM(c.y)))
+
+    def near_nt(x, y):
+        return any(abs(x - zx) < 2.5 and abs(y - zy) < 2.5
+                   for zx, zy in nt_zones)
+
+    segs = []
+    for t in board.GetTracks():
+        if t.GetClass() != "PCB_TRACK":
+            continue
+        li = {pcbnew.F_Cu: 0, pcbnew.B_Cu: 1}.get(t.GetLayer())
+        if li is None:
+            continue
+        a, b = t.GetStart(), t.GetEnd()
+        segs.append([t, li, pcbnew.ToMM(a.x), pcbnew.ToMM(a.y),
+                     pcbnew.ToMM(b.x), pcbnew.ToMM(b.y),
+                     pcbnew.ToMM(t.GetWidth()), t.GetNetname()])
+
+    bins = defaultdict(list)
+    B = 4.0
+    for i, s in enumerate(segs):
+        for bx in range(int(min(s[2], s[4]) // B),
+                        int(max(s[2], s[4]) // B) + 1):
+            for by in range(int(min(s[3], s[5]) // B),
+                            int(max(s[3], s[5]) // B) + 1):
+                bins[(s[1], bx, by)].append(i)
+
+    doomed = set()
+    seen = set()
+    for idxs in bins.values():
+        for ii in range(len(idxs)):
+            for jj in range(ii + 1, len(idxs)):
+                i1, i2 = idxs[ii], idxs[jj]
+                if i1 in doomed or i2 in doomed:
+                    continue
+                pair = (i1, i2)
+                if pair in seen:
+                    continue
+                seen.add(pair)
+                s1, s2 = segs[i1], segs[i2]
+                if s1[7] == s2[7] or not s1[7] or not s2[7]:
+                    continue
+                lim = s1[6] / 2 + s2[6] / 2 + 1e-3
+                d = seg_seg_dist((s1[2], s1[3], s1[4], s1[5]),
+                                 (s2[2], s2[3], s2[4], s2[5]))
+                if d >= lim:
+                    continue
+                if near_nt(s1[2], s1[3]) or near_nt(s1[4], s1[5]):
+                    continue
+                l1 = math.hypot(s1[4] - s1[2], s1[5] - s1[3])
+                l2 = math.hypot(s2[4] - s2[2], s2[5] - s2[3])
+                victim, other = (i1, s2) if l1 <= l2 else (i2, s1)
+                doomed.add(victim)
+                v = segs[victim]
+                print(f"   purge short: {v[7]} seg "
+                      f"({v[2]:.2f},{v[3]:.2f})-({v[4]:.2f},{v[5]:.2f}) "
+                      f"vs {other[7]}")
+    for i in doomed:
+        board.Delete(segs[i][0])
+    return len(doomed)
+
+
 def route_signals(board, g, nets, escapes):
     """Negotiated congestion routing: signal tracks are soft obstacles that
     other nets may cross at a per-iteration penalty; overused cells build
     history cost until every edge has a private path (PathFinder-lite).
-    Hard obstacles (pads, pulse zones, stubs, GND vias) stay in `g`."""
-    import heapq
+    Hard obstacles (pads, pulse zones, stubs, GND vias) stay in `g`.
+
+    The negotiation loop is parallelized (parallel PathFinder): every
+    iteration's batch of edges is routed by a process pool against a
+    snapshot of the usage/history penalty state (stale penalties within an
+    iteration are acceptable), then results are applied sequentially so
+    conflict detection stays identical to the serial code."""
+    import os
+    import time
+    from multiprocessing import Pool, shared_memory
+
+    import numpy as np
+
+    import route_worker
 
     netpads = {}
     padobjs = {}
@@ -840,12 +1158,12 @@ def route_signals(board, g, nets, escapes):
             mst.append((best[1], best[2]))
             in_tree.append(best[2])
         for i, j in mst:
-            extra = pad_cells(padobjs[keys[i]]) | pad_cells(padobjs[keys[j]])
+            extra = filter_extra(g, name, pad_cells(padobjs[keys[i]])
+                                 | pad_cells(padobjs[keys[j]]))
             edges_all.append([len(edges_all), name, keys[i], keys[j],
                               pts[i], pts[j], width, frozenset(extra)])
 
     usage = [{}, {}]   # cellidx -> {netname: refcount}
-    hist = [{}, {}]
     epaths = {}
     eswaths = {}
 
@@ -867,11 +1185,17 @@ def route_signals(board, g, nets, escapes):
             prev_l = l
         return cells
 
+    # `usage` stays the source of truth for has_conflict/history; the
+    # shared-memory `use_arr` mirror encodes each cell for the workers as
+    # -1 = free, -2 = multiple nets, else the id of the single net present.
     def occupy(name, cells):
+        nid = nid_of[name]
         for (l, ix, iy) in cells:
             i = ix * g.ny + iy
             d = usage[l].setdefault(i, {})
             d[name] = d.get(name, 0) + 1
+            if 0 <= i < ncell:
+                use_arr[l][i] = nid if len(d) == 1 else -2
 
     def vacate(name, cells):
         for (l, ix, iy) in cells:
@@ -881,6 +1205,13 @@ def route_signals(board, g, nets, escapes):
                 d[name] -= 1
                 if d[name] <= 0:
                     del d[name]
+                    if 0 <= i < ncell:
+                        if not d:
+                            use_arr[l][i] = -1
+                        elif len(d) == 1:
+                            use_arr[l][i] = nid_of[next(iter(d))]
+                        else:
+                            use_arr[l][i] = -2
 
     def has_conflict(eid, name):
         for (l, ix, iy) in eswaths.get(eid, ()):
@@ -889,117 +1220,186 @@ def route_signals(board, g, nets, escapes):
                 return True
         return False
 
-    def disc_offsets(width):
-        half = width / 2 + (0.15 if width <= 0.31 else 0.36)
-        r = int(math.ceil(half / GRID))
-        offs = []
-        for dx in range(-r, r + 1):
-            for dy in range(-r, r + 1):
-                if (dx * GRID) ** 2 + (dy * GRID) ** 2 <= half * half:
-                    offs.append((dx, dy))
-        return offs
+    # ---- multiprocessing PathFinder setup --------------------------------
+    # Static A*-relevant state (grid occupancy, via keepouts, per-edge
+    # metadata) ships once per worker via the Pool initializer; the mutable
+    # usage/history penalty state lives in shared-memory int32 arrays that
+    # only the parent writes, and only between batches.
+    names = set(e[1] for e in edges_all)
+    for l in (0, 1):
+        names.update(g.owner[l].values())
+    names.update(VIA_FORBID.values())
+    nid_of = {n: i for i, n in enumerate(sorted(names))}
 
-    _disc_cache = {}
+    ncell = g.nx * g.ny
+    shms = []
 
-    def pen(l, ix, iy, name, p_now, offs):
-        c = 0
-        clash = False
-        for dx, dy in offs:
-            i = (ix + dx) * g.ny + iy + dy
-            c += hist[l].get(i, 0)
-            if not clash:
-                d = usage[l].get(i)
-                if d and any(k != name for k in d):
-                    clash = True
-        if clash:
-            c += p_now
-        return c
+    def _shm_arr(fill):
+        s = shared_memory.SharedMemory(create=True, size=ncell * 4)
+        shms.append(s)
+        a = np.frombuffer(s.buf, dtype=np.int32, count=ncell)
+        a[:] = fill
+        return s.name, a
 
-    def astar_neg(name, start, goal, extra, p_now, width):
-        offs = _disc_cache.get(width)
-        if offs is None:
-            offs = disc_offsets(width)
-            _disc_cache[width] = offs
-        sx, sy = int(round(start[0] / GRID)), int(round(start[1] / GRID))
-        gx, gy = int(round(goal[0] / GRID)), int(round(goal[1] / GRID))
-        startn = (0, sx, sy)
-        goals = {(0, gx, gy), (1, gx, gy)}
-        openq = [(0, startn)]
-        came = {startn: None}
-        cost = {startn: 0}
-        pops = 0
-        while openq and pops < 600000:
-            _, node = heapq.heappop(openq)
-            pops += 1
-            if node in goals:
-                path = []
-                while node:
-                    path.append(node)
-                    node = came[node]
-                return path[::-1]
-            l, ix, iy = node
-            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                nix, niy = ix + dx, iy + dy
-                if not g.is_free(l, nix, niy, name, extra):
+    use_arr, hist_arr, use_shm, hist_shm = [], [], [], []
+    for l in (0, 1):
+        nm_, a_ = _shm_arr(-1)
+        use_shm.append(nm_)
+        use_arr.append(a_)
+    for l in (0, 1):
+        nm_, a_ = _shm_arr(0)
+        hist_shm.append(nm_)
+        hist_arr.append(a_)
+    nm_ = a_ = None
+
+    static = {
+        "grid": GRID, "nx": g.nx, "ny": g.ny,
+        "blocked": tuple(bytes(b) for b in g.blocked),
+        "owner": tuple({i: nid_of[v] for i, v in g.owner[l].items()}
+                       for l in (0, 1)),
+        "via_forbid": {k: nid_of[v] for k, v in VIA_FORBID.items()},
+        "edges": {
+            e[0]: (nid_of[e[1]],
+                   int(round(e[4][0] / GRID)), int(round(e[4][1] / GRID)),
+                   int(round(e[5][0] / GRID)), int(round(e[5][1] / GRID)),
+                   e[6], e[7])
+            for e in edges_all},
+        "use_shm": use_shm, "hist_shm": hist_shm,
+    }
+
+    nproc = int(os.environ.get("OMNI_NEG_PROCS", "0")) \
+        or max(1, min(24, os.cpu_count() or 8))
+    max_iters = int(os.environ.get("OMNI_NEG_ITERS", "300"))
+    p_cap = int(os.environ.get("OMNI_NEG_PCAP", "0"))  # 0 = uncapped
+    print(f"   negotiate: {len(edges_all)} edges, {nproc} workers",
+          flush=True)
+    pool = Pool(nproc, initializer=route_worker.init_worker,
+                initargs=(static,))
+    best = None   # (score, it, epaths copy, eswaths copy, over, missing)
+    score = None
+    try:
+        for it in range(max_iters):
+            # present-sharing ramp; the best-state snapshot below banks
+            # the minimum, so late-run thrash from the growing penalty is
+            # harmless -- OMNI_NEG_PCAP>0 caps the ramp if desired
+            p_now = 4 + it * 3
+            if p_cap:
+                p_now = min(p_now, p_cap)
+            if it == 0:
+                work = list(edges_all)
+            else:
+                work = [e for e in edges_all
+                        if e[0] not in epaths or has_conflict(e[0], e[1])]
+                if not work:
+                    break
+                rng = random.Random(1000 + it)
+                rng.shuffle(work)
+            # route in sub-batches of ~nproc edges: within a sub-batch,
+            # edges route in parallel against a stale usage/hist snapshot
+            # (parallel PathFinder semantics -- an edge's own old path
+            # never penalizes itself, so no pre-vacate is needed); the
+            # applied results become visible through shared memory before
+            # the next sub-batch.  Bounding staleness to nproc edges keeps
+            # convergence near-serial (a single whole-iteration snapshot
+            # livelocks: conflicting pairs keep moving simultaneously).
+            t_map = t_apply = t_astar = t_snap = t_slow = 0.0
+            for s0 in range(0, len(work), nproc):
+                sub = work[s0:s0 + nproc]
+                token = it * 100000 + s0
+                tasks = [(token, p_now, [e[0]]) for e in sub]
+                rmap = {}
+                t0 = time.perf_counter()
+                slow = 0.0
+                for batch in pool.map(route_worker.route_batch, tasks):
+                    for eid, path, dsnap, dt in batch:
+                        rmap[eid] = path
+                        t_astar += dt
+                        t_snap += dsnap
+                        slow = max(slow, dt)
+                t1 = time.perf_counter()
+                t_map += t1 - t0
+                t_slow += slow
+                # apply sequentially, in `work` order, exactly as the
+                # serial loop did (vacate old path, occupy new swath)
+                for e in sub:
+                    eid, name, ka, kb, pa, pb, width, extra = e
+                    if eid in epaths:
+                        vacate(name, eswaths[eid])
+                        del epaths[eid], eswaths[eid]
+                    path = rmap[eid]
+                    if path is None:
+                        continue
+                    sw = swath_of(path, width)
+                    epaths[eid] = path
+                    eswaths[eid] = sw
+                    occupy(name, sw)
+                t_apply += time.perf_counter() - t1
+            t_hist0 = time.perf_counter()
+            # build history on overused cells
+            over = 0
+            for e in edges_all:
+                eid, name = e[0], e[1]
+                if eid not in epaths:
                     continue
-                nn = (l, nix, niy)
-                nc = cost[node] + 1 + pen(l, nix, niy, name, p_now, offs)
-                if nc < cost.get(nn, 1 << 30):
-                    cost[nn] = nc
-                    came[nn] = node
-                    heapq.heappush(openq, (nc + abs(nix - gx)
-                                           + abs(niy - gy), nn))
-            ol = 1 - l
-            if g.is_free(ol, ix, iy, name, extra) and via_ok(ix, iy, name):
-                nn = (ol, ix, iy)
-                nc = cost[node] + 10 + pen(ol, ix, iy, name, p_now, offs)
-                if nc < cost.get(nn, 1 << 30):
-                    cost[nn] = nc
-                    came[nn] = node
-                    heapq.heappush(openq, (nc + abs(ix - gx)
-                                           + abs(iy - gy), nn))
-        return None
-
-    hard_failed = []
-    for it in range(40):
-        p_now = 4 + it * 3
-        if it == 0:
-            work = list(edges_all)
-        else:
-            work = [e for e in edges_all
-                    if e[0] not in epaths or has_conflict(e[0], e[1])]
-            if not work:
+                if has_conflict(eid, name):
+                    over += 1
+                    for (l, ix, iy) in eswaths[eid]:
+                        i = ix * g.ny + iy
+                        d = usage[l].get(i)
+                        if d and any(k != name for k in d) \
+                                and 0 <= i < ncell:
+                            hist_arr[l][i] += 1
+            missing = [e for e in edges_all if e[0] not in epaths]
+            print(f"   negotiate iter {it}: rerouted {len(work)}, "
+                  f"conflicted {over}, unrouted {len(missing)}", flush=True)
+            if os.environ.get("OMNI_NEG_PROF"):
+                t_hist = time.perf_counter() - t_hist0
+                nsb = (len(work) + nproc - 1) // nproc
+                util = (t_astar / (t_map * nproc) * 100) if t_map else 0.0
+                print(f"      prof: map {t_map:.2f}s (astar_sum "
+                      f"{t_astar:.2f}s, snap_sum {t_snap:.2f}s, "
+                      f"slowest-per-sb {t_slow:.2f}s, {nsb} sub-batches) "
+                      f"apply {t_apply:.2f}s hist {t_hist:.2f}s "
+                      f"util {util:.0f}%", flush=True)
+            # keep the best state seen so far; the answer is monotone
+            score = over + len(missing)
+            if best is None or score < best[0]:
+                best = (score, it, dict(epaths), dict(eswaths), over,
+                        len(missing))
+            if over == 0 and not missing:
                 break
-        for e in work:
-            eid, name, ka, kb, pa, pb, width, extra = e
-            if eid in epaths:
-                vacate(name, eswaths[eid])
-                del epaths[eid], eswaths[eid]
-            path = astar_neg(name, pa, pb, extra, p_now, width)
-            if path is None:
-                continue
-            sw = swath_of(path, width)
-            epaths[eid] = path
-            eswaths[eid] = sw
-            occupy(name, sw)
-        # build history on overused cells
-        over = 0
-        for e in edges_all:
-            eid, name = e[0], e[1]
-            if eid not in epaths:
-                continue
-            if has_conflict(eid, name):
-                over += 1
-                for (l, ix, iy) in eswaths[eid]:
-                    i = ix * g.ny + iy
-                    d = usage[l].get(i)
-                    if d and any(k != name for k in d):
-                        hist[l][i] = hist[l].get(i, 0) + 1
-        missing = [e for e in edges_all if e[0] not in epaths]
-        print(f"   negotiate iter {it}: rerouted {len(work)}, "
-              f"conflicted {over}, unrouted {len(missing)}")
-        if over == 0 and not missing:
-            break
+            # stagnation break: past the warm-up, stop burning iterations
+            # if no new minimum in 30 iters (best state is banked above)
+            if it > 26 and it - best[1] >= 30:
+                print(f"   negotiate: stagnated (best iter {best[1]}, "
+                      f"score {best[0]}), stopping early", flush=True)
+                break
+        # restore the best state if the final iteration was worse
+        if best is not None and score is not None and score > best[0]:
+            _, bit, bep, besw, bover, bmiss = best
+            print(f"   negotiate: restoring best state from iter {bit} "
+                  f"(conflicted {bover}, unrouted {bmiss})", flush=True)
+            epaths.clear()
+            epaths.update(bep)
+            eswaths.clear()
+            eswaths.update(besw)
+            ename = {e[0]: e[1] for e in edges_all}
+            for l in (0, 1):
+                usage[l].clear()
+                use_arr[l][:] = -1
+            for eid, sw in eswaths.items():
+                occupy(ename[eid], sw)
+    finally:
+        pool.close()
+        pool.join()
+        use_arr.clear()
+        hist_arr.clear()
+        for s in shms:
+            try:
+                s.close()
+                s.unlink()
+            except Exception:
+                pass
 
     failed = []
     routed = 0
@@ -1009,9 +1409,39 @@ def route_signals(board, g, nets, escapes):
             failed.append((name, ka, kb))
             continue
         path = epaths[eid]
+        # re-verify against copper emitted SO FAR in this phase: off-grid
+        # ties are invisible to the negotiation's usage map, so a path
+        # fixed during negotiation can overlap a tie emitted just before
+        # it; bounce such edges to pass2, which sees the live grid.
+        # The build-time `extra` whitelist is deliberately NOT honoured
+        # for foreign-owned cells: a whitelisted cell that acquired
+        # foreign copper during the emit phase must count as dirty.
+        hoffs = hard_disc(width)
+        dirty = False
+        for (pl, pix, piy) in path:
+            cells = [(pix, piy)]
+            if hoffs:
+                cells += [(pix + hx, piy + hy) for hx, hy in hoffs]
+            for cx2, cy2 in cells:
+                if g.is_free(pl, cx2, cy2, name):
+                    continue
+                own2 = (g.owner[pl].get(cx2 * g.ny + cy2)
+                        if 0 <= cx2 < g.nx and 0 <= cy2 < g.ny else None)
+                if own2 in (None, CONTESTED) and (pl, cx2, cy2) in extra:
+                    continue  # static blockage the whitelist already vetted
+                dirty = True
+                break
+            if dirty:
+                break
+        if dirty:
+            failed.append((name, ka, kb))
+            continue
+        ta = emit_tie(board, g, nets, name, pa, path[0], width)
+        tb = emit_tie(board, g, nets, name, pb, path[-1], width)
+        if ta is False or tb is False:
+            failed.append((name, ka, kb))
+            continue
         emit_path(board, g, nets, name, path, width)
-        emit_tie(board, g, nets, name, pa, path[0], width)
-        emit_tie(board, g, nets, name, pb, path[-1], width)
         routed += 1
     return routed, failed, [e[1] for e in edges_all]
 
@@ -1022,10 +1452,10 @@ def route_signals(board, g, nets, escapes):
 
 def build_preroute():
     """Board with placement, pulse copper, Kelvin, GND drops - no signals."""
-    comps, netlist_nets, padnet = load_netlist()
+    comps, netlist_nets, padnet, meta = load_netlist()
     board = new_board()
     add_outline(board)
-    nets, missing = place_all(board, comps, padnet)
+    nets, missing = place_all(board, comps, padnet, meta)
     if missing:
         print(f"UNPLACED refs: {missing}")
 
@@ -1053,10 +1483,6 @@ def build_preroute():
 
     misses = check_pulse_pads(board, zones)
     print(f"pulse pads outside zones: {len(misses)} (straggler-routed)")
-
-    for name, pts, z in zones:
-        if z.GetLayer() == pcbnew.F_Cu:
-            stitch_zone(board, nets[name], pts)
 
     g = build_grid(board)
     build_via_forbid()
@@ -1090,6 +1516,13 @@ def build_preroute():
                 add_via(board, g, nets, net,
                         cx + (ix - (nx - 1) / 2) * pitch,
                         cy + (iy - (ny - 1) / 2) * pitch, drill, size)
+
+    # stitch AFTER kelvin/manual/cluster copper is marked: the lattice
+    # test (is_free) then skips sites colliding with it, instead of the
+    # blind-placed clusters landing on an already-stitched lattice
+    for name, pts, z in zones:
+        if z.GetLayer() == pcbnew.F_Cu:
+            stitch_zone(board, g, nets, name, pts)
 
     strag_failed = route_stragglers(board, g, nets, misses, zone_by_net)
     print(f"straggler failures: {strag_failed}")
@@ -1131,16 +1564,16 @@ def main_scripted():
         for pad in pb.Pads():
             if pad.GetNumber() == kb[1]:
                 padb = pad
-        extra = pad_cells(pada) | pad_cells(padb)
+        extra = filter_extra(g, name, pad_cells(pada) | pad_cells(padb))
         sa = escapes.get(ka) or (pcbnew.ToMM(pada.GetPosition().x),
                                  pcbnew.ToMM(pada.GetPosition().y))
         sb = escapes.get(kb) or (pcbnew.ToMM(padb.GetPosition().x),
                                  pcbnew.ToMM(padb.GetPosition().y))
-        path = astar(g, name, sa, sb, frozenset(extra))
+        w2 = NET_WIDTHS.get(name, 0.3)
+        path = astar(g, name, sa, sb, frozenset(extra), width=w2)
         if path is None:
             still.append((name, ka, kb))
             continue
-        w2 = NET_WIDTHS.get(name, 0.3)
         emit_path(board, g, nets, name, path, w2)
         emit_tie(board, g, nets, name, sa, path[0], w2)
         emit_tie(board, g, nets, name, sb, path[-1], w2)
@@ -1153,6 +1586,8 @@ def main_scripted():
             fail_names.append(n)
     rest = [n for n in route_order if n not in fail_names]
     hf.write_text(json.dumps({"prio": fail_names, "order": rest}))
+    purged = purge_track_shorts(board)
+    print(f"purged {purged} shorting segments")
     unconn = finish(board, "scripted")
     print(f"route_failures={len(still)}, straggler_failures={len(strag_failed)}")
 
@@ -1226,7 +1661,7 @@ def main_import_ses():
     for name, pts in PULSE_ZONES:
         if name == "GND":
             continue
-        stitch_zone(board, nets[name], pts)
+        stitch_zone(board, g, nets, name, pts)
 
     # kelvin ties: re-add only the stripped (pulse-net) ones
     for ra, pa, rb, pb, w in KELVIN_TRACKS:
@@ -1314,12 +1749,12 @@ def main_repair():
             continue
         pa = (items[0]["pos"]["x"], items[0]["pos"]["y"])
         pb = (items[1]["pos"]["x"], items[1]["pos"]["y"])
-        path = astar(g, net, pa, pb, frozenset())
+        w = NET_WIDTHS.get(net, 0.3)
+        path = astar(g, net, pa, pb, frozenset(), width=w)
         if path is None:
             fail += 1
             print(f"   REPAIR FAIL {net} {pa} {pb}")
             continue
-        w = NET_WIDTHS.get(net, 0.3)
         emit_path(board, g, nets, net, path, w)
         emit_tie(board, g, nets, net, pa, path[0], w)
         emit_tie(board, g, nets, net, pb, path[-1], w)

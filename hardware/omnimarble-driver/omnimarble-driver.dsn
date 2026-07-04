@@ -2436,20 +2436,14 @@
     )
   )
   (network
-    (net VBOOST
-      (pins R10-1 C13-1 R15-1 R9-1 D2-1 K1-11 R19-1 C12-1)
-    )
+    
     (net BST_FB
       (pins R10-2 R11-1 R12-2 U4-2 C10-2)
     )
     (net QG2
       (pins R38-1 R37-2 Q11-1 D7-1)
     )
-    (net SHUNT_HI
-      (pins R38-2 D8-2 R35-2 C25-2 NT1-1 Q10-3 Q10-3@1 Q10-3@2 Q10-3@3 Q10-3@4 Q10-3@5
-        Q10-3@6 Q11-3 Q11-3@1 Q11-3@2 Q11-3@3 Q11-3@4 Q11-3@5 Q11-3@6 C23-2 R41-2
-        D6-2 C24-2 RS1-1 D7-2 Q12-3 Q12-3@1 Q12-3@2 Q12-3@3 Q12-3@4 Q12-3@5 Q12-3@6)
-    )
+    
     (net LED_ARMED
       (pins R70-1 J11-20 J10-6)
     )
@@ -2462,22 +2456,11 @@
     (net 24V_F
       (pins Q90-2 F1-2 F1-2@1)
     )
-    (net +24V
-      (pins Q90-3 L2-1 D1-1 C4-1 C6-1 D90-1 R2-1 U1-2 U1-3 U2-3 C1-1)
-    )
+    
     (net VBANK_DIV
       (pins C16-1 R27-1 R26-2 U3-3)
     )
-    (net GND
-      (pins C16-2 R16-2 C35-2 C26-2 C13-2 J11-25 J11-26 C90-2 C7-2 C27-2 R45-2 D14-1
-        C29-2 Q2-2 C30-2 C17-2 R3-2 R11-2 C4-2 D15-1 R31-2 C9-2 Q4-2 C34-2 C6-2 D90-2
-        C93-2 C18-2 Q3-2 R7-2 U7-3 C32-2 U5-3 R9-2 R33-2 J7-2 J7-10 C21-2 C31-2 C11-2
-        Q1-2 C92-2 U1-4 R27-2 R22-2 U9-1 U9-4 U9-6 U9-7 J2-2 C91-2 C19-2 J10-3 J10-8
-        J10-13 J10-18 J8-2 J8-4 U11-12 C94-2 U2-2 R32-2 J9-3 J9-8 J9-13 J9-18 C15-2
-        C14-2 D5-1 C5-2 U12-9 U12-11 U12-12 U8-3 C8-2 R1-2 C33-2 R24-2 C12-2 C22-2
-        C3-2 U10-5 U10-8 U4-5 J1-2 C36-2 J6-2 J6-4 J6-6 J6-8 J6-10 U6-3 C1-2 R29-2
-        D13-2 D13-2@1 RS1-2 C37-2 NT2-1 C20-2 C28-2 U3-4 J4-3)
-    )
+    
     (net QG3
       (pins D8-1 R40-2 R41-1 Q12-1)
     )
@@ -2490,9 +2473,7 @@
     (net OVP_REF
       (pins R16-1 R15-2 U5-2)
     )
-    (net +12V
-      (pins D4-1 K2-A1 J3-1 C9-1 K1-A1 U2-1 C5-1 D3-1 U4-7)
-    )
+    
     (net K2_COIL
       (pins D4-2 K2-A2 Q3-3)
     )
@@ -2502,36 +2483,21 @@
     (net BST_SW
       (pins L2-2 Q91-2 D2-2)
     )
-    (net 3V3
-      (pins R48-1 C26-1 J11-23 C17-1 R64-1 R68-1 U9-5 J10-16 U12-8 U12-10 R52-1 U10-1
-        U10-7 U6-5 R56-1 R60-1 C20-1 C28-1 U3-8)
-    )
+    
     (net GATE1
       (pins R48-2 J11-1 R49-2 U11-2 J9-4)
     )
-    (net COIL_HI
-      (pins J5-1 D11-1 D10-1 D12-1 D9-1)
-    )
-    (net SW_DRAIN
-      (pins J5-2 D11-2 D11-2@1 R42-1 R36-1 Q10-2 Q11-2 D12-2 D12-2@1 R39-1 Q12-2)
-    )
-    (net +5V
-      (pins R62-1 J11-24 R66-1 R54-1 J7-1 U1-1 D16-1 J10-19 J8-1 U11-3 R17-1 R44-1
-        U12-3 R46-1 L1-2 C3-1 BZ1-2 C36-1 J6-1 J6-3 J6-5 J6-7 J6-9 R50-1 C37-1 R58-1)
-    )
+    
+    
+    
     (net SIG5
       (pins R62-2 J7-7 R63-1)
     )
-    (net VBANK
-      (pins K2-11 C90-1 F2-2 F2-2@1 C93-1 K1-14 C92-1 R19-2 C91-1 R25-1 C94-1 D10-2
-        D10-2@1 R24-1 D13-1 D9-2 D9-2@1 R26-1)
-    )
+    
     (net "unconnected-(K2-Pad12)"
       (pins K2-12)
     )
-    (net DUMP_R
-      (pins K2-14 R21-1)
-    )
+    
     (net BOOST_EN_N
       (pins R18-1 J11-11 J9-16)
     )
@@ -2601,9 +2567,7 @@
     (net LEDC_K
       (pins R71-2 D15-2)
     )
-    (net AUX_BANK
-      (pins F2-1 F2-1@1 J2-1)
-    )
+    
     (net VTH_GATE
       (pins R45-1 C29-1 U11-4 U11-6 U11-8 U11-10 R44-2 U12-4 U12-6)
     )
@@ -2664,9 +2628,7 @@
     (net SNB3
       (pins R42-2 C25-1)
     )
-    (net +12V_SW
-      (pins C18-1 U7-1 U7-6 U7-8 C21-1 C19-1 U8-1 U8-6 U8-8 C22-1 R30-1 J4-2)
-    )
+    
     (net K2_B
       (pins Q3-1 R23-2)
     )
@@ -2685,9 +2647,7 @@
     (net VSET_FLT
       (pins R14-2 C15-1 R12-1)
     )
-    (net DUMP_MID
-      (pins R21-2 R22-1)
-    )
+    
     (net BST_COMP
       (pins U5-1 Q1-3 U4-1 R5-1)
     )
