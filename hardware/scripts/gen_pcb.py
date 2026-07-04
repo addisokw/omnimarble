@@ -1999,6 +1999,45 @@ def main_import_ses():
     finish(board, "freerouted")
 
 
+def main_import_clean():
+    """Import a SES from a router that KEPT our fixed copper (DeepPCB) onto a
+    fresh placement+pours board, WITHOUT the freerouting-era strip/rebuild/
+    gnd-drop passes (those mangle a route that already carries the pulse/GND
+    connections). The SES supplies all tracks+vias; the pours come from the
+    board zones. Use for DeepPCB SES; use import-ses for freerouting."""
+    board = new_board()
+    add_outline(board)
+    comps, netlist_nets, padnet, meta = load_netlist()
+    nets, missing = place_all(board, comps, padnet, meta)
+    if missing:
+        print(f"UNPLACED refs: {missing}")
+    dnp_refs = {"C92", "C93", "C94"}
+    exbom_refs = {"TP1", "NT1", "NT2"}
+    for fp in board.Footprints():
+        if fp.GetReference() in dnp_refs:
+            fp.SetDNP(True)
+        if fp.GetReference() in exbom_refs:
+            fp.SetExcludedFromBOM(True)
+    build_zones(board, nets)
+    board.SetLayerType(pcbnew.In1_Cu, pcbnew.LT_POWER)
+    board.SetLayerType(pcbnew.In2_Cu, pcbnew.LT_POWER)
+    pcbnew.SaveBoard(str(PCB_OUT), board)
+
+    board = pcbnew.LoadBoard(str(PCB_OUT))
+    ses = PROJ / "omnimarble-driver.ses"
+    ok = pcbnew.ImportSpecctraSES(board, str(ses))
+    print(f"SES import: {ok}")
+    tent_vias(board)
+    dedup_vias(board)
+    remove_degenerate_tracks(board)
+    filler = pcbnew.ZONE_FILLER(board)
+    filler.Fill(board.Zones())
+    pcbnew.SaveBoard(str(PCB_OUT), board)
+    board.BuildConnectivity()
+    print(f"SAVED (import-clean): unconnected="
+          f"{board.GetConnectivity().GetUnconnectedCount(True)}")
+
+
 def main_repair():
     """Route leftover unconnected pairs from the last DRC report."""
     import re
@@ -2083,6 +2122,8 @@ if __name__ == "__main__":
         main_preroute()
     elif mode == "import-ses":
         main_import_ses()
+    elif mode == "import-clean":
+        main_import_clean()
     elif mode == "repair":
         main_repair()
     else:
