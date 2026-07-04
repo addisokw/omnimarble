@@ -223,7 +223,16 @@ def netclass_rules():
         by_w[w].append(net)
     rules = []
     for w in sorted(by_w, reverse=True):
+        nets = sorted(by_w[w])
         name = "w" + str(w).replace(".", "p")
-        clr = 0.3 if w >= 1.0 else 0.2
-        rules.append((name, w, clr, sorted(by_w[w])))
+        # pulse/bank nets carry the 1.0mm bank-voltage clearance so the router
+        # keeps signals clear of the high-current copper (else V24_SENSE etc
+        # graze the VBANK pour); fat rails 0.3mm; small signals 0.2mm.
+        if any(n in PLANE_NETS or n == "AUX_BANK" for n in nets):
+            clr = 1.0
+        elif w >= 1.0:
+            clr = 0.3
+        else:
+            clr = 0.2
+        rules.append((name, w, clr, nets))
     return rules

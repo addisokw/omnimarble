@@ -267,6 +267,15 @@ def stitch_zone(board, g, nets, name, pts, pitch=5.0):
     skipping lattice points that collide with foreign copper."""
     xs = [p[0] for p in pts]
     ys = [p[1] for p in pts]
+    # THT pad holes to keep 0.6mm-via stitch points clear of (hole-to-hole)
+    tht = []
+    for fp in board.Footprints():
+        for pad in fp.Pads():
+            dr = pad.GetDrillSize()
+            if dr.x > 0 and pad.GetAttribute() != pcbnew.PAD_ATTRIB_SMD:
+                pp = pad.GetPosition()
+                tht.append((pcbnew.ToMM(pp.x), pcbnew.ToMM(pp.y),
+                            0.3 + pcbnew.ToMM(dr.x) / 2 + 0.25))
     added = 0
     y = min(ys) + 2.0
     while y < max(ys) - 1.0:
@@ -277,7 +286,8 @@ def stitch_zone(board, g, nets, name, pts, pitch=5.0):
                 ok = all(g.is_free(l, ix + dx, iy + dy, name)
                          for l in (0, 1)
                          for dx in (-1, 0, 1) for dy in (-1, 0, 1))
-                if ok:
+                if ok and not any((x - hx) ** 2 + (y - hy) ** 2 < hr * hr
+                                  for hx, hy, hr in tht):
                     add_via(board, g, nets, name, x, y, 0.6, 1.2)
                     added += 1
             x += pitch
