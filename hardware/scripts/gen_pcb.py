@@ -1131,9 +1131,18 @@ def gnd_via_drops(board, g, nets):
                             break
                     if not hole_ok:
                         break
+            # size the via to fit INSIDE the pad so a fine-pitch pad (U10 GND
+            # 0.35mm) gets a small via that does not overrun onto -- or box in
+            # the escape of -- its neighbour pads. 0.3mm floor (JLC min).
+            psz = pad.GetSize()
+            pad_min = min(pcbnew.ToMM(psz.x), pcbnew.ToMM(psz.y))
+            via_sz = min(0.45, max(0.3, pad_min - 0.02))
+            via_dr = max(0.15, round(via_sz - 0.2, 2))
+            clr = via_sz / 2 + 0.2
             if hole_ok and via_ok(vix, viy, "GND") \
-                    and via_clear_of_foreign(board, px, py, "GND", 0.425):
-                add_via(board, g, nets, "GND", px, py, drill=0.25, size=0.45)
+                    and via_clear_of_foreign(board, px, py, "GND", clr):
+                add_via(board, g, nets, "GND", px, py,
+                        drill=via_dr, size=via_sz)
                 added += 1
                 done = True
             if done:
