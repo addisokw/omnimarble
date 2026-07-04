@@ -1639,7 +1639,14 @@ def main_import_ses():
         n = t.GetNetname() or "__nc__"
         if t.GetClass() == "PCB_VIA":
             pos = t.GetPosition()
-            half = pcbnew.ToMM(t.GetWidth()) / 2 + 0.36
+            # KiCad 10: PCB_VIA.GetWidth() with no layer arg fires a
+            # blocking wx assert. Read the diameter with a layer arg,
+            # falling back to the script's standard 0.6mm via.
+            try:
+                via_dia = pcbnew.ToMM(t.GetWidth(pcbnew.F_Cu))
+            except Exception:
+                via_dia = 0.6
+            half = via_dia / 2 + 0.36
             r = int(math.ceil(half / GRID))
             for layer in (0, 1):
                 for dx in range(-r, r + 1):
@@ -1714,7 +1721,14 @@ def main_repair():
         n = t.GetNetname() or "__nc__"
         if t.GetClass() == "PCB_VIA":
             pos = t.GetPosition()
-            half = pcbnew.ToMM(t.GetWidth()) / 2 + 0.36
+            # KiCad 10: PCB_VIA.GetWidth() with no layer arg fires a
+            # blocking wx assert. Read the diameter with a layer arg,
+            # falling back to the script's standard 0.6mm via.
+            try:
+                via_dia = pcbnew.ToMM(t.GetWidth(pcbnew.F_Cu))
+            except Exception:
+                via_dia = 0.6
+            half = via_dia / 2 + 0.36
             r = int(math.ceil(half / GRID))
             for layer in (0, 1):
                 for dx in range(-r, r + 1):
@@ -1760,6 +1774,8 @@ def main_repair():
         emit_tie(board, g, nets, net, pb, path[-1], w)
         ok += 1
     print(f"repair: {ok} routed, {fail} failed, {skipped} skipped")
+    purged = purge_track_shorts(board)
+    print(f"repair purge: {purged} shorting segments removed")
     finish(board, "repaired")
 
 
