@@ -2756,7 +2756,7 @@
     (net "unconnected-U12-Pad14"
       (pins U12-14)
     )
-        (class w2p5 AUX_BANK
+        (class w2p5_hv AUX_BANK
       (circuit
         (use_via "Via[0-3]_600:300_um")
       )
@@ -2783,7 +2783,16 @@
         (clearance 300)
       )
     )
-    (class w0p7 BST_CS_HI VBANK VBOOST
+    (class w0p7 BST_CS_HI VBOOST
+      (circuit
+        (use_via "Via[0-3]_600:300_um")
+      )
+      (rule
+        (width 700)
+        (clearance 300)
+      )
+    )
+    (class w0p7_hv VBANK
       (circuit
         (use_via "Via[0-3]_600:300_um")
       )
@@ -2810,7 +2819,7 @@
         (clearance 200)
       )
     )
-    (class w0p3 3V3 ISNS_N ISNS_P
+    (class w0p3 3V3 GND ISNS_N ISNS_P
       (circuit
         (use_via "Via[0-3]_600:300_um")
       )
@@ -2819,7 +2828,7 @@
         (clearance 200)
       )
     )
-    (class kicad_default ADC_CS ADC_SCK ADC_SDO ARM_SENSE BOOST_EN_N BSTINH_B BST_COMP BST_COMP_Z BST_CS BST_DRV BST_FB BST_G BST_RC BST_VREF BUCK_BST BUCK_SW BUZZ BUZZ_B BUZZ_DRV CIN1 CIN2 CIN3 CIN4 CIN5 CIN6 COIL_HI DRV_SPARE ESTOP_OK ESTOP_SENSE FIRE_GATED GATE1 GATE2 GATE3 GATE4 GATE5 GATE6 GND IMON IMON_F K1_B K1_COIL K2_B K2_COIL LEDA_K LEDC_K LED_ARMED LED_CHG MCU_FIRE OVP_REF RLY_CHARGE RLY_DUMP RPP_G SHUNT_HI SIG1 SIG2 SIG3 SIG4 SIG5 SIG6 SIG_SPARE SNB1 SNB2 SNB3 SW_DRAIN V24_DIV V24_SENSE VBANK_DIV VBANK_SENSE VSET_FLT VSET_PWM VSET_RC VTH_GATE unconnected-J10-Pin_10-Pad10 unconnected-J10-Pin_14-Pad14 unconnected-J10-Pin_15-Pad15 unconnected-J10-Pin_17-Pad17 unconnected-J10-Pin_20-Pad20 unconnected-J10-Pin_5-Pad5 unconnected-J10-Pin_9-Pad9 unconnected-J9-Pin_1-Pad1 unconnected-J9-Pin_2-Pad2 unconnected-K1-Pad12 unconnected-K2-Pad12 unconnected-U12-Pad13 unconnected-U12-Pad14
+    (class kicad_default ADC_CS ADC_SCK ADC_SDO ARM_SENSE BOOST_EN_N BSTINH_B BST_COMP BST_COMP_Z BST_CS BST_DRV BST_FB BST_G BST_RC BST_VREF BUCK_BST BUCK_SW BUZZ BUZZ_B BUZZ_DRV CIN1 CIN2 CIN3 CIN4 CIN5 CIN6 COIL_HI DRV_SPARE ESTOP_OK ESTOP_SENSE FIRE_GATED GATE1 GATE2 GATE3 GATE4 GATE5 GATE6 IMON IMON_F K1_B K1_COIL K2_B K2_COIL LEDA_K LEDC_K LED_ARMED LED_CHG MCU_FIRE OVP_REF RLY_CHARGE RLY_DUMP RPP_G SHUNT_HI SIG1 SIG2 SIG3 SIG4 SIG5 SIG6 SIG_SPARE SNB1 SNB2 SNB3 SW_DRAIN V24_DIV V24_SENSE VBANK_DIV VBANK_SENSE VSET_FLT VSET_PWM VSET_RC VTH_GATE unconnected-J10-Pin_10-Pad10 unconnected-J10-Pin_14-Pad14 unconnected-J10-Pin_15-Pad15 unconnected-J10-Pin_17-Pad17 unconnected-J10-Pin_20-Pad20 unconnected-J10-Pin_5-Pad5 unconnected-J10-Pin_9-Pad9 unconnected-J9-Pin_1-Pad1 unconnected-J9-Pin_2-Pad2 unconnected-K1-Pad12 unconnected-K2-Pad12 unconnected-U12-Pad13 unconnected-U12-Pad14
       (circuit
         (use_via "Via[0-3]_600:300_um")
       )

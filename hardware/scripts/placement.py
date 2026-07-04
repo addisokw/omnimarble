@@ -182,7 +182,7 @@ NET_WIDTHS = {
     "+12V": 0.5, "+12V_SW": 0.5, "+5V": 0.5, "3V3": 0.3,
     "VBOOST": 0.7, "BST_SW": 1.5, "BST_CS_HI": 0.7,
     "AUX_BANK": 2.5, "DUMP_R": 2.0, "DUMP_MID": 2.0,
-    "VBANK": 0.7, "LIVE_LED": 0.4,
+    "VBANK": 0.7, "LIVE_LED": 0.4, "GND": 0.3,
     "QG1": 0.5, "QG2": 0.5, "QG3": 0.5,
     "DRV1": 0.5, "DRV2": 0.5, "DRV3": 0.5,
     "ISNS_P": 0.3, "ISNS_N": 0.3,
@@ -228,21 +228,20 @@ def netclass_rules():
     turns into (class ...) blocks so the autorouter honours real widths.
     """
     from collections import defaultdict
-    by_w = defaultdict(list)
+    # Split classes by (width, high-clearance flag). Only the bank-voltage nets
+    # themselves carry the 1.0mm clearance -- grouping purely by width used to
+    # contaminate VBOOST/BST_CS_HI with VBANK's 1.0mm (they share 0.7mm width),
+    # which made DeepPCB flag their pins unroutable. The pour's own 1.0mm
+    # isolation is set on the copper zone, so relaxing these routed taps to
+    # 0.3mm does not reduce clearance to the high-voltage pour.
+    # bank-voltage nets need the 1.0mm creepage; GND is 0V (a plane but not hv)
+    hv = PULSE_NETS | {"AUX_BANK"}
+    groups = defaultdict(list)
     for net, w in NET_WIDTHS.items():
-        by_w[w].append(net)
+        groups[(w, net in hv)].append(net)
     rules = []
-    for w in sorted(by_w, reverse=True):
-        nets = sorted(by_w[w])
-        name = "w" + str(w).replace(".", "p")
-        # pulse/bank nets carry the 1.0mm bank-voltage clearance so the router
-        # keeps signals clear of the high-current copper (else V24_SENSE etc
-        # graze the VBANK pour); fat rails 0.3mm; small signals 0.2mm.
-        if any(n in PLANE_NETS or n == "AUX_BANK" for n in nets):
-            clr = 1.0
-        elif w >= 1.0:
-            clr = 0.3
-        else:
-            clr = 0.2
-        rules.append((name, w, clr, nets))
+    for (w, is_hv), nets in sorted(groups.items(), key=lambda kv: -kv[0][0]):
+        clr = 1.0 if is_hv else (0.3 if w >= 0.7 else 0.2)
+        name = "w" + str(w).replace(".", "p") + ("_hv" if is_hv else "")
+        rules.append((name, w, clr, sorted(nets)))
     return rules
