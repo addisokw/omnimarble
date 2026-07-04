@@ -24,8 +24,8 @@ sys.path.insert(0, str(SCRIPTS))
 
 from kicad_sch import Sym, find, find_all, parse  # stdlib-only parser
 from placement import (AUTO_CLUSTERS, BOARD_H, BOARD_W, BRIDGE_TABLE,
-                       KELVIN_TRACKS, MANUAL_TRACKS, MOUNT_HOLES,
-                       NET_WIDTHS, P, PULSE_NETS, PULSE_ZONES,
+                       CRITICAL_NETS, KELVIN_TRACKS, MANUAL_TRACKS, MOUNT_HOLES,
+                       NET_WIDTHS, P, PLANE_NETS, PULSE_NETS, PULSE_ZONES,
                        VIA_CLUSTERS)
 
 PROJ = HW_DIR / "omnimarble-driver"
@@ -1667,6 +1667,15 @@ def build_preroute():
                         cx + (ix - (nx - 1) / 2) * pitch,
                         cy + (iy - (ny - 1) / 2) * pitch, drill, size)
 
+    # NOTE: route_critical() (deterministic A* authoring of the critical nets)
+    # is intentionally NOT called here. Emitting astar-generated critical
+    # tracks as DSN `(type fix)` wires crashes freerouting v2.2.4 in
+    # insert_forced_trace_polyline ('from_corner is null' on the short diagonal
+    # pad ties). Critical nets are instead routed by freerouting and reviewed
+    # via highlighted screenshots; any net whose routing is inadequate gets a
+    # clean explicit trace in placement.MANUAL_TRACKS (which freerouting
+    # digests fine), not a blanket astar pass.
+
     # stitch AFTER kelvin/manual/cluster copper is marked: the lattice
     # test (is_free) then skips sites colliding with it, instead of the
     # blind-placed clusters landing on an already-stitched lattice
@@ -1685,6 +1694,85 @@ def build_preroute():
     add_text(board, "COIL: L>=1uH R_total>=90mOhm", 30, 37, 1.2)
 
     return board, g, nets, misses, strag_failed
+
+
+def route_critical(board, g, nets):
+    """Deterministically A*-route the critical signal nets BEFORE DSN export so
+    dsn_fixup locks them (type fix) and freerouting only fills the noncritical
+    interconnect around them. Reviewer requirement: pulse-adjacent gate /
+    boost-sense / Kelvin / safety-interlock nets are authored + reviewed, not
+    autorouted. Pours/planes and VBOOST (freerouting handles it well at 1.5mm)
+    are excluded. Nets are ordered so the tightest loops route first into open
+    copper; each net's pads are joined by a nearest-neighbour MST."""
+    route_nets = sorted(CRITICAL_NETS - PLANE_NETS - {"VBOOST"})
+    by_net = {}
+    for fp in board.Footprints():
+        for pad in fp.Pads():
+            n = pad.GetNetname()
+            if n in route_nets:
+                by_net.setdefault(n, []).append(pad)
+
+    # Build the full edge list (nearest-neighbour MST per net) up front, then
+    # route ALL edges shortest-first so tight local loops lock into open copper
+    # before the long cross-board runs consume it.
+    edges = []
+    for net in route_nets:
+        pads = by_net.get(net, [])
+        if len(pads) < 2:
+            continue
+        pts = [(pcbnew.ToMM(p.GetPosition().x), pcbnew.ToMM(p.GetPosition().y),
+                p) for p in pads]
+        connected = [0]
+        remaining = list(range(1, len(pts)))
+        while remaining:
+            best = None
+            for ci in connected:
+                for ri in remaining:
+                    d = (pts[ci][0] - pts[ri][0]) ** 2 \
+                        + (pts[ci][1] - pts[ri][1]) ** 2
+                    if best is None or d < best[0]:
+                        best = (d, ci, ri)
+            d, ci, ri = best
+            edges.append((d, net, pts[ci][2], pts[ri][2]))
+            connected.append(ri)
+            remaining.remove(ri)
+    edges.sort(key=lambda e: e[0])
+
+    def try_edge(net, pa, pb):
+        w = NET_WIDTHS.get(net, 0.3)
+        sa = (pcbnew.ToMM(pa.GetPosition().x), pcbnew.ToMM(pa.GetPosition().y))
+        sb = (pcbnew.ToMM(pb.GetPosition().x), pcbnew.ToMM(pb.GetPosition().y))
+        extra = filter_extra(g, net, pad_cells(pa) | pad_cells(pb))
+        path = astar(g, net, sa, sb, frozenset(extra), width=w)
+        if path is None:
+            return False
+        ta = emit_tie(board, g, nets, net, sa, path[0], w)
+        tb = emit_tie(board, g, nets, net, sb, path[-1], w)
+        if ta is False or tb is False:
+            return False
+        emit_path(board, g, nets, net, path, w)
+        return True
+
+    authored = 0
+    failed = []
+    for _, net, pa, pb in edges:
+        if try_edge(net, pa, pb):
+            authored += 1
+        else:
+            failed.append((net, pa, pb))
+    # one retry pass (copper freed/added since first attempt can open a path)
+    still = []
+    for net, pa, pb in failed:
+        if try_edge(net, pa, pb):
+            authored += 1
+        else:
+            still.append(net)
+    print(f"route_critical: authored {authored} edges, {len(still)} failed")
+    if still:
+        from collections import Counter
+        print("   unlocked (-> freerouting):",
+              dict(Counter(still)))
+    return authored, still
 
 
 def dedup_vias(board):
@@ -1720,7 +1808,23 @@ def tent_vias(board):
             t.SetBackTentingMode(pcbnew.TENTING_MODE_TENTED)
 
 
+def remove_degenerate_tracks(board):
+    """Delete zero-length track segments (start == end). The critical-net
+    authoring can emit a coincident pad->path tie; exported to DSN these become
+    1-point polylines that crash freerouting's insert_forced_trace_polyline
+    (NullPointerException 'from_corner is null')."""
+    removed = 0
+    for t in list(board.GetTracks()):
+        if t.GetClass() == "PCB_TRACK" and t.GetStart() == t.GetEnd():
+            board.Delete(t)
+            removed += 1
+    if removed:
+        print(f"removed {removed} zero-length tracks")
+    return removed
+
+
 def finish(board, label):
+    remove_degenerate_tracks(board)
     dedup_vias(board)
     tent_vias(board)
     filler = pcbnew.ZONE_FILLER(board)
