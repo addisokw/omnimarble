@@ -79,6 +79,24 @@
             2000 -2000))
     (plane GND (polygon B.Cu 0  2000 -2000  218000 -2000  218000 -148000  2000 -148000
             2000 -2000))
+    (keepout "" (polygon F.Cu 0  0 0  220000 0  220000 -1500  0 -1500  0 0))
+    (keepout "" (polygon B.Cu 0  0 0  220000 0  220000 -1500  0 -1500  0 0))
+    (keepout "" (polygon In1.Cu 0  0 0  220000 0  220000 -1500  0 -1500  0 0))
+    (keepout "" (polygon In2.Cu 0  0 0  220000 0  220000 -1500  0 -1500  0 0))
+    (keepout "" (polygon F.Cu 0  0 -148500  220000 -148500  220000 -150000  0 -150000  0 -148500))
+    (keepout "" (polygon B.Cu 0  0 -148500  220000 -148500  220000 -150000  0 -150000  0 -148500))
+    (keepout "" (polygon In1.Cu 0  0 -148500  220000 -148500  220000 -150000  0 -150000
+            0 -148500))
+    (keepout "" (polygon In2.Cu 0  0 -148500  220000 -148500  220000 -150000  0 -150000
+            0 -148500))
+    (keepout "" (polygon F.Cu 0  0 0  1500 0  1500 -150000  0 -150000  0 0))
+    (keepout "" (polygon B.Cu 0  0 0  1500 0  1500 -150000  0 -150000  0 0))
+    (keepout "" (polygon In1.Cu 0  0 0  1500 0  1500 -150000  0 -150000  0 0))
+    (keepout "" (polygon In2.Cu 0  0 0  1500 0  1500 -150000  0 -150000  0 0))
+    (keepout "" (polygon F.Cu 0  218500 0  220000 0  220000 -150000  218500 -150000  218500 0))
+    (keepout "" (polygon B.Cu 0  218500 0  220000 0  220000 -150000  218500 -150000  218500 0))
+    (keepout "" (polygon In1.Cu 0  218500 0  220000 0  220000 -150000  218500 -150000  218500 0))
+    (keepout "" (polygon In2.Cu 0  218500 0  220000 0  220000 -150000  218500 -150000  218500 0))
     (via "Via[0-3]_600:300_um" "Via[0-3]_450:250_um" "Via[0-3]_1200:600_um" "Via[0-3]_800:400_um")
     (rule
       (width 200)
@@ -2792,7 +2810,7 @@
         (clearance 1000)
       )
     )
-    (class w2p0 BST_CS_HI BST_SW DUMP_MID DUMP_R VBOOST
+    (class w2p0 BST_CS_HI BST_SW DUMP_MID DUMP_R
       (circuit
         (use_via "Via[0-3]_600:300_um")
       )
@@ -2801,7 +2819,7 @@
         (clearance 300)
       )
     )
-    (class w1p5 +24V 24V_F 24V_JACK
+    (class w1p5 +24V 24V_F 24V_JACK VBOOST
       (circuit
         (use_via "Via[0-3]_600:300_um")
       )
@@ -3082,8 +3100,6 @@
     (via "Via[0-3]_1200:600_um"  29000 -88000 (net SW_DRAIN)(type fix))
     (via "Via[0-3]_1200:600_um"  49000 -93000 (net SW_DRAIN)(type fix))
     (via "Via[0-3]_1200:600_um"  44000 -93000 (net SW_DRAIN)(type fix))
-    (via "Via[0-3]_1200:600_um"  49000 -88000 (net SW_DRAIN)(type fix))
-    (via "Via[0-3]_1200:600_um"  44000 -88000 (net SW_DRAIN)(type fix))
     (via "Via[0-3]_1200:600_um"  49000 -83000 (net SW_DRAIN)(type fix))
     (via "Via[0-3]_1200:600_um"  44000 -83000 (net SW_DRAIN)(type fix))
     (via "Via[0-3]_1200:600_um"  49000 -78000 (net SW_DRAIN)(type fix))

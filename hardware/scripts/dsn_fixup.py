@@ -2,18 +2,22 @@
 or DeepPCB) routes ONLY the noncritical signal nets, honours real per-net
 widths, and never touches our critical or plane copper.
 
-Three transforms (see hardware plan / placement.py taxonomy):
+Two transforms applied by default (see hardware plan / placement.py taxonomy):
 
   1. NET CLASSES  — replace KiCad's single `(class kicad_default ...)` with one
      class per track width from placement.netclass_rules(), so the router uses
-     VBANK 2.5mm, DRV 0.5mm, etc. instead of a flat 0.2mm.
+     VBANK 2.5mm, DRV 0.5mm, etc. instead of a flat 0.2mm. Pulse/bank nets also
+     get the 1.0mm bank-voltage clearance.
   2. LOCK         — every wire/via on a CRITICAL_NET or PLANE_NET is rewritten
      `(type route)` -> `(type fix)`, so the router treats our authored/pour
      copper as immovable.
-  3. EXCLUDE PLANES — PLANE_NETS are dropped from `(network)` and from every
-     class net-list, so the router has no plane airwires to maze-route (the
-     `(plane ...)` polygons stay). This is the fix for freerouting's ~700GB
-     blow-up / target_shape NPE / non-termination.
+
+Plane nets are deliberately KEPT in the `(network)` (see fixup() default
+drop_planes_from_network=False): freerouting connects GND/plane pads to the
+`(plane ...)` polygons via short via-drops far more completely than our own
+gnd_via_drops could, and the original ~700GB blow-up was max_passes=9999
+(non-termination), NOT plane maze-routing. `exclude_planes_from_network()` is
+retained as an opt-in escape hatch only.
 
 Pure text / balanced-paren rewrite — no pcbnew dependency, unit-testable.
 `new_board()` in gen_pcb.py builds on a fresh board that bypasses .kicad_pro,

@@ -1,0 +1,13 @@
+(version 1)
+
+# Fine-pitch manufacturer land patterns (U10 ADS7042 VSSOP-8 P0.5mm: 0.35mm pads
+# on 0.5mm pitch -> 0.15mm inherent pad gap; U2 SOT-89-3 -> 0.18mm) have
+# recommended pad spacing below the board's 0.2mm default clearance. The pads
+# are correct; the default rule is locally too strict. Grant a 0.14mm minimum
+# clearance PAD-TO-PAD ONLY -- track/via/foreign clearances stay at 0.2mm, so
+# this cannot mask a routing error, only accepts the packages' own land geometry.
+# (Per-footprint scoping via memberOf() is not honoured by KiCad 10's rule
+# engine for pad parents, so the scope is the pad-to-pad case itself.)
+(rule "fine_pitch_pad_to_pad"
+	(condition "A.Type == 'Pad' && B.Type == 'Pad'")
+	(constraint clearance (min 0.14mm)))

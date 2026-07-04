@@ -235,7 +235,29 @@ def add_zone(board, netinfo, layer, pts, clearance=0.3, min_thick=0.25,
     return z
 
 
+def add_edge_keepout(board, margin=1.5):
+    """Perimeter rule-area ring that keeps tracks + vias `margin` mm off the
+    board edge (so wide rails clear the 0.5mm copper-edge rule even with their
+    half-width), while still allowing the GND pour to flood up to its own 2mm
+    inset. Only J1.3 sits within 1.6mm of an edge (at 1.55mm) and stays
+    outside a 1.5mm ring, so no pad is orphaned."""
+    W, H, m = BOARD_W, BOARD_H, margin
+    strips = [(0, 0, W, m), (0, H - m, W, H), (0, 0, m, H), (W - m, 0, W, H)]
+    for (x0, y0, x1, y1) in strips:
+        z = pcbnew.ZONE(board)
+        z.SetIsRuleArea(True)
+        z.SetDoNotAllowTracks(True)
+        z.SetDoNotAllowVias(True)
+        z.SetLayerSet(pcbnew.LSET.AllCuMask())
+        o = z.Outline()
+        o.NewOutline()
+        for x, y in [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]:
+            o.Append(MM(x), MM(y))
+        board.Add(z)
+
+
 def build_zones(board, nets):
+    add_edge_keepout(board)
     zones = []
     prio = 2
     for name, pts in PULSE_ZONES:
@@ -1665,7 +1687,42 @@ def build_preroute():
     return board, g, nets, misses, strag_failed
 
 
+def dedup_vias(board):
+    """Delete vias co-located with another same-net via (stitch lattices from
+    overlapping zone polygons can drop two vias on the same point -> KiCad
+    'holes co-located')."""
+    seen = {}
+    removed = 0
+    for t in list(board.GetTracks()):
+        if t.GetClass() != "PCB_VIA":
+            continue
+        p = t.GetPosition()
+        key = (round(pcbnew.ToMM(p.x), 2), round(pcbnew.ToMM(p.y), 2),
+               t.GetNetname())
+        if key in seen:
+            board.Delete(t)
+            removed += 1
+        else:
+            seen[key] = t
+    if removed:
+        print(f"deduped {removed} co-located vias")
+    return removed
+
+
+def tent_vias(board):
+    """Tent all vias top+bottom. Prevents solder wicking on the GND stitch/
+    via-in-pad vias (a review flag). NOTE: a via-in-pad sitting inside an SMD
+    pad's mask opening is still exposed on that face -> those specifically
+    require filled/capped (JLC POFV) treatment at fab; see hardware/README."""
+    for t in board.GetTracks():
+        if t.GetClass() == "PCB_VIA":
+            t.SetFrontTentingMode(pcbnew.TENTING_MODE_TENTED)
+            t.SetBackTentingMode(pcbnew.TENTING_MODE_TENTED)
+
+
 def finish(board, label):
+    dedup_vias(board)
+    tent_vias(board)
     filler = pcbnew.ZONE_FILLER(board)
     filler.Fill(board.Zones())
     pcbnew.SaveBoard(str(PCB_OUT), board)
