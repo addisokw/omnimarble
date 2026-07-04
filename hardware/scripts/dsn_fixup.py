@@ -172,7 +172,20 @@ def exclude_planes_from_network(text):
 
 
 # --------------------------------------------------------------------------
+def sanitize_net_names(text):
+    """Strip '(' ')' from quoted net names. KiCad emits single-pad no-connects
+    as `"unconnected-(J10-Pin_10-Pad10)"`; freerouting tolerates the parens but
+    DeepPCB's Specctra parser rejects them ('no viable alternative at input').
+    The rename is a pure text op so it stays consistent across class + network.
+    """
+    # quote-agnostic: the class-rewrite emits these names unquoted, and unquoted
+    # parens are exactly what DeepPCB rejects. Strip the parens wherever the
+    # `unconnected-(...)` token appears (class list, network, quoted or not).
+    return re.sub(r'unconnected-\(([^)]*)\)', r'unconnected-\1', text)
+
+
 def fixup(text, drop_planes_from_network=False):
+    text = sanitize_net_names(text)
     """Prepare the DSN for the autorouter.
 
     We LOCK critical + plane copper (type fix) and inject real net classes.
