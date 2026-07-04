@@ -336,9 +336,6 @@
     (component omnimarble:TerminalBarrier_1x02_P9.50mm::1
       (place J2 54000 -144000 front 180 (PN "AUX-BANK"))
     )
-    (component Connector_PinHeader_2.54mm:PinHeader_2x13_P2.54mm_Vertical
-      (place J11 206000 -66000 front 0 (PN "IO-BREAKOUT"))
-    )
     (component Connector_BarrelJack:BarrelJack_Horizontal
       (place J1 24000 -142000 front 0 (PN "24V-IN"))
     )
@@ -1142,48 +1139,6 @@
       (outline (path signal 150  -5500 -12700  -5500 5100))
       (pin Oval[A]Pad_4000.000000x3000.000000_um 1 0 0)
       (pin Oval[A]Pad_4000.000000x3000.000000_um 2 9500 0)
-    )
-    (image Connector_PinHeader_2.54mm:PinHeader_2x13_P2.54mm_Vertical
-      (outline (polygon signal 0  4315 -32245  -1765 -32245  -1765 1775  4315 1775))
-      (outline (path signal 120  -1380 1380  0 1380))
-      (outline (path signal 120  -1380 0  -1380 1380))
-      (outline (path signal 120  -1380 -1270  -1380 -31860))
-      (outline (path signal 120  -1380 -1270  1270 -1270))
-      (outline (path signal 120  -1380 -31860  3920 -31860))
-      (outline (path signal 120  1270 1380  3920 1380))
-      (outline (path signal 120  1270 -1270  1270 1380))
-      (outline (path signal 120  3920 1380  3920 -31860))
-      (outline (path signal 100  -1270 0  0 1270))
-      (outline (path signal 100  -1270 -31750  -1270 0))
-      (outline (path signal 100  0 1270  3810 1270))
-      (outline (path signal 100  3810 1270  3810 -31750))
-      (outline (path signal 100  3810 -31750  -1270 -31750))
-      (pin Rect[A]Pad_1700.000000x1700.000000_um 1 0 0)
-      (pin Round[A]Pad_1700.000000_um 2 2540 0)
-      (pin Round[A]Pad_1700.000000_um 3 0 -2540)
-      (pin Round[A]Pad_1700.000000_um 4 2540 -2540)
-      (pin Round[A]Pad_1700.000000_um 5 0 -5080)
-      (pin Round[A]Pad_1700.000000_um 6 2540 -5080)
-      (pin Round[A]Pad_1700.000000_um 7 0 -7620)
-      (pin Round[A]Pad_1700.000000_um 8 2540 -7620)
-      (pin Round[A]Pad_1700.000000_um 9 0 -10160)
-      (pin Round[A]Pad_1700.000000_um 10 2540 -10160)
-      (pin Round[A]Pad_1700.000000_um 11 0 -12700)
-      (pin Round[A]Pad_1700.000000_um 12 2540 -12700)
-      (pin Round[A]Pad_1700.000000_um 13 0 -15240)
-      (pin Round[A]Pad_1700.000000_um 14 2540 -15240)
-      (pin Round[A]Pad_1700.000000_um 15 0 -17780)
-      (pin Round[A]Pad_1700.000000_um 16 2540 -17780)
-      (pin Round[A]Pad_1700.000000_um 17 0 -20320)
-      (pin Round[A]Pad_1700.000000_um 18 2540 -20320)
-      (pin Round[A]Pad_1700.000000_um 19 0 -22860)
-      (pin Round[A]Pad_1700.000000_um 20 2540 -22860)
-      (pin Round[A]Pad_1700.000000_um 21 0 -25400)
-      (pin Round[A]Pad_1700.000000_um 22 2540 -25400)
-      (pin Round[A]Pad_1700.000000_um 23 0 -27940)
-      (pin Round[A]Pad_1700.000000_um 24 2540 -27940)
-      (pin Round[A]Pad_1700.000000_um 25 0 -30480)
-      (pin Round[A]Pad_1700.000000_um 26 2540 -30480)
     )
     (image Connector_BarrelJack:BarrelJack_Horizontal
       (outline (polygon signal 0  995 1995  1995 1995  1995 -1995  995 -1995  995 -4745
@@ -2470,7 +2425,7 @@
     )
     (net +5V
       (pins D16-1 BZ1-2 R66-1 R62-1 R58-1 R54-1 R50-1 R46-1 R44-1 R17-1 C3-1 L1-2
-        U1-1 C37-1 U12-3 C36-1 U11-3 J8-1 J7-1 J6-1 J6-3 J6-5 J6-7 J6-9 J11-24 J10-19)
+        U1-1 C37-1 U12-3 C36-1 U11-3 J8-1 J7-1 J6-1 J6-3 J6-5 J6-7 J6-9 J10-19)
     )
     (net +24V
       (pins D90-1 D1-1 Q90-3 R2-1 C6-1 U2-3 C4-1 U1-2 U1-3 L2-1 C1-1)
@@ -2482,8 +2437,8 @@
         U4-5 C37-2 U12-9 U12-11 U12-12 C36-2 U11-12 C28-2 U10-5 U10-8 C27-2 C26-2
         U9-1 U9-4 U9-6 U9-7 C13-2 C12-2 R33-2 R32-2 C18-2 C20-2 U6-3 C22-2 U8-3 C21-2
         U7-3 RS1-2 R7-2 R24-2 R22-2 NT2-1 J9-3 J9-8 J9-13 J9-18 J8-2 J8-4 J7-2 J7-10
-        J6-2 J6-4 J6-6 J6-8 J6-10 J4-3 J2-2 J11-25 J11-26 J10-3 J10-8 J10-13 J10-18
-        J1-2 D13-2 D13-2@1 C94-2 C93-2 C92-2 C91-2 C90-2 C19-2 C1-2)
+        J6-2 J6-4 J6-6 J6-8 J6-10 J4-3 J2-2 J10-3 J10-8 J10-13 J10-18 J1-2 D13-2 D13-2@1
+        C94-2 C93-2 C92-2 C91-2 C90-2 C19-2 C1-2)
     )
     (net BST_COMP_Z
       (pins C10-1 R5-2)
@@ -2508,7 +2463,7 @@
     )
     (net 3V3
       (pins C17-1 U3-8 R68-1 R64-1 R60-1 R56-1 R52-1 R48-1 U12-8 U12-10 C28-1 U10-1
-        U10-7 C26-1 U9-5 C20-1 U6-5 J11-23 J10-16)
+        U10-7 C26-1 U9-5 C20-1 U6-5 J10-16)
     )
     (net +12V_SW
       (pins R30-1 C18-1 C22-1 U8-1 U8-6 U8-8 C21-1 U7-1 U7-6 U7-8 J4-2 C19-1)
@@ -2616,22 +2571,22 @@
       (pins J2-1 F2-1 F2-1@1)
     )
     (net ADC_SDO
-      (pins U10-3 J11-15 J10-1)
+      (pins U10-3 J10-1)
     )
     (net ADC_CS
-      (pins U10-4 J11-16 J10-2)
+      (pins U10-4 J10-2)
     )
     (net ADC_SCK
-      (pins U10-2 J11-17 J10-4)
+      (pins U10-2 J10-4)
     )
     (net "unconnected-(J10-Pin_5-Pad5)"
       (pins J10-5)
     )
     (net LED_ARMED
-      (pins R70-1 J11-20 J10-6)
+      (pins R70-1 J10-6)
     )
     (net LED_CHG
-      (pins R71-1 J11-21 J10-7)
+      (pins R71-1 J10-7)
     )
     (net "unconnected-(J10-Pin_9-Pad9)"
       (pins J10-9)
@@ -2640,10 +2595,10 @@
       (pins J10-10)
     )
     (net VBANK_SENSE
-      (pins U3-1 U3-2 J11-18 J10-11)
+      (pins U3-1 U3-2 J10-11)
     )
     (net V24_SENSE
-      (pins U3-6 U3-7 J11-19 J10-12)
+      (pins U3-6 U3-7 J10-12)
     )
     (net "unconnected-(J10-Pin_14-Pad14)"
       (pins J10-14)
@@ -2656,51 +2611,6 @@
     )
     (net "unconnected-(J10-Pin_20-Pad20)"
       (pins J10-20)
-    )
-    (net GATE1
-      (pins R49-2 R48-2 U11-2 J9-4 J11-1)
-    )
-    (net GATE2
-      (pins R53-2 R52-2 U11-1 J9-5 J11-2)
-    )
-    (net GATE3
-      (pins R57-2 R56-2 U11-13 J9-6 J11-3)
-    )
-    (net GATE4
-      (pins R61-2 R60-2 U11-14 J9-7 J11-4)
-    )
-    (net GATE5
-      (pins R65-2 R64-2 U12-2 J9-9 J11-5)
-    )
-    (net GATE6
-      (pins R69-2 R68-2 U12-1 J9-10 J11-6)
-    )
-    (net MCU_FIRE
-      (pins R32-1 U6-1 J9-11 J11-7)
-    )
-    (net ARM_SENSE
-      (pins R31-1 R30-2 U6-2 J9-12 J11-8)
-    )
-    (net RLY_CHARGE
-      (pins R20-1 J9-14 J11-9)
-    )
-    (net RLY_DUMP
-      (pins R23-1 J9-15 J11-10)
-    )
-    (net BOOST_EN_N
-      (pins R18-1 J9-16 J11-11)
-    )
-    (net VSET_PWM
-      (pins R13-1 J9-17 J11-12)
-    )
-    (net BUZZ
-      (pins R72-1 J9-19 J11-13)
-    )
-    (net ESTOP_SENSE
-      (pins R29-1 R28-2 J9-20 J11-14)
-    )
-    (net SIG_SPARE
-      (pins J8-3 J7-9 J11-22)
     )
     (net ESTOP_OK
       (pins R28-1 J4-1 J3-2)
@@ -2723,11 +2633,56 @@
     (net SIG6
       (pins R67-1 R66-2 J7-8)
     )
+    (net SIG_SPARE
+      (pins J8-3 J7-9)
+    )
     (net "unconnected-(J9-Pin_1-Pad1)"
       (pins J9-1)
     )
     (net "unconnected-(J9-Pin_2-Pad2)"
       (pins J9-2)
+    )
+    (net GATE1
+      (pins R49-2 R48-2 U11-2 J9-4)
+    )
+    (net GATE2
+      (pins R53-2 R52-2 U11-1 J9-5)
+    )
+    (net GATE3
+      (pins R57-2 R56-2 U11-13 J9-6)
+    )
+    (net GATE4
+      (pins R61-2 R60-2 U11-14 J9-7)
+    )
+    (net GATE5
+      (pins R65-2 R64-2 U12-2 J9-9)
+    )
+    (net GATE6
+      (pins R69-2 R68-2 U12-1 J9-10)
+    )
+    (net MCU_FIRE
+      (pins R32-1 U6-1 J9-11)
+    )
+    (net ARM_SENSE
+      (pins R31-1 R30-2 U6-2 J9-12)
+    )
+    (net RLY_CHARGE
+      (pins R20-1 J9-14)
+    )
+    (net RLY_DUMP
+      (pins R23-1 J9-15)
+    )
+    (net BOOST_EN_N
+      (pins R18-1 J9-16)
+    )
+    (net VSET_PWM
+      (pins R13-1 J9-17)
+    )
+    (net BUZZ
+      (pins R72-1 J9-19)
+    )
+    (net ESTOP_SENSE
+      (pins R29-1 R28-2 J9-20)
     )
     (net "unconnected-(K1-Pad12)"
       (pins K1-12)

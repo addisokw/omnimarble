@@ -279,8 +279,10 @@ def build_zones(board, nets):
         add_zone(board, nets["GND"], layer, frame, clearance=0.3,
                  priority=0)
     for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
-        add_zone(board, nets["GND"], layer, frame, clearance=0.3,
-                 min_thick=0.25, priority=0)
+        # tight clearance + thin min-thickness so the pour flows into narrow
+        # necks between routed traces and reaches otherwise-isolated GND pads
+        add_zone(board, nets["GND"], layer, frame, clearance=0.2,
+                 min_thick=0.13, priority=0)
     return zones
 
 

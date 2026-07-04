@@ -617,11 +617,11 @@ def build_mcu_status(sch):
                      lcsc=PARTS["pico_socket"]["lcsc"],
                      nets=nets, no_connect=tuple(ncs))
 
-    # Breakout header 2x13 (odd/even numbering: pin k -> BREAKOUT[k-1])
-    s.add_symbol("Connector_Generic:Conn_02x13_Odd_Even", "J11", "IO-BREAKOUT",
-                 (150, 100), footprint=FP["HDR2X13"],
-                 lcsc=PARTS["io_breakout"]["lcsc"],
-                 nets={str(i + 1): BREAKOUT[i] for i in range(26)})
+    # 2x13 IO breakout (J11) REMOVED: it duplicated all 26 control/sense nets
+    # into the congested MCU/sense area, blocking auto-routing. MCU-agnostic
+    # access is preserved via the Pico socket pins themselves (a different
+    # 3.3V micro connects on a Pico-form-factor carrier or via jumper leads to
+    # J9/J10). BREAKOUT[] list kept above for documentation of the pin map.
 
     # Status LEDs (MCU-driven)
     R(s, c, "1k", (210, 60), "LED_ARMED", "LEDA_K")
@@ -690,9 +690,25 @@ def build_root(sheet_plan, root_uuid):
 
 
 def write_project():
+    # Include the board design rules so kicad-cli DRC uses them instead of
+    # KiCad's stricter defaults (default min via 0.5 / hole 0.3 would flag the
+    # 0.45/0.25 GND via-in-pad stitching). JLC-manufacturable at 0.4/0.2.
+    import json as _json
+    pro = {
+        "board": {
+            "design_settings": {
+                "rules": {
+                    "min_via_diameter": 0.4,
+                    "min_through_hole_diameter": 0.2,
+                    "min_hole_to_hole": 0.25,
+                }
+            }
+        },
+        "meta": {"filename": f"{PROJECT}.kicad_pro", "version": 3},
+        "sheets": [],
+    }
     (PROJ_DIR / f"{PROJECT}.kicad_pro").write_text(
-        '{\n  "meta": { "filename": "%s.kicad_pro", "version": 3 },\n'
-        '  "sheets": []\n}\n' % PROJECT, encoding="utf-8")
+        _json.dumps(pro, indent=2) + "\n", encoding="utf-8")
 
 
 def main():
