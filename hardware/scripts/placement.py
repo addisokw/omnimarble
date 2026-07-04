@@ -169,11 +169,20 @@ VIA_CLUSTERS = [
 ]
 
 NET_WIDTHS = {
-    "+24V": 1.5, "24V_F": 1.5, "24V_JACK": 1.5,
-    "+12V": 0.8, "+12V_SW": 1.0, "+5V": 0.8, "3V3": 0.6,
-    "VBOOST": 1.5, "BST_SW": 2.0, "BST_CS_HI": 2.0,
+    # +24V/+5V/3V3/BST_CS_HI narrowed to fit their smallest IC pad: DeepPCB
+    # (unlike freerouting) will not neck a track down at a pad, and these are
+    # low-current control/sense/logic taps (the pulse path stays as pours).
+    # smallest pads: +24V 0.60(U1.2), +5V 0.60(U12.3), 3V3 0.35(U10 VSSOP),
+    # BST_CS_HI 0.80(R8.1). Input rail current ~0.7A -> 0.5mm/2oz ample.
+    # widths set so no routed track exceeds its smallest pad (DeepPCB won't
+    # neck down). Plane nets (VBANK) carry current in the POUR polygon; the
+    # NET_WIDTHS value only shapes their thin routed sense taps (e.g. VBANK->
+    # R26 divider), so narrowing it is harmless to the high-current path.
+    "+24V": 0.5, "24V_F": 1.5, "24V_JACK": 1.5,
+    "+12V": 0.5, "+12V_SW": 0.5, "+5V": 0.5, "3V3": 0.3,
+    "VBOOST": 0.7, "BST_SW": 1.5, "BST_CS_HI": 0.7,
     "AUX_BANK": 2.5, "DUMP_R": 2.0, "DUMP_MID": 2.0,
-    "VBANK": 2.5, "LIVE_LED": 0.4,
+    "VBANK": 0.7, "LIVE_LED": 0.4,
     "QG1": 0.5, "QG2": 0.5, "QG3": 0.5,
     "DRV1": 0.5, "DRV2": 0.5, "DRV3": 0.5,
     "ISNS_P": 0.3, "ISNS_N": 0.3,
