@@ -1,81 +1,80 @@
-# OmniMarble Driver PCB — Layout Review Handoff (rev 2)
+# OmniMarble Driver PCB — Review Handoff (rev 3: autorouting pivot)
 
 **Repo:** github.com/addisokw/omnimarble
 **Board:** `hardware/omnimarble-driver/omnimarble-driver.kicad_pcb`
-**Toolchain:** KiCad 10.0.4 (kicad-cli + pcbnew Python API)
+**Tool:** KiCad 10.0.4 + freerouting v2.2.4 (run on JDK 26)
 
-> **rev 2 corrects rev 1's overclaim.** The board is **NOT DRC-clean and NOT
-> fab-ready.** It has 0 shorts / 0 crossings, but 59 real clearance errors (some
-> near-shorts on safety/gate nets) and 118 unconnected nets (34 of them
-> safety/control/analog). This is an **iteration checkpoint**, not a fab gate.
-> All three prior commits (`e64fb78`, `bb3ea38`, `ae83ebe`) contain a
-> byte-identical board file (sha256 `ed02f3b…`); only docs/renders differ between
-> them. Rev-1 numbers were run without `--schematic-parity`, which under-reported.
+## What changed since rev 2
 
-## Context
+We retired the from-scratch PathFinder router for bulk signal routing and pivoted
+to **freerouting v2.2.4**. The earlier "freerouting is unusable" verdict was wrong
+— its failures were fixable pipeline defects, not board complexity. New
+reproducible pipeline: `preroute → dsn_fixup → freerouting → import-ses → DRC`.
 
-Experimental-side driver PCB (55 V SELV coilgun pulse driver) for the sim-to-real
-loop. Schematics passed two prior review rounds. This handoff covers **PCB layout**.
-It was routed with a purpose-built parallel PathFinder engine
-(`hardware/scripts/gen_pcb.py` + `route_worker.py`) after freerouting and
-OrthoRoute both proved unusable for this board.
+**Key mechanism** (`hardware/scripts/dsn_fixup.py`, new): KiCad exports one flat
+0.2 mm net class, so we post-process the DSN to (a) inject real per-width net
+classes, (b) give pulse/bank nets the 1.0 mm bank-voltage clearance, (c) lock all
+critical + pour copper `(type route)→(type fix)` so the router can't rip it.
+`max_passes=30` (the 9999 default caused the prior ~700 GB / non-termination).
+The same prepared DSN also uploads to DeepPCB unchanged (parallel option).
 
-## Board facts
+## Results (kicad-cli, `--schematic-parity`)
 
-220.1 × 150.1 mm, 4-layer 2 oz outer / 1 oz inner (In1/In2 = solid GND + power
-planes). 178 footprints, 4,390 tracks, 696 vias, 20 zones.
-
-## Verified DRC state (kicad-cli, `--schematic-parity`)
-
-| Rule | Count | Honest disposition |
+| Metric | Scripted (rev 2) | freerouting (now) |
 |---|---|---|
-| shorting_items | **0** | copper has no dead shorts |
-| tracks_crossing | **0** | no illegal overlaps |
-| **schematic_parity** | **0** | FIXED this rev (C92–94 DNP, TP1/NT1/NT2 BOM-exclude) |
-| **clearance** | **59** | **BLOCKER — real, not cosmetic.** Gaps down to 0.010 mm on FIRE_GATED/DRV_SPARE, +5V/GATE*, BOOST_EN_N/BSTINH_B, ADC_CS/ESTOP_SENSE. These are fail-safe/gate/E-stop nets. |
-| **unconnected** | **118 / 59 nets** | **BLOCKER for fab.** 34 airwires are safety/control/analog (see below). |
-| silk_overlap / silk_over_copper | 199 / 199 | cosmetic, deferred; still needs cleanup before fab |
-| track_dangling / hole / via | 156 | finishing residue, clears as nets close |
+| Unconnected | 118 | **13** |
+| Clearance | 59 (to 0.010 mm on FIRE_GATED) | **6** (all mild 0.15 mm signal) |
+| Shorts / crossings / parity | 0 / 0 / 0 | **0 / 0 / 0** |
+| Hole-to-hole / hole-clearance | — | **0 / 0** |
 
-## The 34 airwires that are NOT harmless plane taps
+The clearance quality is the material improvement: no more
+sub-manufacturing-tolerance near-shorts on safety nets; the 6 remaining are benign
+0.15 mm gaps on ADC-SPI / 3V3 / IMON_F.
 
-Still open on safety/control/analog/boost/Kelvin nets — these make the board **not
-electrically reviewable yet**:
+## The 13 unconnected (honest categorization)
 
-`FIRE_GATED`(2), `MCU_FIRE`(1), `BOOST_EN_N`(1), `ESTOP_SENSE`(1),
-`ARM_SENSE`(1), `GATE1/3/4/5/6`, `DRV1/2/3`, `BST_DRV`, `BST_G`,
-`BST_CS`(1), `BST_CS_HI`(2), `BST_FB`(2), `VTH_GATE`(5),
-`ISNS_P`(1), `ISNS_N`(1), `ADC_SDO/SCK/CS`.
+- **3 critical, unrouted by design**: SHUNT_HI Kelvin (×2), BST_G boost gate.
+  Deterministic critical-net authoring (plan Step 1) was deferred to validate the
+  freerouting pipeline first; these are exactly what that step authors and locks —
+  which also satisfies the rev-2 requirement that critical nets be hand-finished,
+  not autorouted.
+- **5 GND**: congested fine-pitch pads the full-board GND pour + via-in-pad
+  stitching couldn't reach.
+- **5 signal taps**: 3V3 (U10), +5V, +24V (U2), VBANK_DIV (U3) in dense areas.
 
-## What DRC does NOT prove (external reviewer, agreed)
+## Two decisions needing scrutiny
 
-DRC passing does not validate the things that actually matter for this board:
-current sharing across the 3 paralleled FETs, pulse-loop inductance, FET
-drain/source copper symmetry, true Kelvin pickup at the shunt pads, thermal-relief
-correctness on pulse pads, or quiet/short boost current-sense + feedback routing.
-**The pulse/gate/boost/Kelvin/safety nets need hand routing and manual review with
-highlighted nets** (`VBOOST`, `COIL_HI`, `SW_DRAIN`, `SHUNT_HI`, power-ground
-return, `ISNS_P/N`, `BST_CS/CS_HI/FB`), not autorouting.
+1. **Design-rule relaxation**: board min-via lowered 0.5→0.4 mm, min-hole
+   0.3→0.2 mm (in `.kicad_pro`) to allow the 0.45/0.25 GND via-in-pad stitching.
+   JLC-manufacturable, but a real rule change — please confirm acceptable for this
+   board class.
+2. **New architecture**: full-board F.Cu/B.Cu GND pours added (`build_zones`), so
+   GND pads connect to the pour directly rather than each needing a threaded via.
+   Standard practice, but it substantially changes the copper — worth confirming no
+   unintended coupling into the analog / Kelvin / boost-sense sections.
 
-## Agreed next gate (before ANY fab/JLC export)
+## Still not fab-ready (unchanged gate from rev 2)
 
-1. **0 unconnected** — do not waive safety/control/analog nets.
-2. **0 clearance.**
-3. **0 schematic parity** — done this rev.
-4. Then **manual power-loop / Kelvin / boost review** with net-highlighted
-   screenshots proving symmetric FET copper, intentional (or absent) thermal
-   reliefs on pulse pads, and true Kelvin shunt pickup.
+0 unconnected / 0 clearance / 0 parity, **then** manual power-loop / Kelvin / boost
+review with net-highlighted screenshots (symmetric FET copper, true Kelvin pickup
+at the shunt, intentional thermal reliefs on pulse pads), then silkscreen cleanup +
+fab exports. Order-time gates still open: 6.8 k bleed LCSC C-number, relay NO/NC
+continuity.
 
-## Planned approach
+## What I want your opinion on
 
-Critical nets (pulse loop, gate drive, boost sense/feedback, Kelvin, safety
-interlock) will be **routed deterministically as reviewed fat/short traces and
-locked** before the autorouter touches the remaining low-speed interconnect —
-autorouting is only acceptable for noncritical nets.
+- Is the freerouted track geometry acceptable for the noncritical nets, given
+  critical nets will be separately authored and locked?
+- The min-via/hole relaxation and the full-board GND pour — any objection?
+- Anything the DRC-clean copper is masking that a highlighted-net review should
+  target first?
 
 ## Artifacts
 
 - Renders: `hardware/fab/renders/driver_top.png`, `driver_bottom.png`
 - Scorecard dashboard: `hardware/fab/driver_pcb_review.html`
-- DRC report (with parity): regenerate via
-  `kicad-cli pcb drc --schematic-parity --format json`
+- DRC report (regenerate): `kicad-cli pcb drc --schematic-parity --format json
+  -o hardware/fab/drc_driver.json hardware/omnimarble-driver/omnimarble-driver.kicad_pcb`
+- Pipeline scripts: `hardware/scripts/dsn_fixup.py`, `gen_pcb.py` (modes:
+  preroute / import-ses / repair), `placement.py` (CRITICAL_NETS / PLANE_NETS /
+  netclass_rules)
