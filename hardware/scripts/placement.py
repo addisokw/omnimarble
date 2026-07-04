@@ -84,7 +84,8 @@ P["L2"] = (58, 88, 0)
 P["Q91"] = (46, 102, 270)
 P["D2"] = (59, 74, 0)        # SS510 tab -> VBOOST
 P["R7"] = (54, 104, 90)      # 0.05R CS
-P["R6"] = (53, 116, 0)       # 10R boost gate (beside Q91)
+P["R6"] = (48.5, 93.8, 0)    # 10R boost gate above Q91 (clear of L2/R7):
+                             # pad2(BST_G) ~3.3mm from Q91.G (48.28,96.96)
 P["C19"] = (148, 90, 0)      # +12V_SW reservoir
 P["C1"] = (12, 88, 0)        # 24V input bulk
 

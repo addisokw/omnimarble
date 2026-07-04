@@ -169,7 +169,7 @@
       (place R43 99934.999 -99455 front 0 (PN 10R))
       (place R33 134744.999 -87455 front 0 (PN 10k))
       (place R32 130334.999 -87455 front 0 (PN 10k))
-      (place R6 53000 -116000 front 0 (PN 10R))
+      (place R6 48500 -93800 front 0 (PN 10R))
     )
     (component LED_SMD:LED_0603_1608Metric
       (place D5 193924.999 -51445 front 0 (PN LED_red))
@@ -3098,7 +3098,6 @@
     (via "Via[0-3]_1200:600_um"  39000 -88000 (net SW_DRAIN)(type fix))
     (via "Via[0-3]_1200:600_um"  34000 -88000 (net SW_DRAIN)(type fix))
     (via "Via[0-3]_1200:600_um"  29000 -88000 (net SW_DRAIN)(type fix))
-    (via "Via[0-3]_1200:600_um"  49000 -93000 (net SW_DRAIN)(type fix))
     (via "Via[0-3]_1200:600_um"  44000 -93000 (net SW_DRAIN)(type fix))
     (via "Via[0-3]_1200:600_um"  49000 -83000 (net SW_DRAIN)(type fix))
     (via "Via[0-3]_1200:600_um"  44000 -83000 (net SW_DRAIN)(type fix))
