@@ -74,11 +74,13 @@ RVALS = {
     "9.1k": "C23260", "4.3k": "C23159", "150": "C22808",
     "100k": "C25803", "220k": "C22961", "2k": "C22975", "51k": "C23196",
     "0.05R-2512": "C2994645", "47R-5W": "C5807995", "100R-10W": "C216413",
-    # R24 bank-bleed 6.8k 2W: no JLC basic/extended part confirmed at a verified
-    # C-number, and 2W in the 2512 land is marginal. Marked HAND-INSTALL: the
-    # user sources the exact 2W part (or accepts a 1W 6.8k 2512 basic part if
-    # the bleed duty allows) and installs it; excluded from the JLC CPL.
-    "6.8k-2W": "HAND-INSTALL",
+    # R24 bank-bleed: 6.8k in a 2512 land. The "2W" spec was inconsistent -- a
+    # 2512 is a ~1W package and every stocked 6.8k 2512 on LCSC is 1W (the 2W
+    # variants are out of stock). Actual dissipation is 55^2/6800 = 0.44W, so a
+    # 1W 2512 carries it with 2.2x margin. Uses C26073 (UNI-ROYAL 25121WJ0682T4E,
+    # 6.8k 2512 1W +/-5%) -- same UNI-ROYAL family as the board's other Rs,
+    # in stock. JLC-placed; no longer hand-install.
+    "6.8k": "C26073",
 }
 CVALS = {
     "100n": "C14663", "1u": "C15849", "1n": "C1588", "10n": "C57112",
@@ -300,7 +302,7 @@ def build_boost_charger(sch):
        "SOD123", "C81598")
 
     # Permanent bleed + live-bank LED (hardwired, works with logic dead)
-    R(s, c, "6.8k-2W", (200, 200), "VBANK", "GND", fp="R2512")
+    R(s, c, "6.8k", (200, 200), "VBANK", "GND", fp="R2512")  # bank bleed, 1W 2512
     R(s, c, "10k", (215, 200), "VBANK", "LIVE_LED")
     LED_(s, c, "red", (215, 230), "LIVE_LED", "GND", "C2286")
 

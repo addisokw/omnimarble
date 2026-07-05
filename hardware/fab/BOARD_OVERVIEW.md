@@ -99,10 +99,10 @@ Run before any fab-package generation:
 - `calcs.py` → all design margins pass.
 
 ## Known items / explicit decisions
-- **R24 (6.8k 2W bank-bleed) is HAND-INSTALL** — no verified JLC C-number for a 6.8k 2W part and
-  2W is marginal in the 2512 land. Marked `LCSC = HAND-INSTALL`; **must be excluded from the JLC
-  CPL** and sourced/installed by the user (or swapped to a 1W 6.8k 2512 basic part if the bleed duty
-  allows). This is an explicit decision, not a placeholder.
+- **R24 (bank bleed) = 6.8k 1W 2512, LCSC `C26073`** (UNI-ROYAL 25121WJ0682T4E, in stock). The
+  original "6.8k 2W" was inconsistent — a 2512 is a ~1W package and every stocked 6.8k 2512 is 1W
+  (2W variants are out of stock). Dissipation is 0.44W (55²/6.8k), so 1W gives 2.2× margin. **JLC
+  places it — no hand-install.**
 - **WAIVER — gate-drive route lengths are unequal.** Measured DRV1/2/3 ≈ 33.2 / 10.1 / 9.0 mm and
   QG1/2/3 ≈ 28.9 / 24.0 / 23.5 mm, so Q10's total gate loop (~62mm) is ~2× Q11/Q12 (~33mm). Accepted
   because each paralleled FET has its **own gate resistor** (R34/R37/R40) that dominates the drive
@@ -114,4 +114,4 @@ Run before any fab-package generation:
 - Committed. Renders: `hardware/fab/renders/driver_{top,bottom}.png`. DRC report: `hardware/fab/drc_driver.json`.
 - **Not yet generated: the JLCPCB fab package** — Gerbers, drill files, BOM (LCSC), pick-and-place
   (CPL). Next action to order the board. LCSC numbers are preserved in the footprint property fields
-  for BOM mapping; **exclude R24 (HAND-INSTALL) from the CPL.**
+  for BOM mapping; every part (incl. R24) is JLC-placeable.

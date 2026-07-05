@@ -8507,7 +8507,7 @@
 				)
 			)
 		)
-		(property "Value" "6.8k-2W"
+		(property "Value" "6.8k"
 			(at 199.39 201.93 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8550,7 +8550,7 @@
 				)
 			)
 		)
-		(property "LCSC" "HAND-INSTALL"
+		(property "LCSC" "C26073"
 			(at 199.39 199.39 0)
 			(show_name no)
 			(do_not_autoplace no)
