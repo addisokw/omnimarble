@@ -34,3 +34,6 @@ Thumbs.db
 
 # Scratch/audit artifacts
 tmp/
+
+# JLC loose gerber/drill files (regenerable; the uploadable zip is committed)
+hardware/fab/jlc/gerbers/

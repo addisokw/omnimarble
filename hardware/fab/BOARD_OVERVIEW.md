@@ -112,6 +112,7 @@ Run before any fab-package generation:
 
 ## State & next step
 - Committed. Renders: `hardware/fab/renders/driver_{top,bottom}.png`. DRC report: `hardware/fab/drc_driver.json`.
-- **Not yet generated: the JLCPCB fab package** — Gerbers, drill files, BOM (LCSC), pick-and-place
-  (CPL). Next action to order the board. LCSC numbers are preserved in the footprint property fields
-  for BOM mapping; every part (incl. R24) is JLC-placeable.
+- **JLCPCB fab package generated** — `hardware/fab/jlc/` (`gen_fab.py`): `omnimarble-driver-gerbers.zip`
+  (gerbers+drill), `bom_jlc.csv`, `cpl_jlc.csv`, `drc_driver.json`, and `ORDER_NOTES.md`. Scope is
+  **SMT + THT assembly** (159 machine-placed incl. 12 THT; 8 hand-installed sockets/fuses/bulk-caps).
+  Regenerate with `gen_fab.py`. Next action: upload to JLC and clear its DFM (see ORDER_NOTES).
