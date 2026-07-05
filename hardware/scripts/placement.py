@@ -166,12 +166,8 @@ MANUAL_TRACKS = [
 VIA_CLUSTERS = [
     ("GND", 14, 60, 3, 2, 1.8, 0.6, 1.2),   # clamp surge return to planes
     ("GND", 18, 68.5, 2, 1, 1.8, 0.4, 0.8),  # bleed return
-    # One via ON each pulse-FET source pad (clear of the 5mm stitch grid) ties
-    # it straight to the SOLID B.Cu SHUNT_HI pour, so a fragmented F.Cu pour
-    # (autorouter tracks crossing it) can't island a source from the shunt.
-    ("SHUNT_HI", 81.0, 71.75, 1, 1, 1, 0.3, 0.6),   # Q10 source
-    ("SHUNT_HI", 95.4, 71.75, 1, 1, 1, 0.3, 0.6),   # Q11 source
-    ("SHUNT_HI", 115.8, 71.75, 1, 1, 1, 0.3, 0.6),  # Q12 source
+    # (SHUNT_HI FET-source ties are authored as an explicit B.Cu bus in
+    #  author_shunt_hi_bus(), not stitch vias -- see gen_pcb.py)
 ]
 
 NET_WIDTHS = {
@@ -253,12 +249,20 @@ def netclass_rules():
     # 0.3mm does not reduce clearance to the high-voltage pour.
     # bank-voltage nets need the 1.0mm creepage; GND is 0V (a plane but not hv)
     hv = PULSE_NETS | {"AUX_BANK"}
+    pair = {"ISNS_P", "ISNS_N"}       # matched current-sense differential pair
     groups = defaultdict(list)
     for net, w in NET_WIDTHS.items():
+        if net in pair:
+            continue                  # emitted as its own pair class below
         groups[(w, net in hv)].append(net)
     rules = []
     for (w, is_hv), nets in sorted(groups.items(), key=lambda kv: -kv[0][0]):
         clr = 1.0 if is_hv else (0.3 if w >= 0.7 else 0.2)
         name = "w" + str(w).replace(".", "p") + ("_hv" if is_hv else "")
         rules.append((name, w, clr, sorted(nets)))
+    # dedicated diff-pair class so an autorouter that couples ISNS_P/N (DeepPCB)
+    # uses OUR 0.2mm gap -- its tight default coupled them at 0.02mm, which is
+    # unmanufacturable. 0.2mm == the board clearance, so it passes DRC with no
+    # diff-pair exception rule needed.
+    rules.append(("diff_ISNS", 0.3, 0.2, sorted(pair)))
     return rules

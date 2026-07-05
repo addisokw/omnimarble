@@ -1639,6 +1639,25 @@ def route_signals(board, g, nets, escapes):
 # Main
 # --------------------------------------------------------------------------
 
+def author_shunt_hi_bus(board, g, nets):
+    """Explicit B.Cu bus tying the three pulse-FET sources (Q10/Q11/Q12 pin 3)
+    to the shunt RS1, so the high-current SHUNT_HI path does NOT depend on the
+    F.Cu pour -- which the autorouter fragments when it runs gate/snubber nets
+    through the FET strip, islanding sources. B.Cu keeps F.Cu clear for gate
+    routing; the bus is locked (SHUNT_HI in PLANE_NETS) so the router routes
+    around it. A via at each source pad and at the shunt ties them to the bus.
+    """
+    if "SHUNT_HI" not in nets:
+        return
+    y = 72.0                          # inside the source pads (y 70.3-73.2)
+    # two vias per FET source (its source is several pads that a fragmented
+    # pour can split) + the shunt RS1 pad, all on the bus line
+    via_x = [76.2, 79.8, 94.2, 96.6, 112.2, 115.8, 128.6]  # clear of stitch grid
+    add_track(board, g, nets, "SHUNT_HI", 1, min(via_x), y, max(via_x), y, 1.5)
+    for x in via_x:
+        add_via(board, g, nets, "SHUNT_HI", x, y, drill=0.4, size=0.7)
+
+
 def author_u10_escape(board, g, nets):
     """U10 (VSSOP-8, 0.35mm pads) fine-pitch power/GND escape.
 
@@ -1768,6 +1787,7 @@ def build_preroute(gnd_drops=True):
                         cy + (iy - (ny - 1) / 2) * pitch, drill, size)
 
     author_u10_escape(board, g, nets)
+    author_shunt_hi_bus(board, g, nets)
 
     # NOTE: route_critical() (deterministic A* authoring of the critical nets)
     # is intentionally NOT called here. Emitting astar-generated critical
