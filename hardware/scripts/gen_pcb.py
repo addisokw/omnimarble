@@ -2102,6 +2102,26 @@ def main_import_ses():
     finish(board, "freerouted")
 
 
+def fix_thin_annular(board, min_ann=0.10, min_hole=0.2):
+    """Shrink the drill of any via whose annular ring is below min_ann so it
+    meets the rule (keeps the via diameter and position). Patches vias an
+    imported SES echoed at a thin-ring geometry (e.g. the U10 escape GND via
+    that came back 0.45/0.30 = 0.075mm ring). DeepPCB can't edit via padstacks,
+    so we do it here at import."""
+    n = 0
+    for t in board.GetTracks():
+        if t.GetClass() != "PCB_VIA":
+            continue
+        w = pcbnew.ToMM(t.GetWidth())
+        dr = pcbnew.ToMM(t.GetDrillValue())
+        if (w - dr) / 2 < min_ann - 1e-6:
+            new_dr = round(w - 2 * min_ann, 3)
+            if new_dr >= min_hole:
+                t.SetDrill(MM(new_dr))
+                n += 1
+    return n
+
+
 def main_import_clean():
     """Import a SES from a router that KEPT our fixed copper (DeepPCB) onto a
     fresh placement+pours board, WITHOUT the freerouting-era strip/rebuild/
@@ -2138,6 +2158,9 @@ def main_import_clean():
             if n and n not in nets:
                 nets[n] = pad.GetNet()
     add_fb_gnd_pours(board, nets)
+    nfix = fix_thin_annular(board)
+    if nfix:
+        print(f"annular fix: shrank drill on {nfix} thin-ring via(s)")
     tent_vias(board)
     dedup_vias(board)
     remove_degenerate_tracks(board)
