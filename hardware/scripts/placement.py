@@ -185,7 +185,10 @@ NET_WIDTHS = {
     # NET_WIDTHS value only shapes their thin routed sense taps (e.g. VBANK->
     # R26 divider), so narrowing it is harmless to the high-current path.
     "+24V": 0.5, "24V_F": 1.5, "24V_JACK": 1.5,
-    "+12V": 0.5, "+12V_SW": 0.5, "+5V": 0.5, "3V3": 0.3,
+    # 3V3 at 0.2mm: DeepPCB could not finish routing it at 0.3mm (too wide for
+    # the congested logic area) and narrowed it to 0.2 itself last route -- bake
+    # that in so the DSN starts there. It also matches the 0.2mm U10 3V3 escape.
+    "+12V": 0.5, "+12V_SW": 0.5, "+5V": 0.5, "3V3": 0.2,
     "VBOOST": 0.7, "BST_SW": 1.5, "BST_CS_HI": 0.7,
     "AUX_BANK": 2.5, "DUMP_R": 2.0, "DUMP_MID": 2.0,
     "VBANK": 0.7, "LIVE_LED": 0.4, "GND": 0.3,
