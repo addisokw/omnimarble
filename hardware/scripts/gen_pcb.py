@@ -2170,19 +2170,21 @@ def fix_thin_annular(board, min_ann=0.10, min_hole=0.2):
 def local_finish(board, nets):
     """Deterministic post-route touch-ups that finished the board locally
     (rev-43 base) instead of paying for more cloud-router revisions:
-      - narrow ISNS_P/N to 0.1mm: the router coupled the Kelvin pair at ~0.02mm
-        (unmanufacturable, and the diff-pair mode always did this). Narrowing
-        both traces grows the edge gap by 0.2mm everywhere -> clears the 0.2mm
-        clearance rule while KEEPING the matched routing. 0.1mm is a fine sense
-        trace (uA) and within JLC's 0.089mm capability.
+      - narrow ISNS_P/N to NET_WIDTHS["ISNS_P"] (0.15mm): the router coupled the
+        Kelvin pair at ~0.02mm (unmanufacturable). Narrowing both traces grows
+        the edge gap while KEEPING the matched routing -- at 0.15mm they sit
+        ~0.17mm apart, which meets the JLC 2oz min trace/space of 0.15mm (the
+        ISNS diff-pair clearance rule in the .kicad_dru accepts the sub-0.2mm
+        pair spacing). 0.15mm is the single source of truth (placement.py).
       - drop dead SHUNT_HI stitch vias stranded in isolated F.Cu pour fragments
         (the wide B.Cu bus already carries the current path).
       - bridge the one CIN4 gap the router left open (R59.2 <-> C33.1).
     All are position-guarded no-ops if the feature is absent."""
+    isns_w = NET_WIDTHS.get("ISNS_P", 0.15)   # single source of truth
     for t in board.GetTracks():
         if t.GetClass() == "PCB_TRACK" and t.GetNetname() in ("ISNS_P",
                                                                "ISNS_N"):
-            t.SetWidth(MM(0.1))
+            t.SetWidth(MM(isns_w))
     dead = [(113.0, 76.5), (123.0, 76.5), (128.0, 76.5)]
     for t in list(board.GetTracks()):
         if t.GetClass() == "PCB_VIA" and t.GetNetname() == "SHUNT_HI":

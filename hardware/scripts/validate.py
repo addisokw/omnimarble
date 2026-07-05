@@ -113,6 +113,12 @@ def main():
                     failures.append(msg)
                 else:
                     print(f"  [WARN] {msg}")
+            # HAND-INSTALL = explicit non-JLC-assembly decision (user sources
+            # the part and installs it), NOT a silent placeholder. Passes the
+            # production gate but must be excluded from the JLC CPL/BOM.
+            if s["lcsc"] == "HAND-INSTALL" and not s["dnp"]:
+                print(f"  [NOTE] {key}: {s['ref']} ({s['value']}) is "
+                      f"hand-install / order-sourced -- exclude from JLC CPL")
         # duplicate refs (multi-unit shares are same lib_id+ref = OK)
         by_ref = {}
         for s in syms:

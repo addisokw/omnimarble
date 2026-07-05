@@ -74,7 +74,11 @@ RVALS = {
     "9.1k": "C23260", "4.3k": "C23159", "150": "C22808",
     "100k": "C25803", "220k": "C22961", "2k": "C22975", "51k": "C23196",
     "0.05R-2512": "C2994645", "47R-5W": "C5807995", "100R-10W": "C216413",
-    "6.8k-2W": "ORDER-REVIEW",
+    # R24 bank-bleed 6.8k 2W: no JLC basic/extended part confirmed at a verified
+    # C-number, and 2W in the 2512 land is marginal. Marked HAND-INSTALL: the
+    # user sources the exact 2W part (or accepts a 1W 6.8k 2512 basic part if
+    # the bleed duty allows) and installs it; excluded from the JLC CPL.
+    "6.8k-2W": "HAND-INSTALL",
 }
 CVALS = {
     "100n": "C14663", "1u": "C15849", "1n": "C1588", "10n": "C57112",
@@ -701,9 +705,9 @@ def write_project():
                     "min_via_diameter": 0.4,
                     "min_through_hole_diameter": 0.2,
                     "min_hole_to_hole": 0.25,
-                    # 0.1mm allows the narrowed ISNS Kelvin pair (see
-                    # gen_pcb.local_finish); within JLC's 0.089mm capability.
-                    "min_track_width": 0.1,
+                    # 0.15mm = JLC 2oz multilayer min trace width; matches the
+                    # narrowed ISNS Kelvin pair (gen_pcb.local_finish).
+                    "min_track_width": 0.15,
                 }
             }
         },

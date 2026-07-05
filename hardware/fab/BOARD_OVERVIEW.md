@@ -71,9 +71,13 @@ Run with KiCad 10's bundled Python: `"C:\Program Files\KiCad\10.0\bin\python.exe
   the ISNS **Kelvin ties** (RS1→NT1/NT2); the **U10 dogbone escape** (fine-pitch ADS7042,
   0.2mm stubs to open-space vias); the **SHUNT_HI B.Cu bus** (ties the 3 FET sources to the
   shunt — the F.Cu pour fragments and can't be trusted for that current path).
-- **ISNS_P/N are 0.1mm traces on purpose** — the Kelvin pair was coupled too tight by the
-  router; narrowing (not re-routing) grew the clearance while preserving matched length.
-  `min_track_width` is 0.1mm for this reason (within JLC's 0.089mm capability).
+- **ISNS_P/N are 0.15mm traces on purpose** — the Kelvin pair was coupled too tight by the
+  router; narrowing (not re-routing) grew the clearance while preserving matched length. 0.15mm
+  is **JLC's 2oz multilayer min trace/space**, and at 0.15mm the pair sits ~0.17mm apart. A scoped
+  rule in `.kicad_dru` (`isns_kelvin_pair`) allows the ISNS_P↔ISNS_N pair down to 0.15mm; their
+  clearance to every other net stays 0.2mm. `min_track_width` is 0.15mm. Single source of truth:
+  `NET_WIDTHS["ISNS_P/N"] = 0.15` in `placement.py` (`local_finish` narrows to it, `validate_widths`
+  checks it). **Do NOT claim 0.1mm / 0.089mm — that is a 1oz spec and is invalid on this 2oz board.**
 - **Never enable a differential-pair router on ISNS** — it hard-couples at ~0.02mm
   (unmanufacturable) every time. Route sense pairs as normal matched nets.
 - **Reference designators live on the F.Fab layer**, not silkscreen (dense board); LCSC part
@@ -85,10 +89,29 @@ Run with KiCad 10's bundled Python: `"C:\Program Files\KiCad\10.0\bin\python.exe
 - **KiCad 10 API traps:** `PCB_VIA.GetWidth()` needs a layer arg (else blocking-assert hang);
   `board.Remove()` / a second `LoadBoard()` corrupt SWIG footprint wrappers (reload fresh).
 
+## Validation (all green)
+Run before any fab-package generation:
+- `gen_pcb.py` DRC via `kicad-cli pcb drc --schematic-parity` → **0 electrical** (0 unconnected /
+  shorts / clearance / parity), 14 cosmetic silk warnings only.
+- `validate.py --production` → PASS (R24 flagged as a hand-install NOTE, see below).
+- `validate_widths.py` → PASS (board matches `NET_WIDTHS`).
+- `check_netlist.py` → all safety/topology assertions PASS.
+- `calcs.py` → all design margins pass.
+
+## Known items / explicit decisions
+- **R24 (6.8k 2W bank-bleed) is HAND-INSTALL** — no verified JLC C-number for a 6.8k 2W part and
+  2W is marginal in the 2512 land. Marked `LCSC = HAND-INSTALL`; **must be excluded from the JLC
+  CPL** and sourced/installed by the user (or swapped to a 1W 6.8k 2512 basic part if the bleed duty
+  allows). This is an explicit decision, not a placeholder.
+- **WAIVER — gate-drive route lengths are unequal.** Measured DRV1/2/3 ≈ 33.2 / 10.1 / 9.0 mm and
+  QG1/2/3 ≈ 28.9 / 24.0 / 23.5 mm, so Q10's total gate loop (~62mm) is ~2× Q11/Q12 (~33mm). Accepted
+  because each paralleled FET has its **own gate resistor** (R34/R37/R40) that dominates the drive
+  impedance, damps ringing, and balances turn-on; and this is a **µs-scale pulse** application, not
+  fast PWM, so a small turn-on skew is tolerable. If tighter current-sharing is ever required,
+  re-place/re-route to equalize the loops or scope the FET turn-on and adjust gate-R values.
+
 ## State & next step
-- Committed (tip `ef45801` at time of writing). Renders: `hardware/fab/renders/driver_{top,bottom}.png`.
-  DRC report: `hardware/fab/drc_driver.json`.
-- Remaining: 14 cosmetic silk warnings (edge/outline; JLC auto-trims).
+- Committed. Renders: `hardware/fab/renders/driver_{top,bottom}.png`. DRC report: `hardware/fab/drc_driver.json`.
 - **Not yet generated: the JLCPCB fab package** — Gerbers, drill files, BOM (LCSC), pick-and-place
-  (CPL). That is the next action to actually order the board. LCSC part numbers are preserved in
-  the footprint property fields for automatic BOM mapping.
+  (CPL). Next action to order the board. LCSC numbers are preserved in the footprint property fields
+  for BOM mapping; **exclude R24 (HAND-INSTALL) from the CPL.**

@@ -194,7 +194,13 @@ NET_WIDTHS = {
     # them at the FETs. They stay in the 0.2mm default (proven to route).
     "QG1": 0.5, "QG2": 0.5, "QG3": 0.5,
     "DRV1": 0.5, "DRV2": 0.5, "DRV3": 0.5,
-    "ISNS_P": 0.3, "ISNS_N": 0.3,
+    # ISNS Kelvin pair: 0.15mm is the SINGLE source of truth for their
+    # manufactured width (JLC 2oz multilayer min trace/space is 0.15mm; 0.1mm
+    # was a 1oz spec and is NOT valid on this 2oz stackup). local_finish()
+    # narrows the imported copper to exactly this value; validate_widths checks
+    # against it. At 0.15mm the tight-coupled pair sits ~0.17mm apart -- see the
+    # ISNS diff-pair clearance rule in the .kicad_dru.
+    "ISNS_P": 0.15, "ISNS_N": 0.15,
 }
 
 PULSE_NETS = {"VBANK", "COIL_HI", "SW_DRAIN", "SHUNT_HI"}

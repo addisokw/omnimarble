@@ -80,13 +80,15 @@ def main():
         check(f"{net} Kelvin isolation",
               members == {tie, "U9"}, f"{net} on {sorted(members)}")
 
-    # 4. All six IR gate signals reach Pico socket, breakout, and comparator
+    # 4. All six IR gate signals reach the comparator + the Pico socket.
+    #    (J11 breakout was removed 2026-07-04; a different uC connects via the
+    #    Pico header footprint. Assert comparator + Pico socket, NOT J11.)
     for i in range(1, 7):
         members = refs(f"GATE{i}")
         pkg = "U11" if i <= 4 else "U12"
-        ok = ("J11" in members and pkg in members
-              and ({"J9", "J10"} & members))
-        check(f"GATE{i} routing", ok, f"on {sorted(members)}")
+        ok = pkg in members and bool({"J9", "J10"} & members)
+        check(f"GATE{i} reaches comparator {pkg} + Pico socket", ok,
+              f"on {sorted(members)}")
 
     # 5. FET drive: each QGx has exactly its FET + gate R + pulldown + zener
     for i in range(1, 4):

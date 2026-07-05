@@ -11,3 +11,11 @@
 (rule "fine_pitch_pad_to_pad"
 	(condition "A.Type == 'Pad' && B.Type == 'Pad'")
 	(constraint clearance (min 0.14mm)))
+
+# ISNS Kelvin current-sense pair: intentionally coupled tight and narrowed to
+# 0.15mm (JLC 2oz min trace) so the pair sits ~0.17mm apart -- below the board's
+# 0.2mm default but above the JLC 2oz 0.15mm min space. Scoped ONLY to the
+# ISNS_P<->ISNS_N pair; their clearance to every other net stays 0.2mm.
+(rule "isns_kelvin_pair"
+	(condition "(A.NetName == 'ISNS_P' && B.NetName == 'ISNS_N') || (A.NetName == 'ISNS_N' && B.NetName == 'ISNS_P')")
+	(constraint clearance (min 0.15mm)))
