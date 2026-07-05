@@ -2200,6 +2200,25 @@ def local_finish(board, nets):
         board.Add(tr)
 
 
+def tidy_silk(board):
+    """Declutter the dense silkscreen: move every reference designator to the
+    Fab layer (0.6mm, for the assembly drawing / pick-and-place) and hide the
+    value + property (LCSC part number, etc.) fields. The physical silkscreen
+    is left with just component outlines and the intentional annotations
+    (K=tab, gate 'G', polarity, board labels). Cuts ~400 silk DRC warnings to a
+    handful and makes the board legible."""
+    for fp in board.Footprints():
+        fab = pcbnew.B_Fab if fp.GetLayer() == pcbnew.B_Cu else pcbnew.F_Fab
+        for f in fp.GetFields():
+            if f.IsReference():
+                f.SetTextHeight(MM(0.6))
+                f.SetTextWidth(MM(0.6))
+                f.SetTextThickness(MM(0.1))
+                f.SetLayer(fab)
+            elif f.IsVisible():
+                f.SetVisible(False)
+
+
 def main_import_clean():
     """Import a SES from a router that KEPT our fixed copper (DeepPCB) onto a
     fresh placement+pours board, WITHOUT the freerouting-era strip/rebuild/
@@ -2237,6 +2256,7 @@ def main_import_clean():
                 nets[n] = pad.GetNet()
     add_fb_gnd_pours(board, nets)
     local_finish(board, nets)
+    tidy_silk(board)
     nfix = fix_thin_annular(board)
     if nfix:
         print(f"annular fix: shrank drill on {nfix} thin-ring via(s)")
