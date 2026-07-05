@@ -166,6 +166,12 @@ MANUAL_TRACKS = [
 VIA_CLUSTERS = [
     ("GND", 14, 60, 3, 2, 1.8, 0.6, 1.2),   # clamp surge return to planes
     ("GND", 18, 68.5, 2, 1, 1.8, 0.4, 0.8),  # bleed return
+    # One via ON each pulse-FET source pad (clear of the 5mm stitch grid) ties
+    # it straight to the SOLID B.Cu SHUNT_HI pour, so a fragmented F.Cu pour
+    # (autorouter tracks crossing it) can't island a source from the shunt.
+    ("SHUNT_HI", 81.0, 71.75, 1, 1, 1, 0.3, 0.6),   # Q10 source
+    ("SHUNT_HI", 95.4, 71.75, 1, 1, 1, 0.3, 0.6),   # Q11 source
+    ("SHUNT_HI", 115.8, 71.75, 1, 1, 1, 0.3, 0.6),  # Q12 source
 ]
 
 NET_WIDTHS = {

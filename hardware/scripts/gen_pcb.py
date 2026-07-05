@@ -1678,7 +1678,8 @@ def author_u10_escape(board, g, nets):
             nx, ny = px + dx, py + dy
             add_track(board, g, nets, net, 0, cx, cy, nx, ny, 0.2)
             cx, cy = nx, ny
-        add_via(board, g, nets, net, cx, cy, drill=0.3, size=0.45)
+        # drill 0.25 on the 0.45 via -> 0.10mm annular (min); 0.3 drill was 0.075
+        add_via(board, g, nets, net, cx, cy, drill=0.25, size=0.45)
 
 
 def build_preroute(gnd_drops=True):
