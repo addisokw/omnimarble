@@ -93,7 +93,7 @@ Run with KiCad 10's bundled Python: `"C:\Program Files\KiCad\10.0\bin\python.exe
 Run before any fab-package generation:
 - `gen_pcb.py` DRC via `kicad-cli pcb drc --schematic-parity` → **0 electrical** (0 unconnected /
   shorts / clearance / parity), 14 cosmetic silk warnings only.
-- `validate.py --production` → PASS (R24 flagged as a hand-install NOTE, see below).
+- `validate.py --production` → PASS (all parts placed; R24 = 6.8k 1W 2512, LCSC C26073).
 - `validate_widths.py` → PASS (board matches `NET_WIDTHS`).
 - `check_netlist.py` → all safety/topology assertions PASS.
 - `calcs.py` → all design margins pass.

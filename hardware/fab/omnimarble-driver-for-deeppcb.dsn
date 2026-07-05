@@ -274,7 +274,7 @@
       (place R42 106000 -69500 front -90 (PN 4.7k))
       (place R39 88000 -69500 front -90 (PN 4.7k))
       (place R36 70000 -69500 front -90 (PN 4.7k))
-      (place R24 18000 -64000 front -90 (PN "6.8k-2W"))
+      (place R24 18000 -64000 front -90 (PN "6.8k"))
     )
     (component Resistor_SMD:R_0603_1608Metric::1
       (place R41 118000 -77500 front 90 (PN 10k))

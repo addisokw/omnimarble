@@ -185,9 +185,10 @@ PARTS = {
         qty=2, alt="RX27-4V 20W from Digi-Key if single-part preferred",
     ),
     "r_bleed": dict(
-        mpn="CRH2512J6K80E04Z", mfr="Ever Ohms", lcsc="ORDER-REVIEW", jlc="ext",
-        package="2512 2W", desc="6.8k 2W permanent bleed (0.44W cont); C-number uncrawlable, verify at order",
-        qty=1, alt="2x 3.4k 1W 2512 in series",
+        mpn="25121WJ0682T4E", mfr="UNI-ROYAL", lcsc="C26073", jlc="ext",
+        package="2512 1W", desc="6.8k permanent bleed (0.44W cont, 2.2x margin). "
+        "1W is the 2512 land rating; 1.5W/2W 2512 are all 0-stock on LCSC",
+        qty=1, alt="C340514 (RMC1-682JTE-M) or C42372225, both 6.8k 2512 1W in stock",
     ),
     "r_boost_cs": dict(
         mpn="HoLLR2512-3W-50mR-1%", mfr="Milliohm", lcsc="C2994645", jlc="ext",

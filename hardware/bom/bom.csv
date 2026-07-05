@@ -30,7 +30,7 @@ idc10,BOOMELE,2.54-2*5P box header,C5665,ext-tht,IDC 2x5,4,"Sensor-rail ribbon h
 jst_xh4,JST,B4B-XH-A(LF)(SN),C144395,ext-tht,JST-XH 4p,1,Spare ad-hoc sensor connector,B4B-XH-AM (C161871)
 r_precharge,VO,SQM5W-47R-5%,C5807995,ext-tht,cement THT,1,47R 5W precharge across charge-relay contacts,"TyOhm SMW 5W 47R (C2937346, SMD)"
 r_dump,CCO,CR-M10W100RJ,C216413,ext-tht,cement THT,2,100R 10W x2 in series = 200R/20W dump (5.3s to <5V),RX27-4V 20W from Digi-Key if single-part preferred
-r_bleed,Ever Ohms,CRH2512J6K80E04Z,ORDER-REVIEW,ext,2512 2W,1,"6.8k 2W permanent bleed (0.44W cont); C-number uncrawlable, verify at order",2x 3.4k 1W 2512 in series
+r_bleed,UNI-ROYAL,25121WJ0682T4E,C26073,ext,2512 1W,1,"6.8k permanent bleed (0.44W cont, 2.2x margin). 1W is the 2512 land rating; 1.5W/2W 2512 are all 0-stock on LCSC","C340514 (RMC1-682JTE-M) or C42372225, both 6.8k 2512 1W in stock"
 r_boost_cs,Milliohm,HoLLR2512-3W-50mR-1%,C2994645,ext,2512 3W,1,50mOhm boost switch current sense,GX2512-2W-50mR-1% (C500723)
 cap_boost_out,Honor,RVT1J101M1010,C28241,ext,SMD 10x10.2,2,100uF 63V boost output x2 (ripple: datasheet check at order),Lelon VE-101M1JTR-1010 (C249468)
 cap_bulk_35v,Lelon,VEJ101M1VTR-0607,C176666,ext,SMD 6.3x7.7,2,100uF 35V input bulk + armed-rail reservoir,
