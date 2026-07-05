@@ -2167,6 +2167,39 @@ def fix_thin_annular(board, min_ann=0.10, min_hole=0.2):
     return n
 
 
+def local_finish(board, nets):
+    """Deterministic post-route touch-ups that finished the board locally
+    (rev-43 base) instead of paying for more cloud-router revisions:
+      - narrow ISNS_P/N to 0.1mm: the router coupled the Kelvin pair at ~0.02mm
+        (unmanufacturable, and the diff-pair mode always did this). Narrowing
+        both traces grows the edge gap by 0.2mm everywhere -> clears the 0.2mm
+        clearance rule while KEEPING the matched routing. 0.1mm is a fine sense
+        trace (uA) and within JLC's 0.089mm capability.
+      - drop dead SHUNT_HI stitch vias stranded in isolated F.Cu pour fragments
+        (the wide B.Cu bus already carries the current path).
+      - bridge the one CIN4 gap the router left open (R59.2 <-> C33.1).
+    All are position-guarded no-ops if the feature is absent."""
+    for t in board.GetTracks():
+        if t.GetClass() == "PCB_TRACK" and t.GetNetname() in ("ISNS_P",
+                                                               "ISNS_N"):
+            t.SetWidth(MM(0.1))
+    dead = [(113.0, 76.5), (123.0, 76.5), (128.0, 76.5)]
+    for t in list(board.GetTracks()):
+        if t.GetClass() == "PCB_VIA" and t.GetNetname() == "SHUNT_HI":
+            x = pcbnew.ToMM(t.GetPosition().x)
+            y = pcbnew.ToMM(t.GetPosition().y)
+            if any(abs(x - vx) < 0.4 and abs(y - vy) < 0.4 for vx, vy in dead):
+                board.Remove(t)
+    if "CIN4" in nets:
+        tr = pcbnew.PCB_TRACK(board)
+        tr.SetStart(V(98.72, 127.255))
+        tr.SetEnd(V(101.53, 127.255))
+        tr.SetWidth(MM(0.2))
+        tr.SetLayer(pcbnew.F_Cu)
+        tr.SetNet(nets["CIN4"])
+        board.Add(tr)
+
+
 def main_import_clean():
     """Import a SES from a router that KEPT our fixed copper (DeepPCB) onto a
     fresh placement+pours board, WITHOUT the freerouting-era strip/rebuild/
@@ -2203,6 +2236,7 @@ def main_import_clean():
             if n and n not in nets:
                 nets[n] = pad.GetNet()
     add_fb_gnd_pours(board, nets)
+    local_finish(board, nets)
     nfix = fix_thin_annular(board)
     if nfix:
         print(f"annular fix: shrank drill on {nfix} thin-ring via(s)")

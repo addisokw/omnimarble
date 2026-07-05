@@ -701,6 +701,9 @@ def write_project():
                     "min_via_diameter": 0.4,
                     "min_through_hole_diameter": 0.2,
                     "min_hole_to_hole": 0.25,
+                    # 0.1mm allows the narrowed ISNS Kelvin pair (see
+                    # gen_pcb.local_finish); within JLC's 0.089mm capability.
+                    "min_track_width": 0.1,
                 }
             }
         },
