@@ -1,3 +1,8 @@
+> ⚠️ **SUPERSEDED (2026-07-05).** This describes the mid-project freerouting
+> attempt (13 unconnected). The board is now **fully routed and DRC-clean** via
+> DeepPCB + local finish — see **`BOARD_OVERVIEW.md`** for the current handoff.
+> Kept only for history.
+
 # OmniMarble Driver PCB — Review Handoff (rev 3: autorouting pivot)
 
 **Repo:** github.com/addisokw/omnimarble
