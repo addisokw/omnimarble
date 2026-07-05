@@ -248,21 +248,18 @@ def netclass_rules():
     # isolation is set on the copper zone, so relaxing these routed taps to
     # 0.3mm does not reduce clearance to the high-voltage pour.
     # bank-voltage nets need the 1.0mm creepage; GND is 0V (a plane but not hv)
+    # NOTE: ISNS_P/ISNS_N are deliberately NOT given a dedicated diff-pair
+    # class. DeepPCB's diff-pair router ignores the class clearance and couples
+    # them at ~0.02mm (unmanufacturable) every time it's enabled. As plain
+    # matched-width nets at 0.2mm clearance they route cleanly (proven rev-134).
+    # They fall into the normal 0.3mm width group (w0p3) with GND.
     hv = PULSE_NETS | {"AUX_BANK"}
-    pair = {"ISNS_P", "ISNS_N"}       # matched current-sense differential pair
     groups = defaultdict(list)
     for net, w in NET_WIDTHS.items():
-        if net in pair:
-            continue                  # emitted as its own pair class below
         groups[(w, net in hv)].append(net)
     rules = []
     for (w, is_hv), nets in sorted(groups.items(), key=lambda kv: -kv[0][0]):
         clr = 1.0 if is_hv else (0.3 if w >= 0.7 else 0.2)
         name = "w" + str(w).replace(".", "p") + ("_hv" if is_hv else "")
         rules.append((name, w, clr, sorted(nets)))
-    # dedicated diff-pair class so an autorouter that couples ISNS_P/N (DeepPCB)
-    # uses OUR 0.2mm gap -- its tight default coupled them at 0.02mm, which is
-    # unmanufacturable. 0.2mm == the board clearance, so it passes DRC with no
-    # diff-pair exception rule needed.
-    rules.append(("diff_ISNS", 0.3, 0.2, sorted(pair)))
     return rules

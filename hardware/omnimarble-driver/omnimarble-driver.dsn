@@ -2823,7 +2823,7 @@
         (clearance 200)
       )
     )
-    (class w0p3 GND
+    (class w0p3 GND ISNS_N ISNS_P
       (circuit
         (use_via "Via[0-3]_600:300_um")
       )
@@ -2838,15 +2838,6 @@
       )
       (rule
         (width 200)
-        (clearance 200)
-      )
-    )
-    (class diff_ISNS ISNS_N ISNS_P
-      (circuit
-        (use_via "Via[0-3]_600:300_um")
-      )
-      (rule
-        (width 300)
         (clearance 200)
       )
     )
