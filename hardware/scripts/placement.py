@@ -90,7 +90,12 @@ P["C19"] = (148, 90, 0)      # +12V_SW reservoir
 P["C1"] = (12, 88, 0)        # 24V input bulk
 
 # --- connectors / big THT --------------------------------------------------
-P["J1"] = (24, 142, 0)       # 24V barrel jack
+P["J1"] = (24, 142, 90)      # 24V barrel jack: opening faces the bottom edge.
+#                              pad1 (24V_JACK) stays on the origin at (24,142) so
+#                              its routed trace is undisturbed; the switch pad
+#                              clears it. GND pad now ~2mm from the bottom edge,
+#                              so add_edge_keepout is notched here (still >0.5mm
+#                              copper-edge, so manufacturable).
 P["F1"] = (34, 104, 270)     # input fuse holder (pads south)
 P["J2"] = (54, 144, 180)     # aux-bank barrier (body up-left)
 P["F2"] = (46, 122, 90)     # aux fuse (VBANK clips north, straggler)

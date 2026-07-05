@@ -239,10 +239,13 @@ def add_edge_keepout(board, margin=1.5):
     """Perimeter rule-area ring that keeps tracks + vias `margin` mm off the
     board edge (so wide rails clear the 0.5mm copper-edge rule even with their
     half-width), while still allowing the GND pour to flood up to its own 2mm
-    inset. Only J1.3 sits within 1.6mm of an edge (at 1.55mm) and stays
-    outside a 1.5mm ring, so no pad is orphaned."""
+    inset. The bottom strip is notched at J1 (x 18-32): the barrel jack faces
+    the bottom edge, so its GND pad legitimately sits ~2mm from the edge. That
+    pad still clears the real 0.5mm copper-edge rule (which stays active); only
+    this extra keepout would flag it, and no signal track runs there to protect."""
     W, H, m = BOARD_W, BOARD_H, margin
-    strips = [(0, 0, W, m), (0, H - m, W, H), (0, 0, m, H), (W - m, 0, W, H)]
+    strips = [(0, 0, W, m), (0, H - m, 18, H), (32, H - m, W, H),
+              (0, 0, m, H), (W - m, 0, W, H)]
     for (x0, y0, x1, y1) in strips:
         z = pcbnew.ZONE(board)
         z.SetIsRuleArea(True)
