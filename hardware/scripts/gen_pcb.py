@@ -2102,6 +2102,28 @@ def main_import_ses():
     finish(board, "freerouted")
 
 
+def add_shunt_hi_stitch(board, nets):
+    """Post-import: drop a via on each pulse-FET source pad down to the solid
+    B.Cu SHUNT_HI pour. A router's SHUNT_HI reconnect can leave a source pad
+    islanded in the fragmented F.Cu pour (Q10/Q11); this guarantees the tie
+    regardless of how the SES routed it. Positions clear of the 5mm stitch grid
+    (see VIA_CLUSTERS)."""
+    if "SHUNT_HI" not in nets:
+        return 0
+    n = 0
+    for x, y in [(81.0, 71.75), (95.4, 71.75), (115.8, 71.75)]:
+        via = pcbnew.PCB_VIA(board)
+        via.SetPosition(V(x, y))
+        via.SetViaType(pcbnew.VIATYPE_THROUGH)
+        via.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu)
+        via.SetDrill(MM(0.3))
+        via.SetWidth(MM(0.6))
+        via.SetNet(nets["SHUNT_HI"])
+        board.Add(via)
+        n += 1
+    return n
+
+
 def fix_thin_annular(board, min_ann=0.10, min_hole=0.2):
     """Shrink the drill of any via whose annular ring is below min_ann so it
     meets the rule (keeps the via diameter and position). Patches vias an
@@ -2112,7 +2134,10 @@ def fix_thin_annular(board, min_ann=0.10, min_hole=0.2):
     for t in board.GetTracks():
         if t.GetClass() != "PCB_VIA":
             continue
-        w = pcbnew.ToMM(t.GetWidth())
+        try:                                    # KiCad-10 needs a layer arg on
+            w = pcbnew.ToMM(t.GetWidth(pcbnew.F_Cu))  # a via or GetWidth() asserts
+        except Exception:
+            w = pcbnew.ToMM(t.GetWidth())
         dr = pcbnew.ToMM(t.GetDrillValue())
         if (w - dr) / 2 < min_ann - 1e-6:
             new_dr = round(w - 2 * min_ann, 3)
