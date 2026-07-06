@@ -184,6 +184,23 @@ def sanitize_net_names(text):
     return re.sub(r'unconnected-\(([^)]*)\)', r'unconnected-\1', text)
 
 
+def add_fet_strip_keepout(text):
+    """Reserve the FET-source B.Cu corridor (KiCad x74-131mm, y69.5-74mm) for
+    the SHUNT_HI bus. DeepPCB drops the locked bus wire and packs signals into
+    that strip (islanding the FET sources); a keepout is a harder constraint the
+    router respects. DSN units are um with y = -(mm)*1000. import-clean
+    re-authors the bus into the cleared strip, so this keepout is DSN-only and
+    never reaches the KiCad board (won't fight the bus in DRC)."""
+    if "fet_shunt_bus" in text:
+        return text
+    ko = ('    (keepout "fet_shunt_bus" (polygon B.Cu 0  74000 -69500  '
+          '131000 -69500  131000 -74000  74000 -74000  74000 -69500))\n')
+    lines = text.splitlines(keepends=True)
+    last = max(i for i, l in enumerate(lines) if "(keepout" in l)
+    lines.insert(last + 1, ko)
+    return "".join(lines)
+
+
 def fixup(text, drop_planes_from_network=False):
     text = sanitize_net_names(text)
     """Prepare the DSN for the autorouter.
@@ -197,6 +214,7 @@ def fixup(text, drop_planes_from_network=False):
     hatch but defaults off.
     """
     text = rewrite_classes(text)
+    text = add_fet_strip_keepout(text)
     text, n_lock = lock_wires(text)
     n_net = 0
     if drop_planes_from_network:

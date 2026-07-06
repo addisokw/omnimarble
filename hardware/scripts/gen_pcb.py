@@ -2297,6 +2297,11 @@ def main_import_clean():
             if n and n not in nets:
                 nets[n] = pad.GetNet()
     add_fb_gnd_pours(board, nets)
+    # The SHUNT_HI B.Cu bus is authored + locked in preroute, but a router can
+    # still drop it as collateral (DeepPCB rev-40 islanded the FET sources).
+    # Re-author it deterministically so the high-current source path never
+    # depends on the router keeping our locked copper.
+    author_shunt_hi_bus(board, build_grid(board), nets)
     local_finish(board, nets)
     tidy_silk(board)
     nfix = fix_thin_annular(board)

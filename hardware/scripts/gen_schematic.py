@@ -73,7 +73,8 @@ RVALS = {
     "10k": "C25804", "22k": "C31850", "27k": "C22967", "47k": "C25819",
     "9.1k": "C23260", "4.3k": "C23159", "150": "C22808",
     "100k": "C25803", "220k": "C22961", "2k": "C22975", "51k": "C23196",
-    "0.05R-2512": "C2994645", "47R-5W": "C5807995", "100R-10W": "C216413",
+    "0.05R-2512": "C2994645", "0.15R-2512": "C2903485", "4.7R": "C146897",
+    "47R-5W": "C5807995", "100R-10W": "C216413",
     # R24 bank-bleed: 6.8k in a 2512 land. The "2W" spec was inconsistent -- a
     # 2512 is a ~1W package and every stocked 6.8k 2512 on LCSC is 1W (the 2W
     # variants are out of stock). Actual dissipation is 55^2/6800 = 0.44W, so a
@@ -163,7 +164,7 @@ def build_power_input(sch):
     R(s, c, "100k", (100, 80), "RPP_G", "GND")
     D_(s, c, "Device:D_Zener", "BZT52C15", (115, 80), "RPP_G", "+24V",
        "SOD123", PARTS["gate_clamp"]["lcsc"])
-    s.add_symbol("Device:D_TVS", "D90", "SMBJ33A", (135, 80), footprint=FP["SMB"],
+    s.add_symbol("Device:D_TVS", "D90", "SMBJ26CA", (135, 80), footprint=FP["SMB"],
                  lcsc=PARTS["tvs_in"]["lcsc"], nets={"1": "+24V", "2": "GND"})
     C_(s, c, "100u-35V", (150, 50), "+24V", "GND", fp="CP_SMD_D63")
 
@@ -179,6 +180,11 @@ def build_power_input(sch):
     C_(s, c, "10u", (45, 120), "+24V", "GND", fp="C0805")
 
     # 12V linear rail (gate driver + relays, <60mA)
+    # NOTE: 78L12 stays SOT-89 here. The thermal upgrade to a 78M12 in TO-252/
+    # DPAK (Shikues C116325) is real and wanted, but the DPAK is larger and U2
+    # sits in an auto-placement band -- swapping it reflows ~50 downstream parts
+    # and desyncs the frozen route, so it needs a dedicated re-place/re-route
+    # pass, not a local edit. Tracked as a follow-up.
     s.add_symbol("Regulator_Linear:L78L12_SOT89", "U2", "78L12", (60, 160),
                  footprint=FP["SOT89"], lcsc=PARTS["reg12"]["lcsc"],
                  nets={"3": "+24V", "1": "+12V", "2": "GND"})
@@ -231,7 +237,7 @@ def build_boost_charger(sch):
                  footprint=FP["TO252"], lcsc=PARTS["boost_fet"]["lcsc"],
                  nets={"1": "BST_G", "2": "BST_SW", "3": "BST_CS_HI"})
     R(s, c, "10R", (55, 115), "BST_DRV", "BST_G")
-    R(s, c, "0.05R-2512", (70, 170), "BST_CS_HI", "GND", fp="R2512")
+    R(s, c, "0.15R-2512", (70, 170), "BST_CS_HI", "GND", fp="R2512")
     # CS filter
     R(s, c, "1k", (95, 150), "BST_CS_HI", "BST_CS")
     C_(s, c, "1n", (95, 170), "BST_CS", "GND")
@@ -265,7 +271,7 @@ def build_boost_charger(sch):
     # independent of the MCU.
     R(s, c, "100k", (210, 60), "VBOOST", "OVP_REF")
     R(s, c, "4.3k", (210, 80), "OVP_REF", "GND")
-    s.add_symbol("Reference_Voltage:TL431DBZ", "U5", "CJ431-0.5%", (230, 70),
+    s.add_symbol("Reference_Voltage:TL431DBZ", "U5", "TL431B", (230, 70),
                  footprint=FP["SOT23"], lcsc=PARTS["tl431"]["lcsc"],
                  nets={"1": "BST_COMP", "2": "OVP_REF", "3": "GND"})
 
@@ -303,7 +309,7 @@ def build_boost_charger(sch):
 
     # Permanent bleed + live-bank LED (hardwired, works with logic dead)
     R(s, c, "6.8k", (200, 200), "VBANK", "GND", fp="R2512")  # bank bleed, 1W 2512
-    R(s, c, "10k", (215, 200), "VBANK", "LIVE_LED")
+    R(s, c, "47k", (215, 200), "VBANK", "LIVE_LED")  # 47k: 0.064W @55V (10k->0.28W cooked 0603)
     LED_(s, c, "red", (215, 230), "LIVE_LED", "GND", "C2286")
 
     s.power_flag("VBOOST", (250, 200))
@@ -425,7 +431,7 @@ def build_pulse_switch(sch):
         D_(s, c, "Device:D_Zener", "BZT52C15", (x + 15, 245), "SHUNT_HI",
            g_net, "SOD123", PARTS["gate_clamp"]["lcsc"])
         # RC snubber D-S
-        R(s, c, "4.7k", (x - 15, 235), "SW_DRAIN", f"SNB{i+1}", fp="R2512")
+        R(s, c, "4.7R", (x - 15, 235), "SW_DRAIN", f"SNB{i+1}", fp="R2512")
         C_(s, c, "10n", (x - 15, 255), f"SNB{i+1}", "SHUNT_HI")
     GNDsym(s, c, (200, 250))
     s.power_flag("+12V_SW", (220, 60))
@@ -640,7 +646,7 @@ def build_mcu_status(sch):
     R(s, c, "1k", (195, 120), "BUZZ", "BUZZ_B")
     s.add_symbol("Device:Buzzer", "BZ1", "buzzer-5V", (230, 130),
                  footprint=FP["BUZZER"], lcsc=PARTS["buzzer"]["lcsc"],
-                 nets={"1": "BUZZ_DRV", "2": "+5V"})
+                 nets={"1": "+5V", "2": "BUZZ_DRV"})  # +(pin1)->+5V, -(pin2)->NPN collector
     D_(s, c, "Device:D", "1N4148W", (250, 130), "BUZZ_DRV", "+5V",
        "SOD123", "C81598")
     GNDsym(s, c, (210, 160))

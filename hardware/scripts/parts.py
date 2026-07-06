@@ -75,9 +75,12 @@ PARTS = {
         qty=2, alt="HF115F/012-1HS3 (C61377, 16A, lower stock)",
     ),
     "tl431": dict(
-        mpn="CJ431", mfr="Changjing", lcsc="C3113", jlc="basic",
-        package="SOT-23", desc="Shunt reference +/-0.5%, OVP trip 60.5V nom (59.1-62.0V band)",
-        qty=1, alt="TI TL431AIDBZR (C23892, 1%)",
+        mpn="TL431BIDBZR", mfr="TI", lcsc="C41283", jlc="ext",
+        package="SOT-23-3", desc="Shunt ref +/-0.5%, DBZ pinout (1=K,2=REF,3=A) "
+        "-- matches the TL431DBZ footprint. OVP trip 60.5V nom (59.1-62.0V band). "
+        "NOT CJ431/C3113 (that part is 1=REF,2=K,3=A -> OVP dead); NOT the 1% "
+        "A-grade (would blow the 62.0V ceiling)",
+        qty=1, alt="CD431 +/-0.5% (JSCJ, same 1=K,2=REF,3=A pinout)",
     ),
 
     # --- power rails -----------------------------------------------------------
@@ -88,13 +91,16 @@ PARTS = {
     ),
     "reg12": dict(
         mpn="78L12(UMW)", mfr="UMW", lcsc="C347272", jlc="ext",
-        package="SOT-89", desc="24V->12V linear, gate-driver + relay rail (<60mA)",
-        qty=1, alt="CJ78L12 (C8615)",
+        package="SOT-89", desc="24V->12V linear, gate-driver + relay rail. THERMAL "
+        "FOLLOW-UP: ~0.5-0.85W during charge is hot for SOT-89 -- upgrade to 78M12 "
+        "TO-252/DPAK (Shikues C116325) in a dedicated re-place/re-route pass",
+        qty=1, alt="78M12 TO-252 C116325 (thermal upgrade, needs re-route)",
     ),
     "tvs_in": dict(
-        mpn="SMBJ33A", mfr="HJC", lcsc="C19077586", jlc="ext",
-        package="SMB", desc="24V input TVS",
-        qty=1, alt="C173526 (higher stock)",
+        mpn="SMBJ26CA", mfr="MDD", lcsc="C113996", jlc="ext",
+        package="SMB", desc="24V input TVS, bidirectional (matches D_TVS symbol); "
+        "26V standoff clamps below SMBJ33A -- confirm vs AP63205 VIN abs-max",
+        qty=1, alt="STMicro SMBJ26CA-TR (C133665)",
     ),
     "fuse_in": dict(
         mpn="0997005.WXN", mfr="Littelfuse", lcsc="C2680609", jlc="hand",
@@ -191,9 +197,10 @@ PARTS = {
         qty=1, alt="C340514 (RMC1-682JTE-M) or C42372225, both 6.8k 2512 1W in stock",
     ),
     "r_boost_cs": dict(
-        mpn="HoLLR2512-3W-50mR-1%", mfr="Milliohm", lcsc="C2994645", jlc="ext",
-        package="2512 3W", desc="50mOhm boost switch current sense",
-        qty=1, alt="GX2512-2W-50mR-1% (C500723)",
+        mpn="HoJLR2512-3W-150mR-1%", mfr="Milliohm", lcsc="C2903485", jlc="ext",
+        package="2512 3W", desc="0.15ohm boost switch current sense (~6.7A limit; "
+        "was 0.05ohm/20A, above realistic inductor saturation)",
+        qty=1, alt="TA-I RLP25FEER150 (C459673)",
     ),
     "cap_boost_out": dict(
         mpn="RVT1J101M1010", mfr="Honor", lcsc="C28241", jlc="ext",
