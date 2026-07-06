@@ -2,7 +2,7 @@
 	(version 20251024)
 	(generator "omnimarble_gen")
 	(generator_version "10.0")
-	(uuid "5d552a29-353a-4620-9e85-ff86d495365b")
+	(uuid "e983a447-c241-422e-9650-13442643de66")
 	(paper "A3")
 	(title_block
 		(title "OmniMarble 60V SELV coilgun driver")
@@ -24,7 +24,7 @@
 		(fill
 			(color 0 0 0 0)
 		)
-		(uuid "400619f3-15bc-43c3-9ca8-3f9a15d4b904")
+		(uuid "86c41b1e-95c1-4867-964e-aebfc748663c")
 		(property "Sheetname" "power_input"
 			(at 30 39 0)
 			(effects
@@ -45,7 +45,7 @@
 		)
 		(instances
 			(project "omnimarble-driver"
-				(path "/5d552a29-353a-4620-9e85-ff86d495365b"
+				(path "/e983a447-c241-422e-9650-13442643de66"
 					(page "2")
 				)
 			)
@@ -66,7 +66,7 @@
 		(fill
 			(color 0 0 0 0)
 		)
-		(uuid "2a3a5036-ad57-42cd-9ae7-af4d2aae3eef")
+		(uuid "a5e2a6e4-9d65-4298-be54-5098c94ecafa")
 		(property "Sheetname" "boost_charger"
 			(at 95 39 0)
 			(effects
@@ -87,7 +87,7 @@
 		)
 		(instances
 			(project "omnimarble-driver"
-				(path "/5d552a29-353a-4620-9e85-ff86d495365b"
+				(path "/e983a447-c241-422e-9650-13442643de66"
 					(page "3")
 				)
 			)
@@ -108,7 +108,7 @@
 		(fill
 			(color 0 0 0 0)
 		)
-		(uuid "26c45bac-53c7-4d03-8ba7-562d1d1899b5")
+		(uuid "b6fe2580-d622-43fc-8716-bce18c62b63c")
 		(property "Sheetname" "cap_bank"
 			(at 160 39 0)
 			(effects
@@ -129,7 +129,7 @@
 		)
 		(instances
 			(project "omnimarble-driver"
-				(path "/5d552a29-353a-4620-9e85-ff86d495365b"
+				(path "/e983a447-c241-422e-9650-13442643de66"
 					(page "4")
 				)
 			)
@@ -150,7 +150,7 @@
 		(fill
 			(color 0 0 0 0)
 		)
-		(uuid "f9241dcb-3b8d-4403-afda-1364ea3f4de3")
+		(uuid "a3bdd996-84f6-400b-9eeb-b2c610d2b91e")
 		(property "Sheetname" "pulse_switch"
 			(at 225 39 0)
 			(effects
@@ -171,7 +171,7 @@
 		)
 		(instances
 			(project "omnimarble-driver"
-				(path "/5d552a29-353a-4620-9e85-ff86d495365b"
+				(path "/e983a447-c241-422e-9650-13442643de66"
 					(page "5")
 				)
 			)
@@ -192,7 +192,7 @@
 		(fill
 			(color 0 0 0 0)
 		)
-		(uuid "5cedf401-44a2-4dc6-b193-fec17f00fb8e")
+		(uuid "a9fc5635-081b-4ed4-badc-26f7b26d14d3")
 		(property "Sheetname" "flyback"
 			(at 30 89 0)
 			(effects
@@ -213,7 +213,7 @@
 		)
 		(instances
 			(project "omnimarble-driver"
-				(path "/5d552a29-353a-4620-9e85-ff86d495365b"
+				(path "/e983a447-c241-422e-9650-13442643de66"
 					(page "6")
 				)
 			)
@@ -234,7 +234,7 @@
 		(fill
 			(color 0 0 0 0)
 		)
-		(uuid "13feb9c2-1f27-443e-aacc-ff118d95fc16")
+		(uuid "afa703e6-aa95-42a6-b93e-4a1d2f2ebb14")
 		(property "Sheetname" "sense_gates"
 			(at 95 89 0)
 			(effects
@@ -255,7 +255,7 @@
 		)
 		(instances
 			(project "omnimarble-driver"
-				(path "/5d552a29-353a-4620-9e85-ff86d495365b"
+				(path "/e983a447-c241-422e-9650-13442643de66"
 					(page "7")
 				)
 			)
@@ -276,7 +276,7 @@
 		(fill
 			(color 0 0 0 0)
 		)
-		(uuid "03ca2aa0-268e-48f3-9388-657291f25029")
+		(uuid "c52f051a-2bda-4f95-9ce1-e3fc3b41d38d")
 		(property "Sheetname" "mcu_status"
 			(at 160 89 0)
 			(effects
@@ -297,7 +297,7 @@
 		)
 		(instances
 			(project "omnimarble-driver"
-				(path "/5d552a29-353a-4620-9e85-ff86d495365b"
+				(path "/e983a447-c241-422e-9650-13442643de66"
 					(page "8")
 				)
 			)

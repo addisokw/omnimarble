@@ -73,8 +73,8 @@ RVALS = {
     "10k": "C25804", "22k": "C31850", "27k": "C22967", "47k": "C25819",
     "9.1k": "C23260", "4.3k": "C23159", "150": "C22808",
     "100k": "C25803", "220k": "C22961", "2k": "C22975", "51k": "C23196",
-    "0.05R-2512": "C2994645", "0.15R-2512": "C2903485", "4.7R": "C146897",
-    "47R-5W": "C5807995", "100R-10W": "C216413",
+    "0.05R-2512": "C2994645", "0.15R-2512": "C2903485", "4.7R": "C25489",
+    "47R-5W": "C5807995", "100R-10W": "C5110275",
     # R24 bank-bleed: 6.8k in a 2512 land. The "2W" spec was inconsistent -- a
     # 2512 is a ~1W package and every stocked 6.8k 2512 on LCSC is 1W (the 2W
     # variants are out of stock). Actual dissipation is 55^2/6800 = 0.44W, so a
@@ -639,7 +639,7 @@ def build_mcu_status(sch):
     R(s, c, "1k", (210, 60), "LED_ARMED", "LEDA_K")
     LED_(s, c, "red", (210, 80), "LEDA_K", "GND", "C2286")
     R(s, c, "1k", (230, 60), "LED_CHG", "LEDC_K")
-    LED_(s, c, "green", (230, 80), "LEDC_K", "GND", "C72043")
+    LED_(s, c, "green", (230, 80), "LEDC_K", "GND", "C2289")  # KT-0603YG; C72043 OOS
 
     # Buzzer via NPN
     NPN(s, c, (210, 130), "BUZZ_B", "BUZZ_DRV", "GND")

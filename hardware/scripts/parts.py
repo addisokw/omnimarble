@@ -37,7 +37,7 @@ PARTS = {
         c_uF=2200.0,
     ),
     "term_coil": dict(
-        mpn="HB9500-9.5-02P-13-00A", mfr="Kangnex", lcsc="C60785", jlc="ext-tht",
+        mpn="HB9500-9.5-2P", mfr="Kangnex", lcsc="C707836", jlc="ext-tht",  # C60785 was OOS
         package="9.5mm barrier", desc="32A barrier terminal, coil + aux-bank connections (pulse path)",
         qty=2, alt="Wurth REDCUBE M4 (hand-install, not LCSC)",
     ),
@@ -49,7 +49,7 @@ PARTS = {
 
     # --- charger -------------------------------------------------------------
     "boost_ctrl": dict(
-        mpn="UC3843BD1R2G", mfr="onsemi", lcsc="C16414", jlc="ext",
+        mpn="UC3843B", mfr="UTC", lcsc="C2995531", jlc="ext",  # C16414 not in JLC PCBA stock
         package="SOIC-8", desc="Current-mode boost controller, 24.5-55V operating (63V-rated bank) @ ~0.5A, Vcc from +12V rail",
         qty=1, alt="LM3481MMX/NOPB (C543002; needs custom symbol)",
     ),
@@ -188,7 +188,7 @@ PARTS = {
         qty=1, alt="TyOhm SMW 5W 47R (C2937346, SMD)",
     ),
     "r_dump": dict(
-        mpn="CR-M10W100RJ", mfr="CCO", lcsc="C216413", jlc="ext-tht",
+        mpn="CR-M10W100R", mfr="CCO", lcsc="C5110275", jlc="ext-tht",  # C216413 was OOS
         package="cement THT", desc="100R 10W x2 in series = 200R/20W dump (5.3s to <5V)",
         qty=2, alt="RX27-4V 20W from Digi-Key if single-part preferred",
     ),
