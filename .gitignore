@@ -37,3 +37,11 @@ tmp/
 
 # JLC loose gerber/drill files (regenerable; the uploadable zip is committed)
 hardware/fab/jlc/gerbers/
+
+# Hardware pipeline scratch (regenerable byproducts of gen_pcb / import-clean / DRC/ERC).
+# The committed omnimarble-driver-5-rev-39.ses stays tracked (already added).
+/logs/
+*.rpt
+hardware/fab/drc_*.json
+hardware/omnimarble-driver/*-rev-*.ses
+hardware/omnimarble-driver/omnimarble-driver.ses
