@@ -6,11 +6,13 @@ PCB, two population variants**; order the bare board once, then assemble as many
 of each, plugged into the driver's J6 (RAIL-EMIT) / J7 (RAIL-RECV) headers).
 
 ## Board
-- **224 × 15 mm, 2-layer, 1 oz** copper (low-current IR rail: ~132 mA on +5 V,
-  sub-mA signals — 1 oz is ample). HASL or ENIG both fine.
+- **224 × 15 mm, 2-layer, 1 oz** copper (low-current IR rail: ~144 mA on +5 V at
+  ~24 mA/LED, sub-mA signals — 1 oz is ample). HASL or ENIG both fine.
 - 6 sensor stations at z = -60 / -40 / -20 / +5 / +60 / +120 mm from the coil
   fiducial (silk-labelled; spacing asserted to 0.01 mm at board generation).
-- IDC-10 (J1): `1=+5V 2=GND 3..8=SIG1..6 9=SIG_SPARE 10=GND`, matching driver J6/J7.
+- IDC-10 (J1): `1=+5V 2=GND 3..8=SIG1..6 9=SIG_SPARE 10=GND` — matches driver **J7**
+  pin-for-pin; driver **J6** is power-only (alternating +5V/GND), so a RECV board
+  must never plug into J6. Label the ribbons.
 - Electrical DRC **0** (0 unconnected / parity); silk warnings cosmetic. `drc_rail.json`.
 
 ## Files in this package
