@@ -1,6 +1,13 @@
 # OmniMarble Driver PCB — Board Overview (handoff)
 
-> Authoritative, current handoff for the driver board. Supersedes
+> ⚠️ **vNext — on hold (2026-07-06).** The driver board is **not the current
+> path**. The launch concept is still unproven, so the project stepped back to a
+> bench rig built from off-the-shelf modules — see
+> **[`../V0_BENCH_RIG.md`](../V0_BENCH_RIG.md)**. This board is DRC-clean and fully
+> preserved; revisit once V0 proves the concept out. The handoff below remains the
+> authoritative description of the board *as designed*.
+
+> Authoritative handoff for the driver board *as designed*. Supersedes
 > `REVIEW_HANDOFF.md` (which is from the earlier freerouting routing attempt and
 > is out of date). Last updated 2026-07-05.
 

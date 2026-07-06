@@ -5,6 +5,11 @@ real coil with the same fire/cutoff logic as the simulation's Kit
 extension and emits telemetry in the sim's trajectory-CSV format for
 direct sim-to-real comparison.
 
+> ⚠️ **vNext — on hold (2026-07-06).** This integrated driver board is not the
+> current path. The launch concept is still unproven, so we stepped back to a
+> bench rig built from off-the-shelf modules — see **[`V0_BENCH_RIG.md`](V0_BENCH_RIG.md)**.
+> This board is DRC-clean and preserved; revisit once V0 proves the concept out.
+
 **Status: layout final — fully routed, electrically DRC-clean (0 unconnected /
 shorts / clearance / parity), all validators green, and the JLCPCB fab/assembly
 package generated (`hardware/fab/jlc/`). Externally reviewed.**

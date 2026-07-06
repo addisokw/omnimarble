@@ -1,5 +1,11 @@
 # OmniMarble Gate-Rail (sensor board) — Overview
 
+> ⚠️ **vNext — on hold (2026-07-06).** This break-beam rail is **superseded** on the
+> current path: V0 uses off-the-shelf **Waveshare ITR20001** reflective modules
+> (before/after the coil) straight into the Pico, so no custom sensor board is built
+> for V0 — see **[`../V0_BENCH_RIG.md`](../V0_BENCH_RIG.md)**. This board is DRC-clean
+> and preserved; revisit if a spread-station rail is wanted after V0.
+
 The **sense side** of the OmniMarble rig: an IR break-beam sensor rail that
 detects the steel marble as it passes six stations along the coil track, so the
 measured launch can be compared against the PINN simulation. It is the companion
