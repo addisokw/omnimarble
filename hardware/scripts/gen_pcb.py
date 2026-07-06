@@ -2224,6 +2224,43 @@ def tidy_silk(board):
                 f.SetVisible(False)
 
 
+STACKUP_2OZ = (
+    '\t\t(stackup\n'
+    '\t\t\t(layer "F.Silkscreen" (type "Top Silk Screen"))\n'
+    '\t\t\t(layer "F.Paste" (type "Top Solder Paste"))\n'
+    '\t\t\t(layer "F.Mask" (type "Top Solder Mask") (thickness 0.01))\n'
+    '\t\t\t(layer "F.Cu" (type "copper") (thickness 0.07))\n'
+    '\t\t\t(layer "dielectric 1" (type "prepreg") (thickness 0.2104) '
+    '(material "FR4") (epsilon_r 4.5) (loss_tangent 0.02))\n'
+    '\t\t\t(layer "In1.Cu" (type "copper") (thickness 0.035))\n'
+    '\t\t\t(layer "dielectric 2" (type "core") (thickness 0.94) '
+    '(material "FR4") (epsilon_r 4.5) (loss_tangent 0.02))\n'
+    '\t\t\t(layer "In2.Cu" (type "copper") (thickness 0.035))\n'
+    '\t\t\t(layer "dielectric 3" (type "prepreg") (thickness 0.2104) '
+    '(material "FR4") (epsilon_r 4.5) (loss_tangent 0.02))\n'
+    '\t\t\t(layer "B.Cu" (type "copper") (thickness 0.07))\n'
+    '\t\t\t(layer "B.Mask" (type "Bottom Solder Mask") (thickness 0.01))\n'
+    '\t\t\t(layer "B.Paste" (type "Bottom Solder Paste"))\n'
+    '\t\t\t(copper_finish "ENIG")\n'
+    '\t\t\t(dielectric_constraints no)\n'
+    '\t\t)\n'
+)
+
+
+def inject_stackup(pcb_path):
+    """Write an explicit 4-layer **2oz-outer / 1oz-inner, ENIG** stackup into
+    the board file. new_board() bypasses the .kicad_pro and leaves KiCad's 1oz
+    default, which contradicts the 2oz thermal/current design; this affirms it
+    at the source (Board Setup) and in exported fab metadata. Text-level because
+    the pcbnew BOARD_STACKUP SWIG bindings are non-functional in KiCad 10."""
+    with open(pcb_path, encoding="utf-8") as f:
+        t = f.read()
+    if "(stackup" in t:
+        return
+    with open(pcb_path, "w", encoding="utf-8") as f:
+        f.write(t.replace("(setup\n", "(setup\n" + STACKUP_2OZ, 1))
+
+
 def main_import_clean():
     """Import a SES from a router that KEPT our fixed copper (DeepPCB) onto a
     fresh placement+pours board, WITHOUT the freerouting-era strip/rebuild/
@@ -2271,6 +2308,7 @@ def main_import_clean():
     filler = pcbnew.ZONE_FILLER(board)
     filler.Fill(board.Zones())
     pcbnew.SaveBoard(str(PCB_OUT), board)
+    inject_stackup(str(PCB_OUT))   # 2oz-outer/1oz-inner ENIG stackup metadata
     board.BuildConnectivity()
     print(f"SAVED (import-clean): unconnected="
           f"{board.GetConnectivity().GetUnconnectedCount(True)}")

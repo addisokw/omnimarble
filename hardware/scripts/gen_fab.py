@@ -87,9 +87,10 @@ Assembly package for `omnimarble-driver.kicad_pcb`. **Scope: SMT + THT
 assembly** (JLC places surface-mount *and* the common through-hole parts).
 
 ## Board
-- 220 × 150 mm, **4-layer, 2 oz** copper (F.Cu / In1.GND / In2.GND / B.Cu)
+- 220 × 150 mm, **4-layer, 2 oz outer / 1 oz inner** copper, **ENIG** finish
+  (F.Cu / In1.GND / In2.GND / B.Cu). The stackup + gerber job metadata state this.
 - Min track/space 0.15 mm; min via 0.4 mm / 0.2 mm drill
-- Electrical DRC: **0** (0 unconnected / shorts / clearance / parity). 14 cosmetic
+- Electrical DRC: **0** (0 unconnected / shorts / clearance / parity). 16 cosmetic
   silk warnings only. Report: `drc_driver.json`.
 
 ## Files in this package
@@ -104,12 +105,16 @@ Summary: **{n_placed} machine-placed** parts, **{len(hand)} hand-installed**,
 {len(feature)} board features, {len(dnp)} do-not-populate.
 
 ## When ordering (read first)
-1. **Enable "Assemble top side" + turn ON through-hole assembly** — {len(tht)} of the
+1. **Set 4-layer, 2 oz OUTER copper + ENIG finish.** The thermal/current design
+   assumes 2 oz outer; verify the order form matches (the gerber stackup states it,
+   but the copper weight is a paid order-form selection). ENIG is recommended for
+   the fine-pitch U10.
+2. **Enable "Assemble top side" + turn ON through-hole assembly** — {len(tht)} of the
    placed parts are THT (below). Without THT assembly JLC will skip them.
-2. **Verify component rotations in JLC's preview.** KiCad and JLC differ on some
+3. **Verify component rotations in JLC's preview.** KiCad and JLC differ on some
    part rotations (polarised caps, some ICs/connectors). Fix any flagged in JLC's
    online CPL editor before paying.
-3. **Let JLC's DFM be the final arbiter.** Inspect DFM warnings around **U10**
+4. **Let JLC's DFM be the final arbiter.** Inspect DFM warnings around **U10**
    (fine-pitch ADS7042 escape), **U2**, the **ISNS_P/N Kelvin pair** (0.15 mm /
    ~0.17 mm spacing — intentional, 2 oz min), and **J1** (barrel jack is now an
    **edge-mount** — its body overhangs the bottom outline ~6 mm by design; pads are
@@ -192,6 +197,18 @@ def main():
     # ---- CPL from kicad-cli pos (correct gerber-convention coordinates) ------
     run_cli("pcb", "export", "gerbers", "--layers", GERBER_LAYERS,
             "--no-protel-ext", "-o", str(GERB) + "\\", str(PCB))
+    # kicad-cli drops copper thickness from the gbrjob when an explicit stackup
+    # is present; re-assert 2oz outer / 1oz inner so the fab metadata matches
+    # the board's stackup (JLC sets copper weight from the order form regardless).
+    import json
+    job = next(GERB.glob("*.gbrjob"), None)
+    if job:
+        j = json.loads(job.read_text(encoding="utf-8"))
+        th = {"F.Cu": 0.07, "B.Cu": 0.07, "In1.Cu": 0.035, "In2.Cu": 0.035}
+        for layer in j.get("MaterialStackup", []):
+            if layer.get("Type") == "Copper" and layer.get("Name") in th:
+                layer["Thickness"] = th[layer["Name"]]
+        job.write_text(json.dumps(j, indent=4), encoding="utf-8")
     run_cli("pcb", "export", "drill", "--format", "excellon",
             "--excellon-units", "mm", "--drill-origin", "absolute",
             "--generate-map", "--map-format", "gerberx2", "-o", str(GERB) + "\\",

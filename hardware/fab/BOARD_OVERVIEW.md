@@ -16,11 +16,11 @@ assembly; controlled by an external Raspberry Pi Pico (or compatible) via header
 ## Key specs
 | | |
 |---|---|
-| Board | 220 × 150 mm, 4-layer, 2oz copper |
+| Board | 220 × 150 mm, 4-layer; **2oz outer / 1oz inner** copper; ENIG finish |
 | Layer stack | F.Cu (signal) / In1 (GND plane) / In2 (GND plane) / B.Cu (signal) |
 | Components | 177 footprints, 108 nets |
 | Bank voltage | ≤55V SELV (functional isolation) |
-| Status | **Fully routed, electrically DRC-clean** (0 unconnected / shorts / clearance / courtyard / parity / annular / hole). Remaining DRC = 14 cosmetic silk warnings. |
+| Status | **Fully routed, electrically DRC-clean** (0 unconnected / shorts / clearance / courtyard / parity / annular / hole). Remaining DRC = 16 cosmetic silk warnings. |
 
 ## Architecture / subsystems
 
@@ -92,7 +92,7 @@ Run with KiCad 10's bundled Python: `"C:\Program Files\KiCad\10.0\bin\python.exe
 ## Validation (all green)
 Run before any fab-package generation:
 - `gen_pcb.py` DRC via `kicad-cli pcb drc --schematic-parity` → **0 electrical** (0 unconnected /
-  shorts / clearance / parity), 14 cosmetic silk warnings only.
+  shorts / clearance / parity), 16 cosmetic silk warnings only.
 - `validate.py --production` → PASS (all parts placed; R24 = 6.8k 1W 2512, LCSC C26073).
 - `validate_widths.py` → PASS (board matches `NET_WIDTHS`).
 - `check_netlist.py` → all safety/topology assertions PASS.
