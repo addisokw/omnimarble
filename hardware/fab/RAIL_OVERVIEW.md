@@ -18,7 +18,7 @@ Both circuits are drawn on the same board; assembly selects which parts are fitt
 (each symbol carries a `Variant` field, and a silk `EMIT [ ] RECV [ ]` checkbox
 marks the built board):
 - **EMIT** — populate **D1–6** (IR333C-A 5 mm IR LEDs, C5130) + **R1–6** (150 Ω
-  0603, C22843). Drive: `+5V → 150 Ω → LED → GND`.
+  0603, C22808). Drive: `+5V → 150 Ω → LED → GND`.
 - **RECV** — populate **Q1–6** (PT204-6B 3 mm phototransistors, C5133). Collector
   → `SIGx`, emitter → GND (pulled up on the driver).
 - **COMMON** — **J1** (IDC-10, C5665). D and Q share each station footprint; only
