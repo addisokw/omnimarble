@@ -1,7 +1,7 @@
 {
     "$schema": "https://schemas.kicad.org/drc.v1.json",
     "coordinate_units": "mm",
-    "date": "2026-07-06T14:09:56",
+    "date": "2026-07-06T14:46:15",
     "ignored_checks": [
         {
             "description": "Footprint has no courtyard defined",
@@ -42,7 +42,7 @@
                         "x": 0.0,
                         "y": 0.0
                     },
-                    "uuid": "62e5c457-2f99-4a93-81af-cba4a880ba1e"
+                    "uuid": "8b83a6f0-ecef-429a-b302-9f0deca9aab8"
                 },
                 {
                     "description": "Reference field of H1",
@@ -50,7 +50,7 @@
                         "x": 4.5,
                         "y": -0.15
                     },
-                    "uuid": "9e4d65cf-025e-4b24-9037-2aa222f9e5e1"
+                    "uuid": "6e4d47a7-3711-4c9a-a86f-00b754f8ba45"
                 }
             ],
             "severity": "warning",
@@ -65,7 +65,7 @@
                         "x": 46.0,
                         "y": 8.0
                     },
-                    "uuid": "82b2e113-41bb-4104-baeb-7f41b9a8db3a"
+                    "uuid": "33708085-3f5b-4bf9-8aad-d85d31cb978d"
                 },
                 {
                     "description": "PCB text 'z=-20' on F.Silkscreen",
@@ -73,7 +73,7 @@
                         "x": 54.5,
                         "y": 7.4
                     },
-                    "uuid": "aa57caad-44d5-49b2-8df5-88ac41063eb2"
+                    "uuid": "4f5a29cf-8424-4757-b3c2-429b8fd89305"
                 }
             ],
             "severity": "warning",
@@ -88,7 +88,7 @@
                         "x": 46.0,
                         "y": 8.0
                     },
-                    "uuid": "82b2e113-41bb-4104-baeb-7f41b9a8db3a"
+                    "uuid": "33708085-3f5b-4bf9-8aad-d85d31cb978d"
                 },
                 {
                     "description": "Arc of D3 on F.Silkscreen",
@@ -96,7 +96,7 @@
                         "x": 51.27,
                         "y": 10.9
                     },
-                    "uuid": "f16b804a-fe12-46a3-9ef1-a33a920afd44"
+                    "uuid": "3f664d5b-f818-40cf-b149-0cb3a82a2878"
                 }
             ],
             "severity": "warning",
@@ -111,7 +111,7 @@
                         "x": 46.0,
                         "y": 8.0
                     },
-                    "uuid": "82b2e113-41bb-4104-baeb-7f41b9a8db3a"
+                    "uuid": "33708085-3f5b-4bf9-8aad-d85d31cb978d"
                 },
                 {
                     "description": "Reference field of D3",
@@ -119,7 +119,7 @@
                         "x": 51.27,
                         "y": 6.94
                     },
-                    "uuid": "b210d084-507d-4f35-96e2-b0278a15c03e"
+                    "uuid": "800de96b-f78c-458d-a9ca-727783405c18"
                 }
             ],
             "severity": "warning",
@@ -128,21 +128,21 @@
         {
             "description": "Silkscreen clearance",
             "items": [
+                {
+                    "description": "PCB text 'EMIT [  ]  RECV [  ]' on F.Silkscreen",
+                    "pos": {
+                        "x": 46.0,
+                        "y": 8.0
+                    },
+                    "uuid": "33708085-3f5b-4bf9-8aad-d85d31cb978d"
+                },
                 {
                     "description": "Circle of D3 on F.Silkscreen",
                     "pos": {
                         "x": 51.27,
                         "y": 10.9
                     },
-                    "uuid": "65cb9447-eb8b-4b4a-a955-39cb8e94bf9c"
-                },
-                {
-                    "description": "PCB text 'EMIT [  ]  RECV [  ]' on F.Silkscreen",
-                    "pos": {
-                        "x": 46.0,
-                        "y": 8.0
-                    },
-                    "uuid": "82b2e113-41bb-4104-baeb-7f41b9a8db3a"
+                    "uuid": "56beb9e3-9005-488b-a4fa-046e261543c2"
                 }
             ],
             "severity": "warning",
@@ -152,20 +152,20 @@
             "description": "Silkscreen clearance",
             "items": [
                 {
-                    "description": "Reference field of D3",
-                    "pos": {
-                        "x": 51.27,
-                        "y": 6.94
-                    },
-                    "uuid": "b210d084-507d-4f35-96e2-b0278a15c03e"
-                },
-                {
                     "description": "Arc of Q3 on F.Silkscreen",
                     "pos": {
                         "x": 51.27,
                         "y": 4.8
                     },
-                    "uuid": "f50dd19c-70d3-44e5-abe4-de18db88e4db"
+                    "uuid": "3e4c86eb-090d-4602-92ca-72b8822389b5"
+                },
+                {
+                    "description": "Reference field of D3",
+                    "pos": {
+                        "x": 51.27,
+                        "y": 6.94
+                    },
+                    "uuid": "800de96b-f78c-458d-a9ca-727783405c18"
                 }
             ],
             "severity": "warning",
@@ -175,20 +175,43 @@
             "description": "Silkscreen clearance",
             "items": [
                 {
-                    "description": "Reference field of D3",
-                    "pos": {
-                        "x": 51.27,
-                        "y": 6.94
-                    },
-                    "uuid": "b210d084-507d-4f35-96e2-b0278a15c03e"
-                },
-                {
                     "description": "Arc of Q3 on F.Silkscreen",
                     "pos": {
                         "x": 51.27,
                         "y": 4.8
                     },
-                    "uuid": "d519d08e-2728-4bf3-a693-e263fb62606b"
+                    "uuid": "2770975c-5619-4e15-85e5-3a16b77fc623"
+                },
+                {
+                    "description": "Reference field of D3",
+                    "pos": {
+                        "x": 51.27,
+                        "y": 6.94
+                    },
+                    "uuid": "800de96b-f78c-458d-a9ca-727783405c18"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance",
+            "items": [
+                {
+                    "description": "Reference field of D5",
+                    "pos": {
+                        "x": 131.27,
+                        "y": 6.94
+                    },
+                    "uuid": "60291945-142c-4daf-8b9f-b862f6d35265"
+                },
+                {
+                    "description": "Arc of Q5 on F.Silkscreen",
+                    "pos": {
+                        "x": 131.27,
+                        "y": 4.8
+                    },
+                    "uuid": "89c06b42-bb10-424a-ac09-5d02300c2cf2"
                 }
             ],
             "severity": "warning",
@@ -203,7 +226,7 @@
                         "x": 131.27,
                         "y": 4.8
                     },
-                    "uuid": "71536c73-6b31-4774-9660-1ea5a8f27c37"
+                    "uuid": "409c800a-c3e1-4ead-8e88-86827c3d6804"
                 },
                 {
                     "description": "Reference field of D5",
@@ -211,30 +234,7 @@
                         "x": 131.27,
                         "y": 6.94
                     },
-                    "uuid": "cbbf177b-350c-446a-9fd5-fcb793c30244"
-                }
-            ],
-            "severity": "warning",
-            "type": "silk_overlap"
-        },
-        {
-            "description": "Silkscreen clearance",
-            "items": [
-                {
-                    "description": "Arc of Q5 on F.Silkscreen",
-                    "pos": {
-                        "x": 131.27,
-                        "y": 4.8
-                    },
-                    "uuid": "61db8e29-3fcd-4c21-b236-7004416ad36e"
-                },
-                {
-                    "description": "Reference field of D5",
-                    "pos": {
-                        "x": 131.27,
-                        "y": 6.94
-                    },
-                    "uuid": "cbbf177b-350c-446a-9fd5-fcb793c30244"
+                    "uuid": "60291945-142c-4daf-8b9f-b862f6d35265"
                 }
             ],
             "severity": "warning",
@@ -249,7 +249,7 @@
                         "x": 74.5,
                         "y": 8.199999
                     },
-                    "uuid": "3fa1872a-0840-415b-b7c4-bd4c48f98bfb"
+                    "uuid": "1ecbeb2c-95d3-4fd5-b0d2-b15fc61e0e56"
                 },
                 {
                     "description": "Arc of D4 on F.Silkscreen",
@@ -257,7 +257,7 @@
                         "x": 76.27,
                         "y": 10.9
                     },
-                    "uuid": "b8c8d88b-29d2-4abf-a14a-b75f3ffe2d90"
+                    "uuid": "672ddff0-275d-4db5-baaa-1090d39f89ce"
                 }
             ],
             "severity": "warning",
@@ -272,7 +272,7 @@
                         "x": 74.5,
                         "y": 8.199999
                     },
-                    "uuid": "3fa1872a-0840-415b-b7c4-bd4c48f98bfb"
+                    "uuid": "1ecbeb2c-95d3-4fd5-b0d2-b15fc61e0e56"
                 },
                 {
                     "description": "Circle of D4 on F.Silkscreen",
@@ -280,7 +280,7 @@
                         "x": 76.27,
                         "y": 10.9
                     },
-                    "uuid": "8ac8933f-8802-4f4e-b596-1e1edd4d92e2"
+                    "uuid": "4105a3e8-6be9-446d-89bb-593e9d106205"
                 }
             ],
             "severity": "warning",
@@ -290,20 +290,20 @@
             "description": "Silkscreen clearance",
             "items": [
                 {
-                    "description": "Reference field of D4",
-                    "pos": {
-                        "x": 76.27,
-                        "y": 6.94
-                    },
-                    "uuid": "a76ade70-d30c-4794-9f58-fd0599f1c796"
-                },
-                {
                     "description": "Arc of Q4 on F.Silkscreen",
                     "pos": {
                         "x": 76.27,
                         "y": 4.8
                     },
-                    "uuid": "ce97c91b-8c34-4081-905e-955de370b0f9"
+                    "uuid": "4f83c25b-285f-42e2-b204-5e1f709bf301"
+                },
+                {
+                    "description": "Reference field of D4",
+                    "pos": {
+                        "x": 76.27,
+                        "y": 6.94
+                    },
+                    "uuid": "92941397-d160-4b75-a16c-79a6507a41d3"
                 }
             ],
             "severity": "warning",
@@ -313,20 +313,43 @@
             "description": "Silkscreen clearance",
             "items": [
                 {
-                    "description": "Reference field of D4",
-                    "pos": {
-                        "x": 76.27,
-                        "y": 6.94
-                    },
-                    "uuid": "a76ade70-d30c-4794-9f58-fd0599f1c796"
-                },
-                {
                     "description": "Arc of Q4 on F.Silkscreen",
                     "pos": {
                         "x": 76.27,
                         "y": 4.8
                     },
-                    "uuid": "c61a63fb-f9e8-4ba9-8c1d-dca0e2e4ae4f"
+                    "uuid": "239829ce-e026-40f0-ad1a-5e6cd386cfc9"
+                },
+                {
+                    "description": "Reference field of D4",
+                    "pos": {
+                        "x": 76.27,
+                        "y": 6.94
+                    },
+                    "uuid": "92941397-d160-4b75-a16c-79a6507a41d3"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance",
+            "items": [
+                {
+                    "description": "Reference field of D2",
+                    "pos": {
+                        "x": 31.27,
+                        "y": 6.94
+                    },
+                    "uuid": "b0d2d070-49e5-4723-b70c-f6e86557d5fd"
+                },
+                {
+                    "description": "Arc of Q2 on F.Silkscreen",
+                    "pos": {
+                        "x": 31.27,
+                        "y": 4.8
+                    },
+                    "uuid": "fe0b395c-f179-4f74-9338-1ecff9e92e97"
                 }
             ],
             "severity": "warning",
@@ -341,7 +364,7 @@
                         "x": 11.27,
                         "y": 4.8
                     },
-                    "uuid": "39ccf13e-02c7-4187-8eae-64d1590c3d6c"
+                    "uuid": "50b0b9b5-b0d5-4948-885f-686266d3bcbb"
                 },
                 {
                     "description": "Reference field of D1",
@@ -349,7 +372,7 @@
                         "x": 11.27,
                         "y": 6.94
                     },
-                    "uuid": "9bbc91e2-530c-4423-b03d-2a6c79e227ae"
+                    "uuid": "e03cf65c-5035-4e8a-9744-55315d80fff5"
                 }
             ],
             "severity": "warning",
@@ -364,7 +387,7 @@
                         "x": 31.27,
                         "y": 6.94
                     },
-                    "uuid": "22288a76-975f-4e79-9ac3-4962fd460578"
+                    "uuid": "b0d2d070-49e5-4723-b70c-f6e86557d5fd"
                 },
                 {
                     "description": "Arc of Q2 on F.Silkscreen",
@@ -372,30 +395,7 @@
                         "x": 31.27,
                         "y": 4.8
                     },
-                    "uuid": "f6d5451a-9b32-449e-8055-2818f0dc0290"
-                }
-            ],
-            "severity": "warning",
-            "type": "silk_overlap"
-        },
-        {
-            "description": "Silkscreen clearance",
-            "items": [
-                {
-                    "description": "Reference field of D2",
-                    "pos": {
-                        "x": 31.27,
-                        "y": 6.94
-                    },
-                    "uuid": "22288a76-975f-4e79-9ac3-4962fd460578"
-                },
-                {
-                    "description": "Arc of Q2 on F.Silkscreen",
-                    "pos": {
-                        "x": 31.27,
-                        "y": 4.8
-                    },
-                    "uuid": "7a2175b7-95e8-46d3-b273-e645da9c0d07"
+                    "uuid": "eaaf0b81-49c3-46f6-9716-70af5100f1d5"
                 }
             ],
             "severity": "warning",
@@ -410,7 +410,7 @@
                         "x": 196.43,
                         "y": 10.52
                     },
-                    "uuid": "7c00c3fe-a3f1-4319-abbd-0f789b91e749"
+                    "uuid": "289bd5f1-e3b9-4b8f-ae27-a0ed26f0c9ca"
                 },
                 {
                     "description": "PCB text 'z=+120' on F.Silkscreen",
@@ -418,30 +418,7 @@
                         "x": 194.5,
                         "y": 7.4
                     },
-                    "uuid": "c78baf95-2edc-42e8-85ed-dbe566c57744"
-                }
-            ],
-            "severity": "warning",
-            "type": "silk_overlap"
-        },
-        {
-            "description": "Silkscreen clearance",
-            "items": [
-                {
-                    "description": "Reference field of D6",
-                    "pos": {
-                        "x": 191.27,
-                        "y": 6.94
-                    },
-                    "uuid": "ab125093-0250-4f13-98f9-a04f7c5dc1f0"
-                },
-                {
-                    "description": "PCB text 'z=+120' on F.Silkscreen",
-                    "pos": {
-                        "x": 194.5,
-                        "y": 7.4
-                    },
-                    "uuid": "c78baf95-2edc-42e8-85ed-dbe566c57744"
+                    "uuid": "643e45e8-26c1-485a-a447-b6a60d54ccf3"
                 }
             ],
             "severity": "warning",
@@ -456,7 +433,7 @@
                         "x": 194.5,
                         "y": 7.4
                     },
-                    "uuid": "c78baf95-2edc-42e8-85ed-dbe566c57744"
+                    "uuid": "643e45e8-26c1-485a-a447-b6a60d54ccf3"
                 },
                 {
                     "description": "Segment of J1 on F.Silkscreen",
@@ -464,7 +441,7 @@
                         "x": 195.13,
                         "y": 11.83
                     },
-                    "uuid": "ec3e4db8-3197-41d8-87eb-7c2d7c2a4c12"
+                    "uuid": "f2adee6a-6a3c-4f67-b78e-753ec456d306"
                 }
             ],
             "severity": "warning",
@@ -479,7 +456,30 @@
                         "x": 191.27,
                         "y": 6.94
                     },
-                    "uuid": "ab125093-0250-4f13-98f9-a04f7c5dc1f0"
+                    "uuid": "3d7dd735-0ab8-4cc3-bf17-d960f5ecbf08"
+                },
+                {
+                    "description": "PCB text 'z=+120' on F.Silkscreen",
+                    "pos": {
+                        "x": 194.5,
+                        "y": 7.4
+                    },
+                    "uuid": "643e45e8-26c1-485a-a447-b6a60d54ccf3"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance",
+            "items": [
+                {
+                    "description": "Reference field of D6",
+                    "pos": {
+                        "x": 191.27,
+                        "y": 6.94
+                    },
+                    "uuid": "3d7dd735-0ab8-4cc3-bf17-d960f5ecbf08"
                 },
                 {
                     "description": "Arc of Q6 on F.Silkscreen",
@@ -487,7 +487,7 @@
                         "x": 191.27,
                         "y": 4.8
                     },
-                    "uuid": "ca8c9709-24dd-4d0e-aed1-eff4f3551381"
+                    "uuid": "c96022d7-d070-4eaa-88d0-9668332ecd43"
                 }
             ],
             "severity": "warning",

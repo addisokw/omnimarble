@@ -63,11 +63,19 @@ def main():
 
     for i in range(6):
         x = 40 + i * 35
-        # EMIT: +5V -> R -> LED -> GND
+        # EMIT: +5V -> R -> LED -> GND.  R = 150ohm = C22808 (0603WAF1500T5E,
+        # JLC basic). NOT C22843 -- that is 0603WAF1501T5E = 1.5k (would run the
+        # IR LEDs at ~2.5mA instead of ~24mA and collapse the break-beam margin).
         s.add_symbol("Device:R", f"R{i+1}", LED_R_VALUE, (x, 100),
-                     footprint=FP_R, lcsc="C22843",
+                     footprint=FP_R, lcsc="C22808",
                      nets={"1": "+5V", "2": f"LEDA{i+1}"},
                      extra_fields={"Variant": "EMIT"})
+        # LED/phototransistor polarity is by the footprint FLAT marking (pad1 =
+        # flat-marked side): D pad1(cathode-flat)->GND, anode->LEDA; Q pad1(flat=
+        # collector)->SIG, emitter->GND. The Everlight parts number pin1 as
+        # anode/emitter (opposite KiCad's Device:LED/Q convention), so JLC must
+        # orient FLAT-TO-FLAT -- confirm in the assembly preview. Do NOT "fix"
+        # this by swapping the nets: that reverses a correct board.
         s.add_symbol("Device:LED", f"D{i+1}", "IR333C-A", (x, 130),
                      footprint=FP_LED5, lcsc=PARTS["ir_led"]["lcsc"],
                      nets={"2": f"LEDA{i+1}", "1": "GND"},

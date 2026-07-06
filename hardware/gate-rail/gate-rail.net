@@ -2,7 +2,7 @@
 	(version "E")
 	(design
 		(source "C:\\Users\\kaddi\\Documents\\Projects\\omnimarble\\hardware\\gate-rail\\gate-rail.kicad_sch")
-		(date "2026-07-06T14:00:32")
+		(date "2026-07-06T14:46:13")
 		(tool "Eeschema 10.0.4")
 		(sheet
 			(number "1")
@@ -105,7 +105,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "ba82bc14-c180-49d9-9c22-9e858b8951cc")
+			(tstamps "19e79b50-e642-4dca-814b-947f7307a586")
 			(units
 				(unit
 					(name "A")
@@ -171,7 +171,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "15e35ea7-74e6-4932-adb9-f04253203e83")
+			(tstamps "dd67c2b4-4861-4056-a2d5-d0f785094a37")
 			(units
 				(unit
 					(name "A")
@@ -237,7 +237,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "e2b33594-45d4-4b40-9dfd-efc21c0fbf1a")
+			(tstamps "e013fc2d-73c9-49f9-b7a7-4c04fecd2edf")
 			(units
 				(unit
 					(name "A")
@@ -303,7 +303,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "ff826779-a2bd-4160-bb44-b780a0a429ba")
+			(tstamps "98cf414d-47ed-4c3d-974c-ee65c05e5972")
 			(units
 				(unit
 					(name "A")
@@ -369,7 +369,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "f2672de6-1094-4aff-92b1-2ff5845ccd1d")
+			(tstamps "71a55420-5d1b-4712-bbf6-07a838c93a17")
 			(units
 				(unit
 					(name "A")
@@ -435,7 +435,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "c1b1487f-be6d-4821-a7f2-161ac6af85d3")
+			(tstamps "35645fce-1047-4ee4-9d22-f557c6d88be2")
 			(units
 				(unit
 					(name "A")
@@ -501,7 +501,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "c63a111c-f2e6-4f50-a399-4175c0ee8e36")
+			(tstamps "97a5b666-75d5-494c-95a4-65b21c97e33c")
 			(units
 				(unit
 					(name "A")
@@ -587,7 +587,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "75b86540-868a-4009-998c-bc28713711ae")
+			(tstamps "34817e96-0dd5-4bd2-bcae-4639ed13137c")
 			(units
 				(unit
 					(name "A")
@@ -649,7 +649,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "cbd4f3f2-2443-4202-93e9-8ec1fc88b75f")
+			(tstamps "06a9cc63-3da3-49a4-9449-1bf64ec08f06")
 			(units
 				(unit
 					(name "A")
@@ -711,7 +711,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "14eae14d-ac40-4fae-a71f-eaacdae46e90")
+			(tstamps "d21981ae-f5ca-4c9e-94bb-0e1d0b40e984")
 			(units
 				(unit
 					(name "A")
@@ -773,7 +773,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "9cc8167c-fabc-49b2-a547-4806f2713433")
+			(tstamps "a0c16795-47d8-4531-80cb-2a5436582555")
 			(units
 				(unit
 					(name "A")
@@ -835,7 +835,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "8b0cc305-c57d-4224-b3f0-b056ddc2a498")
+			(tstamps "e1a91f6c-171b-466f-8366-84a2b53a9a8f")
 			(units
 				(unit
 					(name "A")
@@ -897,7 +897,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "4d0a747c-aa4c-4d15-a52a-0effcca01993")
+			(tstamps "86a92059-e90b-4400-84a7-0823fdade6d8")
 			(units
 				(unit
 					(name "A")
@@ -918,7 +918,7 @@
 			(footprint "Resistor_SMD:R_0603_1608Metric")
 			(fields
 				(field
-					(name "LCSC") "C22843")
+					(name "LCSC") "C22808")
 				(field
 					(name "Variant") "EMIT")
 				(field
@@ -937,7 +937,7 @@
 			)
 			(property
 				(name "LCSC")
-				(value "C22843")
+				(value "C22808")
 			)
 			(property
 				(name "Variant")
@@ -963,7 +963,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "4139c189-a467-408f-a07f-abcd3fa2f430")
+			(tstamps "e02e8036-6c27-4c2a-b484-81f601c1f835")
 			(units
 				(unit
 					(name "A")
@@ -984,7 +984,7 @@
 			(footprint "Resistor_SMD:R_0603_1608Metric")
 			(fields
 				(field
-					(name "LCSC") "C22843")
+					(name "LCSC") "C22808")
 				(field
 					(name "Variant") "EMIT")
 				(field
@@ -1003,7 +1003,7 @@
 			)
 			(property
 				(name "LCSC")
-				(value "C22843")
+				(value "C22808")
 			)
 			(property
 				(name "Variant")
@@ -1029,7 +1029,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "5fe53a83-0475-4766-a92b-b20db1f9c201")
+			(tstamps "ecbd8381-213d-4ccf-b0b4-eedb3e375300")
 			(units
 				(unit
 					(name "A")
@@ -1050,7 +1050,7 @@
 			(footprint "Resistor_SMD:R_0603_1608Metric")
 			(fields
 				(field
-					(name "LCSC") "C22843")
+					(name "LCSC") "C22808")
 				(field
 					(name "Variant") "EMIT")
 				(field
@@ -1069,7 +1069,7 @@
 			)
 			(property
 				(name "LCSC")
-				(value "C22843")
+				(value "C22808")
 			)
 			(property
 				(name "Variant")
@@ -1095,7 +1095,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "3b9cb67e-0101-4cde-a462-1c6d09cb51e4")
+			(tstamps "46321322-5fe5-4d9c-a1b0-afd4d11cca4c")
 			(units
 				(unit
 					(name "A")
@@ -1116,7 +1116,7 @@
 			(footprint "Resistor_SMD:R_0603_1608Metric")
 			(fields
 				(field
-					(name "LCSC") "C22843")
+					(name "LCSC") "C22808")
 				(field
 					(name "Variant") "EMIT")
 				(field
@@ -1135,7 +1135,7 @@
 			)
 			(property
 				(name "LCSC")
-				(value "C22843")
+				(value "C22808")
 			)
 			(property
 				(name "Variant")
@@ -1161,7 +1161,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "f0fbe5b4-5040-4a47-812e-48a45a1314b5")
+			(tstamps "2599dfa5-255f-4594-925f-4252064933d6")
 			(units
 				(unit
 					(name "A")
@@ -1182,7 +1182,7 @@
 			(footprint "Resistor_SMD:R_0603_1608Metric")
 			(fields
 				(field
-					(name "LCSC") "C22843")
+					(name "LCSC") "C22808")
 				(field
 					(name "Variant") "EMIT")
 				(field
@@ -1201,7 +1201,7 @@
 			)
 			(property
 				(name "LCSC")
-				(value "C22843")
+				(value "C22808")
 			)
 			(property
 				(name "Variant")
@@ -1227,7 +1227,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "d145d3f2-4860-46e3-b349-e8c46102bda1")
+			(tstamps "d208b9a9-f25d-4c78-8b49-71fc1e64dccf")
 			(units
 				(unit
 					(name "A")
@@ -1248,7 +1248,7 @@
 			(footprint "Resistor_SMD:R_0603_1608Metric")
 			(fields
 				(field
-					(name "LCSC") "C22843")
+					(name "LCSC") "C22808")
 				(field
 					(name "Variant") "EMIT")
 				(field
@@ -1267,7 +1267,7 @@
 			)
 			(property
 				(name "LCSC")
-				(value "C22843")
+				(value "C22808")
 			)
 			(property
 				(name "Variant")
@@ -1293,7 +1293,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "ad0ebf0a-4686-4898-8482-fbc131814fb4")
+			(tstamps "4061d29a-325b-4fb3-9a53-276256c5dc4b")
 			(units
 				(unit
 					(name "A")
@@ -1350,7 +1350,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "0a71e6e3-62fc-4e36-83f1-9e026d46944f")
+			(tstamps "05ff8fc3-dc6a-4352-b43a-b1c9ef469081")
 			(units
 				(unit
 					(name "A")

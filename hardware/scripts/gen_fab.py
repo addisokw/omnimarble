@@ -290,8 +290,17 @@ of each, plugged into the driver's J6 (RAIL-EMIT) / J7 (RAIL-RECV) headers).
    Q1–6 (PT204-6B) + J1. D and Q share each station; only one is fitted per build.
 4. **Silk marks the built variant** — check the `EMIT [ ] RECV [ ]` box on each
    board so populated boards are distinguishable at assembly.
-5. **Verify rotations in JLC's preview** (the IDC header and the polarised LEDs /
-   phototransistors), and let JLC's DFM be the final arbiter.
+5. **🔴 CONFIRM OPTO POLARITY IN THE ASSEMBLY PREVIEW (mandatory gate).** The
+   Everlight IR333C-A and PT204-6B number pin 1 as anode / emitter — *opposite*
+   KiCad's generic `Device:LED` / `Q_Photo` convention. The board is wired
+   correctly for **flat-to-flat** insertion (footprint pad 1 = flat-marked side:
+   D cathode→GND, anode→LEDA; Q collector→SIG, emitter→GND), so JLC's polarity
+   orientation places them right — **but verify it in the preview before paying**:
+   each D's flat/cathode faces GND (away from its resistor), each Q's flat/collector
+   faces its SIG trace. If the preview shows them reversed, rotate 180° in JLC's
+   editor. (Do not have the *generator* swap the nets — that reverses a correct board.)
+6. **Verify rotations in JLC's preview** (the IDC header especially), and let JLC's
+   DFM be the final arbiter.
 
 ## EMIT variant — machine-placed — {e_npl} parts, {e_cpl} placements
 | Ref | Value | LCSC (package) | Type |

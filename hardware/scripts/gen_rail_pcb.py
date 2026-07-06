@@ -10,7 +10,7 @@ courtyard cannot fit between stations). EMIT parts (R + 5mm IR LED) and
 the RECV phototransistor are alternate-populate; silkscreen checkboxes
 mark the built variant.
 
-Deterministic, planar, via-free signal wiring (2 vias total, both +5V):
+Deterministic, planar, near-via-free signal wiring (2 vias: +5V bus, SIG_SPARE):
   B.Cu  GND zone; SIG_SPARE runs J1.9 -> TP1 at y=0.8; +5V riser J1.1
   F.Cu  +5V bus y=13.4; LED feeds y=11.4; SIG lanes y=1.0..3.5 with depth
         nested by station (west shallower) so every drop meets its own

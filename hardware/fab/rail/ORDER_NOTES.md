@@ -33,8 +33,17 @@ of each, plugged into the driver's J6 (RAIL-EMIT) / J7 (RAIL-RECV) headers).
    Q1–6 (PT204-6B) + J1. D and Q share each station; only one is fitted per build.
 4. **Silk marks the built variant** — check the `EMIT [ ] RECV [ ]` box on each
    board so populated boards are distinguishable at assembly.
-5. **Verify rotations in JLC's preview** (the IDC header and the polarised LEDs /
-   phototransistors), and let JLC's DFM be the final arbiter.
+5. **🔴 CONFIRM OPTO POLARITY IN THE ASSEMBLY PREVIEW (mandatory gate).** The
+   Everlight IR333C-A and PT204-6B number pin 1 as anode / emitter — *opposite*
+   KiCad's generic `Device:LED` / `Q_Photo` convention. The board is wired
+   correctly for **flat-to-flat** insertion (footprint pad 1 = flat-marked side:
+   D cathode→GND, anode→LEDA; Q collector→SIG, emitter→GND), so JLC's polarity
+   orientation places them right — **but verify it in the preview before paying**:
+   each D's flat/cathode faces GND (away from its resistor), each Q's flat/collector
+   faces its SIG trace. If the preview shows them reversed, rotate 180° in JLC's
+   editor. (Do not have the *generator* swap the nets — that reverses a correct board.)
+6. **Verify rotations in JLC's preview** (the IDC header especially), and let JLC's
+   DFM be the final arbiter.
 
 ## EMIT variant — machine-placed — 13 parts, 13 placements
 | Ref | Value | LCSC (package) | Type |
@@ -46,12 +55,12 @@ of each, plugged into the driver's J6 (RAIL-EMIT) / J7 (RAIL-RECV) headers).
 | D5 | IR333C-A | C5130 (LED_D5.0mm) | THT |
 | D6 | IR333C-A | C5130 (LED_D5.0mm) | THT |
 | J1 | RAIL-IDC | C5665 (IDC-Header_2x05_P2.54mm_Vertical) | THT |
-| R1 | 150 | C22843 (R_0603_1608Metric) | SMD |
-| R2 | 150 | C22843 (R_0603_1608Metric) | SMD |
-| R3 | 150 | C22843 (R_0603_1608Metric) | SMD |
-| R4 | 150 | C22843 (R_0603_1608Metric) | SMD |
-| R5 | 150 | C22843 (R_0603_1608Metric) | SMD |
-| R6 | 150 | C22843 (R_0603_1608Metric) | SMD |
+| R1 | 150 | C22808 (R_0603_1608Metric) | SMD |
+| R2 | 150 | C22808 (R_0603_1608Metric) | SMD |
+| R3 | 150 | C22808 (R_0603_1608Metric) | SMD |
+| R4 | 150 | C22808 (R_0603_1608Metric) | SMD |
+| R5 | 150 | C22808 (R_0603_1608Metric) | SMD |
+| R6 | 150 | C22808 (R_0603_1608Metric) | SMD |
 
 ## RECV variant — machine-placed — 7 parts, 7 placements
 | Ref | Value | LCSC (package) | Type |

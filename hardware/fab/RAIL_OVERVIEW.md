@@ -6,9 +6,9 @@ measured launch can be compared against the PINN simulation. It is the companion
 to the driver board and plugs into the driver's J6 / J7 headers.
 
 ## What it is
-- **224 × 15 mm, 2-layer, 1 oz** copper. Low-current board (~132 mA on +5 V from
-  6 IR LEDs; sub-mA signal lines), so 1 oz is ample — no 2 oz/4-layer like the
-  driver. B.Cu is a solid GND pour; 2 vias total (both +5 V).
+- **224 × 15 mm, 2-layer, 1 oz** copper. Low-current board (~144 mA on +5 V from
+  6 IR LEDs at ~24 mA; sub-mA signal lines), so 1 oz is ample — no 2 oz/4-layer
+  like the driver. B.Cu is a solid GND pour; 2 vias (one +5 V, one SIG_SPARE→TP1).
 - **6 sensor stations** at z = **-60 / -40 / -20 / +5 / +60 / +120 mm** from the
   coil-center fiducial. Exact x-spacing is asserted to 0.01 mm at board generation
   (`gen_rail_pcb.py`), silk-labelled `z=±NN` per station.
@@ -28,10 +28,17 @@ A break-beam setup needs at least one EMIT board and one RECV board facing each
 other across the track.
 
 ## Connection to the driver
-`J1` (IDC-10) pinout — matches the driver's **J6 (RAIL-EMIT)** and **J7 (RAIL-RECV)**:
+`J1` (IDC-10) pinout:
 ```
 1=+5V  2=GND  3..8=SIG1..6  9=SIG_SPARE  10=GND
 ```
+This matches driver **J7 (RAIL-RECV) pin-for-pin** — J7 carries +5 V/GND *and* the
+six SIG lines to the front-end. Driver **J6 (RAIL-EMIT)** is **power-only**
+(alternating +5 V/GND on all 10 pins); the EMIT rail only uses J1.1/J1.2/J1.10,
+and its SIG traces dead-end at the unpopulated Q pads, so J6 works for EMIT.
+**Cables are not interchangeable: never plug a RECV board into J6** (its
+phototransistor collectors would sit across +5 V/GND — non-damaging but no sense
+data). Label the ribbons; the silk EMIT/RECV checkbox helps.
 
 ## How it is generated (fully scripted, deterministic, no autorouter)
 1. `gen_gate_rail.py` → schematic (`gate-rail.kicad_sch`) + `.kicad_pro`
