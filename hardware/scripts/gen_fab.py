@@ -31,6 +31,7 @@ PCB = HW / "omnimarble-driver" / "omnimarble-driver.kicad_pcb"
 DRC = HW / "fab" / "drc_driver.json"
 OUT = HW / "fab" / "jlc"
 GERB = OUT / "gerbers"
+BOARD_REV = "r1"          # stable design revision (first spin); stamped into the gbrjob
 KICLI = r"C:\Program Files\KiCad\10.0\bin\kicad-cli.exe"
 
 # footprint libs that are hand-soldered / not JLC-placed (mirror of validate.py)
@@ -237,6 +238,11 @@ def main():
         for layer in j.get("MaterialStackup", []):
             if layer.get("Type") == "Copper" and layer.get("Name") in th:
                 layer["Thickness"] = th[layer["Name"]]
+        # stamp a stable design revision (KiCad leaves "rev?" when the board
+        # title-block rev is unset). BOARD_REV is the single source of truth so
+        # the gerber, docs and README agree on one identifier (the git hash
+        # inevitably lags, since committing the stamp changes the hash).
+        j.setdefault("GeneralSpecs", {}).setdefault("ProjectId", {})["Revision"] = BOARD_REV
         job.write_text(json.dumps(j, indent=4), encoding="utf-8")
     run_cli("pcb", "export", "drill", "--format", "excellon",
             "--excellon-units", "mm", "--drill-origin", "absolute",
