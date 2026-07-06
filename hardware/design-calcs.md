@@ -57,7 +57,7 @@ Baseline population: **4400uF** (2x 2200uF snap-in).
 
 - VBOOST = 2.5 + RT*(2.5/RB - (VSET-2.5)/RJ) with RT/RB/RJ = 100k / 10k / 9.1k
 - PWM=0 (fail state) -> 55.0V; PWM=100% -> 18.7V (< 24.5V floor, idle)
-- Ladder: operating 55V < OVP 59.1..62.0V (CJ431 +/-0.5% + 1% divider) < capacitor rating 63V
+- Ladder: operating 55V < OVP 59.1..62.0V (TL431B +/-0.5% + 1% divider) < capacitor rating 63V
 - Boost enable is fail-safe INHIBITED (pull-up holds COMP low; MCU must drive BOOST_EN_N low to charge)
 - Relay sequencing: charge relay closes only after precharge equalization, opens only with boost inhibited; dump relay switches <=0.6A resistive.
 

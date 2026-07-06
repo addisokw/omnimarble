@@ -97,9 +97,12 @@ DIVIDER = {"top": 100_000.0, "bottom": 5_100.0}   # V_bank sense (E24/JLC-basic 
 BOOST_FB = {"rt": 100_000.0, "rb": 10_000.0, "rj": 9_100.0, "vref": 2.5}
 BOOST_FLOOR_V = 24.5     # boost cannot regulate below Vin
 
-# Hardware OVP: CJ431 (2.495V +/-0.5%) + 1% divider pulls UC3843 COMP low
+# Hardware OVP: TL431B (2.495V +/-0.5%) + 1% divider pulls UC3843 COMP low.
+# NOTE: the TL431 cathode sits on COMP and can only clamp it to ~2-2.5V, which
+# throttles but does not fully stop the boost (COMP<1.4V needed for zero duty);
+# the MCU inhibit (Q1) is the authoritative cut. See OVP-authority note below.
 OVP = {"top": 100_000.0, "bottom": 4_300.0, "vref": 2.495,
-       "r_tol": 0.01, "ref_tol": 0.005}  # CJ431 is +/-0.5%
+       "r_tol": 0.01, "ref_tol": 0.005}  # TL431BIDBZR is +/-0.5%
 
 # Relays (Hongfa HF3FF/012-1ZS): contact 15A/125VAC, ~10A/28VDC class.
 # DC switching at bank voltage is managed by SEQUENCING, not contact
@@ -467,7 +470,7 @@ def main():
            f"{BOOST_FB['rt']/1e3:.0f}k / {BOOST_FB['rb']/1e3:.0f}k / {BOOST_FB['rj']/1e3:.1f}k",
            f"- PWM=0 (fail state) -> {vboost(0.0):.1f}V; PWM=100% -> {vboost(3.3):.1f}V (< {BOOST_FLOOR_V}V floor, idle)",
            f"- Ladder: operating {V_BANK_MAX:.0f}V < OVP {trip_lo:.1f}..{trip_hi:.1f}V "
-           f"(CJ431 +/-0.5% + 1% divider) < capacitor rating {V_BANK_ABS:.0f}V",
+           f"(TL431B +/-0.5% + 1% divider) < capacitor rating {V_BANK_ABS:.0f}V",
            "- Boost enable is fail-safe INHIBITED (pull-up holds COMP low; MCU"
            " must drive BOOST_EN_N low to charge)",
            "- Relay sequencing: charge relay closes only after precharge"

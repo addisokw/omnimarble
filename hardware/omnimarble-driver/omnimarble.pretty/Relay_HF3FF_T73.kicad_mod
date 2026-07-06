@@ -80,7 +80,7 @@
 		(fill none)
 		(layer "F.CrtYd")
 	)
-	(fp_text user "14=NO 12=NC (datasheet is bottom-view; verify COM-NC @rest)"
+	(fp_text user "14=NO 12=NC ohm@rest"
 		(at 0 8.6)
 		(layer "F.SilkS")
 		(effects (font (size 0.7 0.7) (thickness 0.15)))

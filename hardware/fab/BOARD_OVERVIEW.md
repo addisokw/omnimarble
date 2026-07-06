@@ -30,7 +30,13 @@ assembly; controlled by an external Raspberry Pi Pico (or compatible) via header
 
 **Boost charger** (charges the cap bank)
 - U4 (UC3843B current-mode PWM) + Q91 (AOD66923 N-FET) + L2 → `VBOOST` → cap bank `VBANK`
-- Bank sense divider → U3 (MCP6002) buffers `VBANK_SENSE` / `V24_SENSE`; OVP reference U5 (CJ431)
+- Bank sense divider → U3 (MCP6002) buffers `VBANK_SENSE` / `V24_SENSE`; OVP reference U5 (TL431BIDBZR)
+  - **OVP authority caveat:** U5's cathode sits on the UC3843 COMP pin and can only clamp it to
+    ~2–2.5 V — it *throttles* the boost but cannot reach zero duty (needs COMP < 1.4 V), so the
+    analog OVP slows but does not fully stop a runaway in the divider-fault case. The **authoritative
+    over-voltage cut is firmware** (`VBANK_SENSE > threshold → BOOST_EN_N`, driving Q1 which saturates
+    COMP with full authority). Accepted for the first spin (see `ORDER_NOTES.md` bring-up item 2);
+    rev-2 gives the TL431 full authority via a PNP off BST_VREF onto COMP/Q1.
 
 **Cap bank & pulse stage** (the high-current path)
 - 5 bulk caps (2 radial + 3 screw-terminal), `VBANK` pours
@@ -76,13 +82,20 @@ router couldn't be trusted to keep. Run with KiCad 10's bundled Python:
   the ISNS **Kelvin ties** (RS1→NT1/NT2); the **U10 dogbone escape** (fine-pitch ADS7042,
   0.2mm stubs to open-space vias); the **SHUNT_HI B.Cu bus** (ties the 3 FET sources to the
   shunt — the F.Cu pour fragments and can't be trusted for that current path).
-- **ISNS_P/N are 0.15mm traces on purpose** — the Kelvin pair was coupled too tight by the
-  router; narrowing (not re-routing) grew the clearance while preserving matched length. 0.15mm
-  is **JLC's 2oz multilayer min trace/space**, and at 0.15mm the pair sits ~0.17mm apart. A scoped
-  rule in `.kicad_dru` (`isns_kelvin_pair`) allows the ISNS_P↔ISNS_N pair down to 0.15mm; their
-  clearance to every other net stays 0.2mm. `min_track_width` is 0.15mm. Single source of truth:
-  `NET_WIDTHS["ISNS_P/N"] = 0.15` in `placement.py` (`local_finish` narrows to it, `validate_widths`
-  checks it). **Do NOT claim 0.1mm / 0.089mm — that is a 1oz spec and is invalid on this 2oz board.**
+- **ISNS_P/N are 0.15mm traces** (JLC 2oz min trace/space). A scoped rule in `.kicad_dru`
+  (`isns_kelvin_pair`) allows the ISNS_P↔ISNS_N pair down to 0.15mm; clearance to every other net
+  stays 0.2mm. `min_track_width` is 0.15mm. Single source of truth: `NET_WIDTHS["ISNS_P/N"] = 0.15`
+  in `placement.py` (`local_finish` narrows to it, `validate_widths` checks it). **Do NOT claim
+  0.1mm / 0.089mm — that is a 1oz spec and invalid on this 2oz board.**
+- **⚠️ ISNS is NOT a tight matched pair after the re-route (first-spin limitation).** The router
+  put ISNS_P on B.Cu (~57mm, along y≈81.6) and ISNS_N on a different corridor (~102mm, F.Cu detour
+  east to x≈156 and back) — they never travel together, so the earlier "sits ~0.17mm apart, matched
+  length" description is obsolete. Effect: a differential pickup loop that adds ~5–10 A of transient
+  error on the **rising** edge of the pulse (peak/energy unaffected — see `ORDER_NOTES.md` bring-up
+  item 5). A clean local re-author isn't possible — the only corridor paralleling ISNS_P is ~0.7mm
+  wide (boxed by ISNS_P at x≈88.4 and ARM_SENSE at x≈89.1), so a proper pair needs a routing pass.
+  **Rev-2 fix:** author the full ISNS pair (taps→INA240) as *locked critical copper in preroute* so
+  the router routes everything else around it (same pattern as the SHUNT_HI bus / Kelvin ties).
 - **Never enable a differential-pair router on ISNS** — it hard-couples at ~0.02mm
   (unmanufacturable) every time. Route sense pairs as normal matched nets.
 - **Reference designators live on the F.Fab layer**, not silkscreen (dense board); LCSC part
