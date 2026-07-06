@@ -10,10 +10,10 @@ boost_fet,AOS,AOD66923,C485687,ext,TO-252,1,100V 11mOhm boost switch,UMW 15N10 (
 boost_diode,MDD,SS510,C65010,ext,SMA,1,"100V 5A Schottky, boost rectifier","SS510B (C7420368, SMB, preferred-class)"
 boost_ind,YJYCOIN,YSPI1365-470M,C497913,ext,1265,1,47uH 5A/7Asat shielded power inductor,APH1265T470M (C5349639)
 relay,Hongfa,HF3FF/012-1ZS,C399561,ext-tht,THT relay,2,"12V coil SPDT 15A (charge + dump), NO contact used","HF115F/012-1HS3 (C61377, 16A, lower stock)"
-tl431,Changjing,CJ431,C3113,basic,SOT-23,1,"Shunt reference +/-0.5%, OVP trip 60.5V nom (59.1-62.0V band)","TI TL431AIDBZR (C23892, 1%)"
+tl431,TI,TL431BIDBZR,C41283,ext,SOT-23-3,1,"Shunt ref +/-0.5%, DBZ pinout (1=K,2=REF,3=A) -- matches the TL431DBZ footprint. OVP trip 60.5V nom (59.1-62.0V band). NOT CJ431/C3113 (that part is 1=REF,2=K,3=A -> OVP dead); NOT the 1% A-grade (would blow the 62.0V ceiling)","CD431 +/-0.5% (JSCJ, same 1=K,2=REF,3=A pinout)"
 buck5,Diodes,AP63205WU-7,C2071056,ext,TSOT-23-6,1,24V->5V/2A buck (logic + Pico VSYS + gate emitters),"TPS54331DR (C9865, preferred-class)"
-reg12,UMW,78L12(UMW),C347272,ext,SOT-89,1,"24V->12V linear, gate-driver + relay rail (<60mA)",CJ78L12 (C8615)
-tvs_in,HJC,SMBJ33A,C19077586,ext,SMB,1,24V input TVS,C173526 (higher stock)
+reg12,UMW,78L12(UMW),C347272,ext,SOT-89,1,"24V->12V linear, gate-driver + relay rail. THERMAL FOLLOW-UP: ~0.5-0.85W during charge is hot for SOT-89 -- upgrade to 78M12 TO-252/DPAK (Shikues C116325) in a dedicated re-place/re-route pass","78M12 TO-252 C116325 (thermal upgrade, needs re-route)"
+tvs_in,MDD,SMBJ26CA,C113996,ext,SMB,1,"24V input TVS, bidirectional (matches D_TVS symbol); 26V standoff clamps below SMBJ33A -- confirm vs AP63205 VIN abs-max",STMicro SMBJ26CA-TR (C133665)
 fuse_in,Littelfuse,0997005.WXN,C2680609,hand,MINI blade,1,5A input fuse (holder hand-installed; confirm PN at order),any 5A MINI blade
 pfet_rpp,AOS,AOD4185,C77317,ext,TO-252,1,-40V PFET reverse-polarity protection (confirm stock at order),"any 40V+ PFET, TO-252"
 jack24,XKB,DC-005-5A-2.0,C381116,ext-tht,DC barrel 5.5/2.1,1,"24V input jack (5A, 24V rated - input only)",5.08mm terminal WJ128V-5.0-2P (C8269)
@@ -31,7 +31,7 @@ jst_xh4,JST,B4B-XH-A(LF)(SN),C144395,ext-tht,JST-XH 4p,1,Spare ad-hoc sensor con
 r_precharge,VO,SQM5W-47R-5%,C5807995,ext-tht,cement THT,1,47R 5W precharge across charge-relay contacts,"TyOhm SMW 5W 47R (C2937346, SMD)"
 r_dump,CCO,CR-M10W100RJ,C216413,ext-tht,cement THT,2,100R 10W x2 in series = 200R/20W dump (5.3s to <5V),RX27-4V 20W from Digi-Key if single-part preferred
 r_bleed,UNI-ROYAL,25121WJ0682T4E,C26073,ext,2512 1W,1,"6.8k permanent bleed (0.44W cont, 2.2x margin). 1W is the 2512 land rating; 1.5W/2W 2512 are all 0-stock on LCSC","C340514 (RMC1-682JTE-M) or C42372225, both 6.8k 2512 1W in stock"
-r_boost_cs,Milliohm,HoLLR2512-3W-50mR-1%,C2994645,ext,2512 3W,1,50mOhm boost switch current sense,GX2512-2W-50mR-1% (C500723)
+r_boost_cs,Milliohm,HoJLR2512-3W-150mR-1%,C2903485,ext,2512 3W,1,"0.15ohm boost switch current sense (~6.7A limit; was 0.05ohm/20A, above realistic inductor saturation)",TA-I RLP25FEER150 (C459673)
 cap_boost_out,Honor,RVT1J101M1010,C28241,ext,SMD 10x10.2,2,100uF 63V boost output x2 (ripple: datasheet check at order),Lelon VE-101M1JTR-1010 (C249468)
 cap_bulk_35v,Lelon,VEJ101M1VTR-0607,C176666,ext,SMD 6.3x7.7,2,100uF 35V input bulk + armed-rail reservoir,
 ind_buck,Sunlord,SWPA6045S100MT,C79272,ext,6x6x4.5,1,"10uH Isat 3.5A, 5V buck output",SWPA5040S100MT (C84608)
