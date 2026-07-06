@@ -95,7 +95,9 @@ router couldn't be trusted to keep. Run with KiCad 10's bundled Python:
   item 5). A clean local re-author isn't possible — the only corridor paralleling ISNS_P is ~0.7mm
   wide (boxed by ISNS_P at x≈88.4 and ARM_SENSE at x≈89.1), so a proper pair needs a routing pass.
   **Rev-2 fix:** author the full ISNS pair (taps→INA240) as *locked critical copper in preroute* so
-  the router routes everything else around it (same pattern as the SHUNT_HI bus / Kelvin ties).
+  the router routes everything else around it (same pattern as the SHUNT_HI bus / Kelvin ties), and
+  **drop the now-moot `isns_kelvin_pair` scoped rule** from `.kicad_dru` — it describes the old
+  co-routed pair (min same-layer separation is now 0.65 mm at the INA240 pins) and no longer applies.
 - **Never enable a differential-pair router on ISNS** — it hard-couples at ~0.02mm
   (unmanufacturable) every time. Route sense pairs as normal matched nets.
 - **Reference designators live on the F.Fab layer**, not silkscreen (dense board); LCSC part

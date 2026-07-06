@@ -35,10 +35,10 @@ Summary: **159 machine-placed** parts, **8 hand-installed**,
    confirm J1 (barrel jack) and the polarised caps. Fix any flagged in JLC's
    online CPL editor before paying.
 4. **Let JLC's DFM be the final arbiter.** Inspect DFM warnings around **U10**
-   (fine-pitch ADS7042 escape), **U2**, the **ISNS_P/N Kelvin pair** (0.15 mm /
-   ~0.17 mm spacing — intentional, 2 oz min), and **J1** (barrel jack is now an
-   **edge-mount** — its body overhangs the bottom outline ~6 mm by design; pads are
-   on-board).
+   (fine-pitch ADS7042 escape), **U2**, the **ISNS_P/N traces** (0.15 mm width —
+   intentional, 2 oz min; note these are *not* a tight matched pair — see bring-up
+   item 5), and **J1** (barrel jack is now an **edge-mount** — its body overhangs
+   the bottom outline ~6 mm by design; pads are on-board).
 
 ## Machine-placed through-hole parts (need JLC THT assembly) — 12
 | Ref | Value | LCSC (package) |
