@@ -18,6 +18,7 @@ Run with KiCad 10's bundled python:
 """
 
 import csv
+import re
 import subprocess
 import sys
 import zipfile
@@ -27,6 +28,38 @@ from pathlib import Path
 from collections import defaultdict
 
 import pcbnew
+
+# JLCPCB CPL rotation corrections: KiCad's footprint orientation convention
+# differs from JLC's EasyEDA library for whole families, so the raw exported
+# rotation needs a per-footprint offset added. Table = the community
+# fabrication-toolkit transformations.csv (authoritative). Specific patterns
+# must precede general ones (first match wins). Footprints with no match pass
+# through unchanged — that deliberately covers connectors/relays/THT (JLC places
+# those by the hole pattern), whose rotation is verified in the JLC preview/DFM.
+JLC_ROT_CORRECTIONS = [
+    (r"^Bosch_LGA-", 90), (r"^CP_EIA-", 180), (r"^CP_Elec_", 180),
+    (r"^C_Elec_", 180), (r"^DFN-", 270), (r"^D_SOT-23", 180),
+    (r"^HTSSOP-", 270), (r"^JST_GH_SM", 180), (r"^JST_PH_S", 180),
+    (r"^LQFP-", 270), (r"^MSOP-", 270), (r"^PowerPAK_SO-8_Single", 270),
+    (r"^QFN-", 90), (r"^qfn-", 90), (r"^R_Array_Concave_", 90),
+    (r"^R_Array_Convex_", 90), (r"^SC-74-6", 180),
+    (r"^SOIC127P798X216-8N", -90), (r"^SOIC-", 270),
+    (r"^SOP-18_", 0), (r"^SOP-4_", 0), (r"^SOP-", 270),
+    (r"^SOT-143", 180), (r"^SOT-223", 180), (r"^SOT-23", 180),
+    (r"^SOT-353", 180), (r"^SOT-363", 180), (r"^SOT-89", 180),
+    (r"^SSOP-", 270), (r"^SW_SPST_B3", 90), (r"^TDSON-8-1", 270),
+    (r"^TO-277", 90), (r"^TQFP-", 270), (r"^TSOT-23", 180),
+    (r"^TSSOP-", 270), (r"^UDFN-10", 270), (r"^USON-10", 270),
+    (r"^VSON-8_", 270), (r"^VSSOP-10_", 270), (r"^VSSOP-8_", 270),
+]
+
+
+def jlc_rotation(fp_name, raw_rot):
+    """Apply the JLC rotation offset for a footprint; unmatched -> unchanged."""
+    for pat, deg in JLC_ROT_CORRECTIONS:
+        if re.match(pat, fp_name):
+            return round((raw_rot + deg) % 360, 4)
+    return round(raw_rot % 360, 4)
 
 HW = Path(__file__).resolve().parent.parent
 KICLI = r"C:\Program Files\KiCad\10.0\bin\kicad-cli.exe"
@@ -390,6 +423,7 @@ def main(cfg):
         m = re.match(r"([A-Za-z]+)(\d+)", r)
         return (m.group(1), int(m.group(2))) if m else (r, 0)
 
+    ref2fp = {ref: pkg for fp, ref, val, pkg, lcsc in placed}   # for JLC rotation
     summary = []
     for variant in (cfg.variants or (None,)):
         suffix = f"_{variant.lower()}" if variant else ""
@@ -422,7 +456,8 @@ def main(cfg):
                     continue
                 layer = "Top" if row["Side"].lower() in ("top", "front", "f") \
                     else "Bottom"
-                w.writerow([row["Ref"], row["PosX"], row["PosY"], layer, row["Rot"]])
+                rot = jlc_rotation(ref2fp.get(row["Ref"], ""), float(row["Rot"]))
+                w.writerow([row["Ref"], row["PosX"], row["PosY"], layer, rot])
                 n_cpl += 1
         summary.append((variant, len(bom_rows),
                         sum(len(v) for v in groups.values()), n_cpl, parts))

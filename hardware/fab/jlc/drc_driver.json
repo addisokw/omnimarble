@@ -1,7 +1,7 @@
 {
     "$schema": "https://schemas.kicad.org/drc.v1.json",
     "coordinate_units": "mm",
-    "date": "2026-07-06T13:31:03",
+    "date": "2026-07-06T15:56:20",
     "ignored_checks": [
         {
             "description": "Footprint has no courtyard defined",
@@ -42,76 +42,7 @@
                         "x": 220.0,
                         "y": 150.0
                     },
-                    "uuid": "971d0ecc-310c-4723-87f0-bfd09bd66d44"
-                },
-                {
-                    "description": "Segment of J6 on F.Silkscreen",
-                    "pos": {
-                        "x": 156.63,
-                        "y": 150.83
-                    },
-                    "uuid": "7f46d068-7045-4f7e-8ade-5367a7e10ef0"
-                }
-            ],
-            "severity": "warning",
-            "type": "silk_edge_clearance"
-        },
-        {
-            "description": "Silkscreen clipped by board edge",
-            "items": [
-                {
-                    "description": "Segment on Edge.Cuts",
-                    "pos": {
-                        "x": 220.0,
-                        "y": 150.0
-                    },
-                    "uuid": "971d0ecc-310c-4723-87f0-bfd09bd66d44"
-                },
-                {
-                    "description": "Segment of J6 on F.Silkscreen",
-                    "pos": {
-                        "x": 177.21,
-                        "y": 141.71
-                    },
-                    "uuid": "424f12c1-677e-4125-ae26-1c5d2691b2f2"
-                }
-            ],
-            "severity": "warning",
-            "type": "silk_edge_clearance"
-        },
-        {
-            "description": "Silkscreen clipped by board edge",
-            "items": [
-                {
-                    "description": "Segment on Edge.Cuts",
-                    "pos": {
-                        "x": 220.0,
-                        "y": 150.0
-                    },
-                    "uuid": "971d0ecc-310c-4723-87f0-bfd09bd66d44"
-                },
-                {
-                    "description": "Footprint text of J2 (wire entry ->)",
-                    "pos": {
-                        "x": 54.0,
-                        "y": 150.2
-                    },
-                    "uuid": "2fbd867c-7f46-4651-9f1d-2c46c44fc129"
-                }
-            ],
-            "severity": "warning",
-            "type": "silk_edge_clearance"
-        },
-        {
-            "description": "Silkscreen clipped by board edge",
-            "items": [
-                {
-                    "description": "Segment on Edge.Cuts",
-                    "pos": {
-                        "x": 220.0,
-                        "y": 150.0
-                    },
-                    "uuid": "971d0ecc-310c-4723-87f0-bfd09bd66d44"
+                    "uuid": "83a15a39-94d6-4ef6-b4d2-e7d0297d7976"
                 },
                 {
                     "description": "Segment of J7 on F.Silkscreen",
@@ -119,7 +50,7 @@
                         "x": 178.63,
                         "y": 150.83
                     },
-                    "uuid": "3ed1580d-816c-470d-acb2-8fc435b9a87c"
+                    "uuid": "28b28946-3e3b-48ba-9299-d89cdceb2be9"
                 }
             ],
             "severity": "warning",
@@ -134,7 +65,7 @@
                         "x": 220.0,
                         "y": 150.0
                     },
-                    "uuid": "971d0ecc-310c-4723-87f0-bfd09bd66d44"
+                    "uuid": "83a15a39-94d6-4ef6-b4d2-e7d0297d7976"
                 },
                 {
                     "description": "Segment of J7 on F.Silkscreen",
@@ -142,7 +73,7 @@
                         "x": 199.21,
                         "y": 141.71
                     },
-                    "uuid": "6c6a5da3-caad-4737-8195-c42e65e127c7"
+                    "uuid": "36c20fb2-21c8-48aa-98bd-df8d2ca8e7f4"
                 }
             ],
             "severity": "warning",
@@ -157,7 +88,30 @@
                         "x": 220.0,
                         "y": 150.0
                     },
-                    "uuid": "971d0ecc-310c-4723-87f0-bfd09bd66d44"
+                    "uuid": "83a15a39-94d6-4ef6-b4d2-e7d0297d7976"
+                },
+                {
+                    "description": "Footprint text of J2 (wire entry ->)",
+                    "pos": {
+                        "x": 54.0,
+                        "y": 150.2
+                    },
+                    "uuid": "cc97648a-51c5-41c5-addd-4e3dded6f58f"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_edge_clearance"
+        },
+        {
+            "description": "Silkscreen clipped by board edge",
+            "items": [
+                {
+                    "description": "Segment on Edge.Cuts",
+                    "pos": {
+                        "x": 220.0,
+                        "y": 150.0
+                    },
+                    "uuid": "83a15a39-94d6-4ef6-b4d2-e7d0297d7976"
                 },
                 {
                     "description": "Segment of J1 on F.Silkscreen",
@@ -165,7 +119,7 @@
                         "x": 19.4,
                         "y": 155.8
                     },
-                    "uuid": "93bc63ad-0b9f-4b7c-8ea5-d791d9f411bd"
+                    "uuid": "0cf3e3e8-664a-4ded-a338-2a104b2b58f7"
                 }
             ],
             "severity": "warning",
@@ -180,7 +134,7 @@
                         "x": 220.0,
                         "y": 150.0
                     },
-                    "uuid": "971d0ecc-310c-4723-87f0-bfd09bd66d44"
+                    "uuid": "83a15a39-94d6-4ef6-b4d2-e7d0297d7976"
                 },
                 {
                     "description": "Segment of J1 on F.Silkscreen",
@@ -188,7 +142,53 @@
                         "x": 28.6,
                         "y": 147.0
                     },
-                    "uuid": "32944e77-db99-4a20-8a59-46a237b2eff5"
+                    "uuid": "400fea68-d566-4de5-ac3a-39eb940c9622"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_edge_clearance"
+        },
+        {
+            "description": "Silkscreen clipped by board edge",
+            "items": [
+                {
+                    "description": "Segment on Edge.Cuts",
+                    "pos": {
+                        "x": 220.0,
+                        "y": 150.0
+                    },
+                    "uuid": "83a15a39-94d6-4ef6-b4d2-e7d0297d7976"
+                },
+                {
+                    "description": "Segment of J6 on F.Silkscreen",
+                    "pos": {
+                        "x": 156.63,
+                        "y": 150.83
+                    },
+                    "uuid": "6b6c1dc3-474b-4719-a7da-22903aa1bdb3"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_edge_clearance"
+        },
+        {
+            "description": "Silkscreen clipped by board edge",
+            "items": [
+                {
+                    "description": "Segment on Edge.Cuts",
+                    "pos": {
+                        "x": 220.0,
+                        "y": 150.0
+                    },
+                    "uuid": "83a15a39-94d6-4ef6-b4d2-e7d0297d7976"
+                },
+                {
+                    "description": "Segment of J6 on F.Silkscreen",
+                    "pos": {
+                        "x": 177.21,
+                        "y": 141.71
+                    },
+                    "uuid": "b45b11df-c0cb-4d2f-acf8-c53f97e3ead6"
                 }
             ],
             "severity": "warning",
@@ -198,20 +198,20 @@
             "description": "Silkscreen clearance",
             "items": [
                 {
-                    "description": "Footprint text of D9 (K=tab)",
+                    "description": "Segment of D11 on F.Silkscreen",
                     "pos": {
-                        "x": 30.3,
-                        "y": 54.3
+                        "x": 49.75,
+                        "y": 53.5
                     },
-                    "uuid": "91af0dce-dbe2-41d6-8f10-e9022419f5e5"
+                    "uuid": "0c5226ed-9363-47b9-ba97-a227a9e063e6"
                 },
                 {
-                    "description": "Segment of D10 on F.Silkscreen",
+                    "description": "Footprint text of D12 (K=tab)",
                     "pos": {
-                        "x": 25.3,
-                        "y": 54.5
+                        "x": 44.75,
+                        "y": 53.2
                     },
-                    "uuid": "9606d750-839b-4c84-b662-c2b846da14cf"
+                    "uuid": "0f5f3496-dde8-43d2-9420-3cac086931da"
                 }
             ],
             "severity": "warning",
@@ -221,70 +221,24 @@
             "description": "Silkscreen clearance",
             "items": [
                 {
-                    "description": "Footprint text of D12 (K=tab)",
+                    "description": "Segment of D10 on F.Silkscreen",
                     "pos": {
-                        "x": 44.75,
-                        "y": 53.2
+                        "x": 25.3,
+                        "y": 54.5
                     },
-                    "uuid": "246e45fe-1f25-44f6-a1bf-fcab89fb530c"
+                    "uuid": "76a3572d-e1ec-4dcf-9cba-83e433997b38"
                 },
-                {
-                    "description": "Segment of D11 on F.Silkscreen",
-                    "pos": {
-                        "x": 49.75,
-                        "y": 53.5
-                    },
-                    "uuid": "7b38fa7a-ef35-4097-9c08-f8f2b02f39ac"
-                }
-            ],
-            "severity": "warning",
-            "type": "silk_overlap"
-        },
-        {
-            "description": "Silkscreen clipped by solder mask",
-            "items": [
-                {
-                    "description": "Segment of K1 on F.Silkscreen",
-                    "pos": {
-                        "x": 66.6,
-                        "y": 147.6
-                    },
-                    "uuid": "34fb7e50-3eec-4481-b395-fadfaae5000d"
-                },
-                {
-                    "description": "PTH pad 11 [VBOOST] of K1",
-                    "pos": {
-                        "x": 68.0,
-                        "y": 140.0
-                    },
-                    "uuid": "6d5e907b-dc76-43d1-a90d-83030f91daef"
-                }
-            ],
-            "severity": "warning",
-            "type": "silk_over_copper"
-        },
-        {
-            "description": "Silkscreen clipped by solder mask",
-            "items": [
                 {
                     "description": "Footprint text of D9 (K=tab)",
                     "pos": {
                         "x": 30.3,
                         "y": 54.3
                     },
-                    "uuid": "91af0dce-dbe2-41d6-8f10-e9022419f5e5"
-                },
-                {
-                    "description": "Pad 1 [COIL_HI] of D10 on F.Cu",
-                    "pos": {
-                        "x": 31.8,
-                        "y": 60.0
-                    },
-                    "uuid": "5eaf8b1c-b736-40f3-b6f4-81e5462a4b33"
+                    "uuid": "7a053591-3a74-4ecf-8a76-d8d30b1c9d54"
                 }
             ],
             "severity": "warning",
-            "type": "silk_over_copper"
+            "type": "silk_overlap"
         },
         {
             "description": "Silkscreen clipped by solder mask",
@@ -295,7 +249,7 @@
                         "x": 20.8,
                         "y": 48.0
                     },
-                    "uuid": "33b86fbe-f573-44b9-ac75-944042c384bf"
+                    "uuid": "a4b9816a-f9a3-4c6a-8d2e-f9aa9e7bb77b"
                 },
                 {
                     "description": "Pad 2 [VBANK] of D9 on F.Cu",
@@ -303,7 +257,7 @@
                         "x": 22.65,
                         "y": 50.04
                     },
-                    "uuid": "45e4514e-3b8f-4441-92a7-5332e70da113"
+                    "uuid": "2cac8557-3796-4482-bbf6-48f58e35b3f3"
                 }
             ],
             "severity": "warning",
@@ -318,7 +272,7 @@
                         "x": 44.75,
                         "y": 53.2
                     },
-                    "uuid": "246e45fe-1f25-44f6-a1bf-fcab89fb530c"
+                    "uuid": "0f5f3496-dde8-43d2-9420-3cac086931da"
                 },
                 {
                     "description": "Pad 1 [COIL_HI] of D11 on F.Cu",
@@ -326,7 +280,30 @@
                         "x": 43.25,
                         "y": 48.0
                     },
-                    "uuid": "780fcbe6-32c4-4ad9-83c2-b4eac5a20a3c"
+                    "uuid": "251df866-cb7a-4945-af23-a5ae936b67c2"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "Footprint text of D9 (K=tab)",
+                    "pos": {
+                        "x": 30.3,
+                        "y": 54.3
+                    },
+                    "uuid": "7a053591-3a74-4ecf-8a76-d8d30b1c9d54"
+                },
+                {
+                    "description": "Pad 1 [COIL_HI] of D10 on F.Cu",
+                    "pos": {
+                        "x": 31.8,
+                        "y": 60.0
+                    },
+                    "uuid": "fe9e5f2b-33f4-48ef-aeea-3dbcd6e56eaa"
                 }
             ],
             "severity": "warning",
@@ -341,7 +318,7 @@
                         "x": 92.6,
                         "y": 147.6
                     },
-                    "uuid": "4e666bb5-200f-4866-add1-041c5f747e0b"
+                    "uuid": "7934d0c3-b3ea-4511-b69d-4f000cfda48a"
                 },
                 {
                     "description": "PTH pad 11 [VBANK] of K2",
@@ -349,7 +326,30 @@
                         "x": 94.0,
                         "y": 140.0
                     },
-                    "uuid": "97984ff9-581e-400b-9907-b845b5c4219f"
+                    "uuid": "265fbfc5-b161-42cd-a3bd-86e3dcb7f636"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "Segment of K1 on F.Silkscreen",
+                    "pos": {
+                        "x": 66.6,
+                        "y": 147.6
+                    },
+                    "uuid": "7cb02720-4325-4530-88af-e801bbbdd0ca"
+                },
+                {
+                    "description": "PTH pad 11 [VBOOST] of K1",
+                    "pos": {
+                        "x": 68.0,
+                        "y": 140.0
+                    },
+                    "uuid": "6b0287a0-c52e-4c05-a77f-b85af73fa6fd"
                 }
             ],
             "severity": "warning",

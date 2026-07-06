@@ -108,7 +108,9 @@ PARTS = {
         qty=1, alt="any 5A MINI blade",
     ),
     "pfet_rpp": dict(
-        mpn="AOD4185", mfr="AOS", lcsc="C77317", jlc="ext",
+        mpn="AOD4185", mfr="AOS", lcsc="C5371006", jlc="ext",
+        # NOTE: was wrongly C77317 (that is a BAT54AW Schottky diode!). C5371006
+        # is the AOD4185 P-channel 40V MOSFET in JLC assembly stock (TO-252).
         package="TO-252", desc="-40V PFET reverse-polarity protection (confirm stock at order)",
         qty=1, alt="any 40V+ PFET, TO-252",
     ),
