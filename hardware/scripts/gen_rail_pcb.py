@@ -51,17 +51,30 @@ def V(x, y):
 def load_netlist():
     tree = parse(NETLIST.read_text(encoding="utf-8"))[0]
     comps = {}
+    meta = {}   # ref -> (value, lcsc) for schematic-parity metadata sync
     for c in find_all(find(tree, Sym("components")), Sym("comp")):
         ref = str(find(c, Sym("ref"))[1])
         fp = find(c, Sym("footprint"))
         comps[ref] = str(fp[1]) if fp else ""
+        val = find(c, Sym("value"))
+        lcsc = variant = ""
+        fields = find(c, Sym("fields"))
+        if fields:
+            for f in find_all(fields, Sym("field")):
+                nm = find(f, Sym("name"))
+                if nm and len(f) > 2:
+                    if str(nm[1]) == "LCSC":
+                        lcsc = str(f[2])
+                    elif str(nm[1]) == "Variant":
+                        variant = str(f[2])
+        meta[ref] = (str(val[1]) if val else "", lcsc, variant)
     padnet = {}
     for n in find_all(find(tree, Sym("nets")), Sym("net")):
         name = str(find(n, Sym("name"))[1])
         for node in find_all(n, Sym("node")):
             padnet[(str(find(node, Sym("ref"))[1]),
                     str(find(node, Sym("pin"))[1]))] = name
-    return comps, padnet
+    return comps, padnet, meta
 
 
 def load_footprint(fpid):
@@ -73,7 +86,7 @@ def load_footprint(fpid):
 
 
 def main():
-    comps, padnet = load_netlist()
+    comps, padnet, meta = load_netlist()
     if PCB_OUT.exists():
         PCB_OUT.unlink()
     board = pcbnew.NewBoard(str(PCB_OUT))
@@ -138,6 +151,31 @@ def main():
     for ref, fpid in sorted(comps.items()):
         fp = load_footprint(fpid)
         fp.SetReference(ref)
+        # schematic-parity metadata: correct LIB_ID, symbol value, LCSC field
+        # (the raw library footprint carries none of these). Mirrors
+        # gen_pcb.py place_all() so kicad-cli --schematic-parity is clean.
+        if ":" in fpid:
+            lib_nick, fp_name = fpid.split(":", 1)
+            try:
+                fp.SetFPID(pcbnew.LIB_ID(lib_nick, fp_name))
+            except Exception:
+                pass
+        if ref in meta:
+            val, lcsc, variant = meta[ref]
+            if val:
+                fp.SetValue(val)
+            # LCSC + Variant carry the schematic's fields onto the footprint so
+            # parity is clean; keep them HIDDEN so they don't clutter the dense
+            # silkscreen (SetField defaults new fields to visible on F.SilkS).
+            for fname, fval in (("LCSC", lcsc), ("Variant", variant)):
+                if fval:
+                    try:
+                        fp.SetField(fname, fval)
+                        for fld in fp.GetFields():
+                            if fld.GetName() == fname:
+                                fld.SetVisible(False)
+                    except Exception:
+                        pass
         for pad in fp.Pads():
             key = (ref, pad.GetNumber())
             if key in padnet:
@@ -149,6 +187,11 @@ def main():
 
     for i, (hx, hy) in enumerate([(4.5, 4), (220, 11)]):
         fp = load_footprint("MountingHole:MountingHole_3.2mm_M3_Pad")
+        try:                       # "board only" -> exempt from extra_footprint parity
+            fp.SetExcludedFromBOM(True)
+            fp.SetBoardOnly(True)
+        except Exception:
+            pass
         fp.SetReference(f"H{i + 1}")
         fp.SetPosition(V(hx, hy))
         board.Add(fp)

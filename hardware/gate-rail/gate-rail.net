@@ -2,7 +2,7 @@
 	(version "E")
 	(design
 		(source "C:\\Users\\kaddi\\Documents\\Projects\\omnimarble\\hardware\\gate-rail\\gate-rail.kicad_sch")
-		(date "2026-07-03T18:19:05")
+		(date "2026-07-06T14:00:32")
 		(tool "Eeschema 10.0.4")
 		(sheet
 			(number "1")
@@ -105,7 +105,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "6c332135-52ab-4ed7-a08e-09fab9a8b83e")
+			(tstamps "ba82bc14-c180-49d9-9c22-9e858b8951cc")
 			(units
 				(unit
 					(name "A")
@@ -171,7 +171,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "db20c717-b793-4c4c-9028-da671648d6a3")
+			(tstamps "15e35ea7-74e6-4932-adb9-f04253203e83")
 			(units
 				(unit
 					(name "A")
@@ -237,7 +237,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "a8c4bc6a-6485-4345-88a5-0295d954173e")
+			(tstamps "e2b33594-45d4-4b40-9dfd-efc21c0fbf1a")
 			(units
 				(unit
 					(name "A")
@@ -303,7 +303,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "60cb8555-49a1-46f7-a924-39ebd25f36d4")
+			(tstamps "ff826779-a2bd-4160-bb44-b780a0a429ba")
 			(units
 				(unit
 					(name "A")
@@ -369,7 +369,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "e4de7788-f6ad-45e9-8e83-c4a45f9bc8f3")
+			(tstamps "f2672de6-1094-4aff-92b1-2ff5845ccd1d")
 			(units
 				(unit
 					(name "A")
@@ -435,7 +435,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "0c114f83-aabb-4c15-96fd-24bc3b562aec")
+			(tstamps "c1b1487f-be6d-4821-a7f2-161ac6af85d3")
 			(units
 				(unit
 					(name "A")
@@ -501,7 +501,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "7173f130-fe1e-4f80-b96b-5068c970f447")
+			(tstamps "c63a111c-f2e6-4f50-a399-4175c0ee8e36")
 			(units
 				(unit
 					(name "A")
@@ -587,7 +587,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "6d4af0cd-0ccb-47fb-9f8b-0333fdde873f")
+			(tstamps "75b86540-868a-4009-998c-bc28713711ae")
 			(units
 				(unit
 					(name "A")
@@ -649,7 +649,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "fb97f4ba-8c40-4220-9de2-db939a5743f4")
+			(tstamps "cbd4f3f2-2443-4202-93e9-8ec1fc88b75f")
 			(units
 				(unit
 					(name "A")
@@ -711,7 +711,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "660d7a60-2f9d-4ef1-9f94-73779caf14b6")
+			(tstamps "14eae14d-ac40-4fae-a71f-eaacdae46e90")
 			(units
 				(unit
 					(name "A")
@@ -773,7 +773,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "bb741737-c9c4-4fe2-a607-b036c961f291")
+			(tstamps "9cc8167c-fabc-49b2-a547-4806f2713433")
 			(units
 				(unit
 					(name "A")
@@ -835,7 +835,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "2643eb82-6df6-4a98-a188-66ea0ea425fe")
+			(tstamps "8b0cc305-c57d-4224-b3f0-b056ddc2a498")
 			(units
 				(unit
 					(name "A")
@@ -897,7 +897,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "a8432e5b-67a0-4c22-b0e0-9e4860196df5")
+			(tstamps "4d0a747c-aa4c-4d15-a52a-0effcca01993")
 			(units
 				(unit
 					(name "A")
@@ -963,7 +963,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "d7a29340-a270-43e4-bc7c-da9a2b61683d")
+			(tstamps "4139c189-a467-408f-a07f-abcd3fa2f430")
 			(units
 				(unit
 					(name "A")
@@ -1029,7 +1029,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "0e9fb9e2-5e0e-45ec-8408-d3948ea900c7")
+			(tstamps "5fe53a83-0475-4766-a92b-b20db1f9c201")
 			(units
 				(unit
 					(name "A")
@@ -1095,7 +1095,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "bf66d873-13a3-432d-87fb-cf5e36e4d2f6")
+			(tstamps "3b9cb67e-0101-4cde-a462-1c6d09cb51e4")
 			(units
 				(unit
 					(name "A")
@@ -1161,7 +1161,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "1c53265d-e612-41b2-b909-44607455e3fd")
+			(tstamps "f0fbe5b4-5040-4a47-812e-48a45a1314b5")
 			(units
 				(unit
 					(name "A")
@@ -1227,7 +1227,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "846b617a-7788-479a-ad3f-c55a80ad4f26")
+			(tstamps "d145d3f2-4860-46e3-b349-e8c46102bda1")
 			(units
 				(unit
 					(name "A")
@@ -1293,7 +1293,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "e804841b-1895-492c-aa66-b02bb02e64cc")
+			(tstamps "ad0ebf0a-4686-4898-8482-fbc131814fb4")
 			(units
 				(unit
 					(name "A")
@@ -1336,6 +1336,9 @@
 				(value "gate-rail.kicad_sch")
 			)
 			(property
+				(name "exclude_from_bom")
+			)
+			(property
 				(name "ki_keywords")
 				(value "test point tp")
 			)
@@ -1347,7 +1350,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "5057081f-17f2-49bd-82bd-db978b650094")
+			(tstamps "0a71e6e3-62fc-4e36-83f1-9e026d46944f")
 			(units
 				(unit
 					(name "A")

@@ -59,7 +59,7 @@ def main():
     # SIG_SPARE terminates on a test pad (unused on the rail itself)
     s.add_symbol("Connector:TestPoint", "TP1", "SIG_SPARE", (80, 60),
                  footprint="TestPoint:TestPoint_Pad_1.5x1.5mm",
-                 nets={"1": "SIG_SPARE"})
+                 nets={"1": "SIG_SPARE"}, in_bom=False)
 
     for i in range(6):
         x = 40 + i * 35
