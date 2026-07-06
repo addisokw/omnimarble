@@ -2261,6 +2261,71 @@ def inject_stackup(pcb_path):
         f.write(t.replace("(setup\n", "(setup\n" + STACKUP_2OZ, 1))
 
 
+def deeppcb_repairs(board, nets):
+    """Deterministic repairs for the DeepPCB rev-39 SES that the DSN locks +
+    FET-strip keepout didn't fully protect. All position/feature-guarded, so
+    they are no-ops if the artifact is absent.
+      - rip DeepPCB's F.Cu SHUNT_HI tracks: redundant with the authored B.Cu bus
+        and they short the ISNS_P Kelvin tap
+      - re-author the RS1->NT1 SHUNT_HI Kelvin tie pad-to-pad (a router can drop
+        the locked tie; the straight pad-to-pad run clears ISNS_P)
+      - stitch each F.Cu SHUNT_HI pour fragment to the B.Cu bus (the router
+        fragments the F.Cu pour, islanding a piece with no via down to the bus)
+      - close a MCU_FIRE B.Cu/F.Cu via gap; bulge GATE6 off a 3V3 via
+    Set island-removal on the SHUNT_HI F.Cu zone first (before any Remove, while
+    the Zones() iterator is still valid)."""
+    if "SHUNT_HI" not in nets:
+        return
+    mode = getattr(pcbnew, "ISLAND_REMOVAL_MODE_ALWAYS", 0)
+    for z in board.Zones():
+        if z.GetNetname() == "SHUNT_HI" and z.IsOnLayer(pcbnew.F_Cu):
+            z.SetIslandRemovalMode(mode)
+    for t in list(board.GetTracks()):
+        if (t.GetClass() == "PCB_TRACK" and t.GetNetname() == "SHUNT_HI"
+                and t.GetLayer() == pcbnew.F_Cu):
+            board.Remove(t)
+    for ra, pa, rb, pb, w in KELVIN_TRACKS:
+        fa = board.FindFootprintByReference(ra)
+        fb = board.FindFootprintByReference(rb)
+        if not fa or not fb:
+            continue
+        pada = next((p for p in fa.Pads() if p.GetNumber() == pa), None)
+        padb = next((p for p in fb.Pads() if p.GetNumber() == pb), None)
+        if pada is None or padb is None or pada.GetNetname() not in PULSE_NETS:
+            continue
+        a, b = pada.GetPosition(), padb.GetPosition()
+        tr = pcbnew.PCB_TRACK(board)
+        tr.SetStart(a); tr.SetEnd(b); tr.SetWidth(MM(w))
+        tr.SetLayer(pcbnew.F_Cu); tr.SetNet(nets[pada.GetNetname()])
+        board.Add(tr)
+    for x, y in [(121.5, 72.0)]:  # stitch the one islanded F.Cu fragment -> bus
+        via = pcbnew.PCB_VIA(board)
+        via.SetPosition(V(x, y)); via.SetViaType(pcbnew.VIATYPE_THROUGH)
+        via.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu)
+        via.SetDrill(MM(0.4)); via.SetWidth(MM(0.7))
+        via.SetNet(nets["SHUNT_HI"]); board.Add(via)
+    if "MCU_FIRE" in nets:
+        tr = pcbnew.PCB_TRACK(board)
+        tr.SetStart(V(129.6, 89.4)); tr.SetEnd(V(130.9, 88.9))
+        tr.SetWidth(MM(0.2)); tr.SetLayer(pcbnew.B_Cu)
+        tr.SetNet(nets["MCU_FIRE"]); board.Add(tr)
+    if "GATE6" in nets:
+        def cl(pt, x, y):
+            return abs(pcbnew.ToMM(pt.x) - x) < 0.1 and abs(pcbnew.ToMM(pt.y) - y) < 0.1
+        for t in list(board.GetTracks()):
+            if (t.GetClass() == "PCB_TRACK" and t.GetNetname() == "GATE6"
+                    and t.GetLayer() == pcbnew.B_Cu):
+                a, e = t.GetStart(), t.GetEnd()
+                if (cl(a, 170.11, 111.69) and cl(e, 170.11, 109.85)) \
+                        or (cl(a, 170.11, 109.85) and cl(e, 170.11, 111.69)):
+                    board.Remove(t)
+        for aa, ee in [((170.11, 111.69), (170.6, 111.15)),
+                       ((170.6, 111.15), (170.11, 109.85))]:
+            tr = pcbnew.PCB_TRACK(board)
+            tr.SetStart(V(*aa)); tr.SetEnd(V(*ee)); tr.SetWidth(MM(0.2))
+            tr.SetLayer(pcbnew.B_Cu); tr.SetNet(nets["GATE6"]); board.Add(tr)
+
+
 def main_import_clean():
     """Import a SES from a router that KEPT our fixed copper (DeepPCB) onto a
     fresh placement+pours board, WITHOUT the freerouting-era strip/rebuild/
@@ -2302,6 +2367,7 @@ def main_import_clean():
     # Re-author it deterministically so the high-current source path never
     # depends on the router keeping our locked copper.
     author_shunt_hi_bus(board, build_grid(board), nets)
+    deeppcb_repairs(board, nets)   # rev-39 SES fixups (Kelvin tie, pour stitch, ...)
     local_finish(board, nets)
     tidy_silk(board)
     nfix = fix_thin_annular(board)
