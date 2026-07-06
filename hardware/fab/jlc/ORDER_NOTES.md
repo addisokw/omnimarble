@@ -45,16 +45,16 @@ Summary: **159 machine-placed** parts, **8 hand-installed**,
 |---|---|---|
 | BZ1 | buzzer-5V | C409842 (Buzzer_12x9.5RM7.6) |
 | J1 | 24V-IN | C381116 (BarrelJack_Horizontal) |
-| J2 | AUX-BANK | C60785 (TerminalBarrier_1x02_P9.50mm) |
-| J5 | COIL | C60785 (TerminalBarrier_1x02_P9.50mm) |
+| J2 | AUX-BANK | C707836 (TerminalBarrier_1x02_P9.50mm) |
+| J5 | COIL | C707836 (TerminalBarrier_1x02_P9.50mm) |
 | J6 | RAIL-EMIT | C5665 (IDC-Header_2x05_P2.54mm_Vertical) |
 | J7 | RAIL-RECV | C5665 (IDC-Header_2x05_P2.54mm_Vertical) |
 | J8 | SPARE-JST | C144395 (JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical) |
 | K1 | HF3FF-12V | C399561 (Relay_HF3FF_T73) |
 | K2 | HF3FF-12V | C399561 (Relay_HF3FF_T73) |
 | R19 | 47R-5W | C5807995 (R_Box_L26.0mm_W5.0mm_P20.00mm) |
-| R21 | 100R-10W | C216413 (R_Radial_Power_L11.0mm_W7.0mm_P5.00mm) |
-| R22 | 100R-10W | C216413 (R_Radial_Power_L11.0mm_W7.0mm_P5.00mm) |
+| R21 | 100R-10W | C5110275 (R_Radial_Power_L11.0mm_W7.0mm_P5.00mm) |
+| R22 | 100R-10W | C5110275 (R_Radial_Power_L11.0mm_W7.0mm_P5.00mm) |
 
 ## Hand-installed by you (NOT on the CPL) — 8
 Order these separately (LCSC # given where known) and solder after JLC assembly.
