@@ -60,11 +60,16 @@ assembly; controlled by an external Raspberry Pi Pico (or compatible) via header
 4. `dsn_fixup.py` → net classes, name sanitizing, lock critical/pulse copper → DSN uploaded to
    **DeepPCB** (cloud router) for bulk signal routing (diff-pair mode OFF — see gotchas)
 5. **`gen_pcb.py import-clean`** → imports routed SES + deterministic finishing
-   (`local_finish`, `tidy_silk`, `fix_thin_annular`, F/B GND flood, fill) → final board
+   (`author_shunt_hi_bus`, `deeppcb_repairs`, `local_finish`, `tidy_silk`,
+   `fix_thin_annular`, F/B GND flood, `inject_stackup`, fill) → final board
 
-**Regenerate the exact current board:** `gen_pcb.py import-clean` on
-`hardware/omnimarble-driver/omnimarble-driver-3-rev-43.ses` (the frozen routed input).
-Run with KiCad 10's bundled Python: `"C:\Program Files\KiCad\10.0\bin\python.exe"`.
+**Regenerate the exact current board:** copy
+`hardware/omnimarble-driver/omnimarble-driver-5-rev-39.ses` → `omnimarble-driver.ses`,
+then `gen_pcb.py import-clean` (the frozen routed input — the corrected-netlist
+DeepPCB re-route with the FET-strip keepout). This reproduces the DRC-clean board
+from scratch; `deeppcb_repairs` re-applies the SHUNT_HI bus/Kelvin/pour fixups the
+router couldn't be trusted to keep. Run with KiCad 10's bundled Python:
+`"C:\Program Files\KiCad\10.0\bin\python.exe"`.
 
 ## Design decisions / gotchas (READ before editing)
 - **Critical authored copper is locked and intentional** — a router must not touch it:
