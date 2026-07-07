@@ -8,8 +8,11 @@ path — see **[`../V0_BENCH_RIG.md`](../V0_BENCH_RIG.md)** and the switch theor
 (no boost / OVP / interlocks).
 
 ## What it is
-- **150 × 136 mm, 2-layer, 2 oz** copper, **bare board / hand-populated** (iron-
-  solderable throughout: TO-247, SOIC-8, D2PAK, Shunt-5930, 0805, THT bank + headers).
+- **150 × 136 mm, 4-layer** (2 oz outer / 1 oz inner), **bare board / hand-populated**
+  (iron-solderable throughout: TO-247, SOIC-8, D2PAK, Shunt-5930, 0805, THT bank +
+  headers). Stackup: **F.Cu + B.Cu = signals, In1 = solid GND plane, In2 = GND plane
+  with a +3V3 pocket over the logic zone.** The inner GND plane is never cut by a
+  signal, so the return plane can't fragment — the reason this board is 4-layer.
 - **One board** — the originally-planned power + logic boards were merged: the
   Waveshare sensor outputs are digital/noise-immune and the fire pulse never
   coincides with a velocity-gate read, so the GND plane + physical separation of the
@@ -36,30 +39,36 @@ path — see **[`../V0_BENCH_RIG.md`](../V0_BENCH_RIG.md)** and the switch theor
 - **Interfaces** — coil / charge / aux-bank / 12 V-in barrier terminals, ISENSE scope
   tap; star ground at the bank-negative node.
 
-## How it is generated (scripted, freerouted)
+## How it is generated (scripted, plane-locked, freerouted)
 1. `gen_vbench_pwr.py` → schematic (`vbench-pwr.kicad_sch`) + `.kicad_pro`
 2. `kicad-cli sch export netlist` → `vbench-pwr.net`
-3. `gen_vbench_pwr_pcb.py place` → footprints + parity/DNP metadata + B.Cu GND pour
-4. `gen_vbench_pwr_pcb.py dsn` → Specctra DSN; **freerouting** (`-mp 30 -mt 1`) → SES
-5. `gen_vbench_pwr_pcb.py import` → back-import routing, stitch the GND pour, fill
-6. `gen_fab.py vbench` → 2-layer 2 oz gerber package
+3. `gen_vbench_pwr_pcb.py place` → footprints + parity/DNP metadata + inner GND
+   planes (In1/In2) + the In2 +3V3 pocket
+4. `gen_vbench_pwr_pcb.py dsn` → Specctra DSN, **plane-locked** (`plane_lock_dsn`
+   marks In1/In2 `(type power)` so freerouting never routes signals on them); then
+   **freerouting** (`-mp 30 -mt 1`) → SES
+5. `gen_vbench_pwr_pcb.py import` → back-import routing, drop a GND via at each SMD
+   GND pad (freerouting doesn't via them to the inner planes), fill
+6. `gen_fab.py vbench` → 4-layer gerber package
 
-Routing is by **freerouting** (this is a 2-D board; only the planar gate-rail is
-hand-routed). ⚠️ **Known limitation:** the merged logic zone is dense, and
-freerouting occasionally fragments the B.Cu GND pour into small pockets around the
-connector pins. The committed board is stitched clean, but the stitch is tied to this
-particular freerouting output — a full re-route can produce pockets that need a
-manual GND bridge (or a plane-locked DSN, like the driver's `dsn_fixup.py`). Fixing
-this generically (or spreading the logic connectors) is the next hardening step.
+**Why this is robust.** Signals route on the two outer layers (F.Cu + B.Cu = ample
+room, freerouting completes in ~2 s); the GND return is a **dedicated inner plane
+that a signal can never cut**, so it can't fragment. +3V3 (all-THT pins) connects
+through the In2 +3V3 pocket by via, with no routing. There is **no post-hoc GND
+stitching** — a full re-route from scratch reproduces a clean board every time
+(verified across repeated runs). This is the driver board's dedicated-plane pattern,
+applied here to fix the 2-layer GND-fragmentation the earlier revision hit.
 
 ## Status
 - ERC **0**; DRC `--schematic-parity` **0 parity / 0 electrical / 0 unconnected**
   (1 cosmetic silk-over-copper). `validate.py` PASS (bare board: LCSC not required).
-- Fab package (`hardware/fab/vbench/`): 2-layer 2 oz gerbers + drill, `vbench-gerbers.zip`,
-  reference `bom_vbench.csv` / `cpl_vbench.csv`.
+  Reproducible: repeated place→route→import runs give the same DRC-clean board.
+- Fab package (`hardware/fab/vbench/`): 4-layer gerbers + drill (14 files),
+  `vbench-gerbers.zip`, reference `bom_vbench.csv` / `cpl_vbench.csv`.
 
 ## Ordering (bare board)
-Order the **bare 2-layer 2 oz PCB** only (gerber zip); hand-populate everything. The
+Order the **bare 4-layer PCB** (2 oz outer / 1 oz inner) — gerber zip; hand-populate
+everything. The
 IRFP4668, 18 mm cans, headers, Pico socket and Waveshare connectors are user-sourced.
 Bring up per **[`../STAGE2_SWITCH.md`](../STAGE2_SWITCH.md)** — 12 V + logic first,
 bank at ~10 V, add coil + shunt, then populate caps upward for the C-sweep.

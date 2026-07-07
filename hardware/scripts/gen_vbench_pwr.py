@@ -146,6 +146,7 @@ def main():
                        "13": "GND", "14": "WC_D0", "15": "WC_D1", "16": "WC_D2",
                        "17": "WC_D3", "18": "GND", "19": "WC_D4", "20": "FIRE_IN"})
     # Pico-R (GP16..): WD = GP16-20, VBANK_SENSE = GP26/ADC0 (pin11), +3V3 (pin16).
+    # Pico-R (GP16..): WD = GP16-20, VBANK_SENSE = GP26/ADC0 (pin11), +3V3 (pin16).
     s.add_symbol("Connector_Generic:Conn_01x20", "J8", "PICO-R", (340, 60),
                  footprint=FP["PICO"], lcsc=PARTS["pico_socket"]["lcsc"],
                  nets={"1": "WD_D0", "2": "WD_D1", "3": "GND", "4": "WD_D2",

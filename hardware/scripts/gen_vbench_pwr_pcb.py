@@ -13,6 +13,7 @@ Pipeline:
 Run under KiCad python.
 """
 
+import re
 import sys
 from pathlib import Path
 
@@ -105,6 +106,8 @@ P["J6"] = (130, 84, 0)                         # ISENSE
 # logic zone (bottom, separated from the pulse loop by the GND plane + distance)
 P["J7"] = (24, 104, 90)     # PICO-L  (pins along x)
 P["J8"] = (24, 122, 90)     # PICO-R  (17.78mm below)
+# 4 sensor connectors (20 ch); GND is a solid inner plane on 4-layer, so signals
+# route freely across F.Cu + B.Cu and the plane never fragments.
 P["J9"] = (86, 104, 0)      # WAVESHARE-A
 P["J10"] = (102, 104, 0)    # WAVESHARE-B
 P["J11"] = (118, 104, 0)    # WAVESHARE-C
@@ -116,7 +119,12 @@ def build_place():
     if PCB_OUT.exists():
         PCB_OUT.unlink()
     board = pcbnew.NewBoard(str(PCB_OUT))
-    board.SetCopperLayerCount(2)
+    board.SetCopperLayerCount(4)   # F.Cu | In1 GND plane | In2 GND plane | B.Cu
+    for lyr in (pcbnew.In1_Cu, pcbnew.In2_Cu):
+        try:
+            board.SetLayerType(lyr, pcbnew.LT_POWER)
+        except Exception:
+            pass                    # DSN plane_lock enforces the plane type anyway
 
     pts = [(0, 0), (BOARD_W, 0), (BOARD_W, BOARD_H), (0, BOARD_H)]
     for i in range(4):
@@ -182,16 +190,30 @@ def build_place():
         fp.SetPosition(V(hx, hy))
         board.Add(fp)
 
-    # B.Cu GND pour (return plane; freerouting routes signal + drops GND vias)
-    z = pcbnew.ZONE(board)
-    z.SetLayer(pcbnew.B_Cu); z.SetNet(netinfo("GND"))
-    o = z.Outline(); o.NewOutline()
-    for x, y in [(0.6, 0.6), (BOARD_W - 0.6, 0.6),
-                 (BOARD_W - 0.6, BOARD_H - 0.6), (0.6, BOARD_H - 0.6)]:
-        o.Append(MM(x), MM(y))
-    z.SetPadConnection(pcbnew.ZONE_CONNECTION_FULL)
-    z.SetMinThickness(MM(0.25))
-    board.Add(z)
+    # Solid GND planes on the two inner layers. Signals route on F.Cu + B.Cu
+    # (2 layers = routes cleanly); the inner planes are never cut, so GND cannot
+    # fragment -- freerouting just drops GND-pad vias into them. No F.Cu/B.Cu GND
+    # pour (that would re-introduce the fragmentation this 4-layer stackup fixes).
+    def rect_zone(layer, net, box, prio=0):
+        z = pcbnew.ZONE(board)
+        z.SetLayer(layer); z.SetNet(netinfo(net))
+        x0, y0, x1, y1 = box
+        o = z.Outline(); o.NewOutline()
+        for x, y in [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]:
+            o.Append(MM(x), MM(y))
+        z.SetPadConnection(pcbnew.ZONE_CONNECTION_FULL)
+        z.SetMinThickness(MM(0.25))
+        z.SetAssignedPriority(prio)
+        board.Add(z)
+
+    full = (0.6, 0.6, BOARD_W - 0.6, BOARD_H - 0.6)
+    rect_zone(pcbnew.In1_Cu, "GND", full)
+    rect_zone(pcbnew.In2_Cu, "GND", full)
+    # +3V3 pocket on In2 over the logic zone: all +3V3 pins are THT, so they connect
+    # straight into this pocket (higher priority carves it out of the In2 GND plane)
+    # -- no F.Cu/B.Cu +3V3 routing, hence no crossings. All SMD GND via-drops sit at
+    # y<90, clear of this pocket, so GND through-vias never short to it.
+    rect_zone(pcbnew.In2_Cu, "+3V3", (55, 100, 141, 126), prio=1)
 
     t = pcbnew.PCB_TEXT(board)
     t.SetText("OMNIMARBLE VBENCH-PWR  (charge <=55V; star GND at bank -)")
@@ -204,11 +226,30 @@ def build_place():
     print(f"SAVED place-only {PCB_OUT.name}")
 
 
+def plane_lock_dsn():
+    """Mark the two inner layers `(type power)` in the exported DSN so freerouting
+    treats them as plane-only: signals route on F.Cu + B.Cu, GND-pad vias drop into
+    the inner GND planes, and the planes are NEVER cut by signal tracks. This is the
+    driver's dedicated-inner-plane pattern and makes re-routing reproducible (no
+    fragile post-hoc GND stitching). KiCad usually already emits inner layers as
+    power (we set LT_POWER), but flip any that come out signal to be safe."""
+    text = DSN.read_text(encoding="utf-8")
+    n = 0
+    for layer in ("In1.Cu", "In2.Cu"):
+        text, k = re.subn(r"(\(layer " + re.escape(layer) + r"\s*\n\s*)\(type signal\)",
+                          r"\1(type power)", text, count=1)
+        n += k
+    DSN.write_text(text, encoding="utf-8")
+    print(f"plane_lock: {n} inner layer(s) forced -> (type power) "
+          "[solid inner GND planes]")
+
+
 def export_dsn():
     board = pcbnew.LoadBoard(str(PCB_OUT))
     for tr in list(board.Tracks()):
         board.Remove(tr)
     ok = pcbnew.ExportSpecctraDSN(board, str(DSN))
+    plane_lock_dsn()
     print(f"DSN export: {ok} -> {DSN.name}")
 
 
@@ -217,29 +258,28 @@ def import_ses():
     for tr in list(board.Tracks()):
         board.Remove(tr)
     ok = pcbnew.ImportSpecctraSES(board, str(SES))
-    # freerouting's B.Cu routing traps a small GND pocket around the Pico/sensor
-    # pins; stitch it to the main plane with an F.Cu track between a pocket GND pad
-    # (J9.2) and an adjacent main-plane GND pad (J10.2). Both are THT, so the track
-    # ties the two B.Cu pours through the pads. (freerouting is deterministic, so
-    # the pocket is stable for this placement.)
+    # The inner GND planes are solid, but freerouting doesn't via SMD GND pads down
+    # to them (THT GND pads already pass through). Drop a GND through-via at each SMD
+    # GND pad -> ties it to both inner planes. Deterministic; no fragile stitching,
+    # since the planes are never cut. Same-net so no clearance conflict.
     gnd = board.FindNet("GND")
-
-    def padxy(ref, num):
-        for fp in board.Footprints():
-            if fp.GetReference() == ref:
-                for p in fp.Pads():
-                    if p.GetNumber() == num:
-                        pp = p.GetPosition()
-                        return pcbnew.ToMM(pp.x), pcbnew.ToMM(pp.y)
-        raise KeyError((ref, num))
-
-    (x0, y0), (x1, y1) = padxy("J9", "2"), padxy("J10", "2")
-    t = pcbnew.PCB_TRACK(board)
-    t.SetStart(V(x0, y0)); t.SetEnd(V(x1, y1))
-    t.SetWidth(MM(0.6)); t.SetLayer(pcbnew.F_Cu); t.SetNet(gnd); board.Add(t)
+    n_via = 0
+    for fp in board.Footprints():
+        for p in fp.Pads():
+            if p.GetNetname() == "GND" and p.GetAttribute() != pcbnew.PAD_ATTRIB_PTH:
+                v = pcbnew.PCB_VIA(board)
+                v.SetViaType(pcbnew.VIATYPE_THROUGH)
+                v.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu)
+                v.SetPosition(p.GetPosition())
+                v.SetDrill(MM(0.3)); v.SetWidth(MM(0.6))
+                v.SetNet(gnd)
+                board.Add(v)
+                n_via += 1
+    # +3V3 (all-THT: Pico J8.16 + 4 Waveshare pin-1s) connects through the In2 +3V3
+    # pocket built in build_place -- no F.Cu/B.Cu routing, so no crossings.
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())
     pcbnew.SaveBoard(str(PCB_OUT), board)
-    print(f"SES import: {ok} (run kicad-cli drc for the unconnected count)")
+    print(f"SES import: {ok}; {n_via} SMD-GND via-drops to inner planes")
 
 
 if __name__ == "__main__":
