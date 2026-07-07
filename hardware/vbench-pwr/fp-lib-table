@@ -1,0 +1,4 @@
+(fp_lib_table
+	(version 7)
+	(lib (name "omnimarble")(type "KiCad")(uri "${KIPRJMOD}/../omnimarble-driver/omnimarble.pretty")(options "")(descr "OmniMarble custom footprints"))
+)

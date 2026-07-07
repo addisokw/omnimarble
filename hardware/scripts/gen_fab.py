@@ -120,7 +120,18 @@ RAIL = BoardCfg(
     variants=("EMIT", "RECV"),
 )
 
-BOARDS = {"driver": DRIVER, "rail": RAIL}
+VBENCH = BoardCfg(
+    name="vbench",
+    pcb=HW / "vbench-pwr" / "vbench-pwr.kicad_pcb",
+    drc=HW / "fab" / "drc_vbench.json",
+    out=HW / "fab" / "vbench",
+    zip_name="vbench-gerbers.zip",
+    gerber_layers=LAYERS_2,
+    copper_th={"F.Cu": 0.07, "B.Cu": 0.07},   # 2-layer, 2 oz both (pulse path)
+    bom_stem="bom_vbench", cpl_stem="cpl_vbench", notes="driver",  # bare board: gerbers are the deliverable
+)
+
+BOARDS = {"driver": DRIVER, "rail": RAIL, "vbench": VBENCH}
 
 
 def lcsc_of(fp):

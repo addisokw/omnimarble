@@ -25,7 +25,11 @@ FP_SHARE = KICAD_SHARE / "footprints"
 PROJECTS = {
     "driver": HW_DIR / "omnimarble-driver",
     "rail": HW_DIR / "gate-rail",
+    "vbench": HW_DIR / "vbench-pwr",
 }
+# Hand-populated BARE boards (ordered as bare PCB, no JLC assembly) -- footprints
+# are still checked, but LCSC completeness is not required.
+BARE_BOARDS = {"vbench"}
 
 # Footprint-library prefixes / ref prefixes that are hand-installed or
 # non-orderable board features (no LCSC required)
@@ -74,7 +78,7 @@ def main():
     args = ap.parse_args()
 
     failures = []
-    all_syms = {"driver": [], "rail": []}
+    all_syms = {k: [] for k in PROJECTS}
     for key, proj in PROJECTS.items():
         for sch in sorted(proj.glob("*.kicad_sch")):
             all_syms[key].extend(iter_symbols(sch))
@@ -100,7 +104,7 @@ def main():
             fp_lib = s["footprint"].split(":")[0] if s["footprint"] else ""
             hand = fp_lib in HAND_FP_LIBS or s["lib_id"] in (
                 "Connector:TestPoint",) or fp_lib == "NetTie"
-            if not hand and not s["lcsc"] and not s["dnp"]:
+            if not hand and not s["lcsc"] and not s["dnp"] and key not in BARE_BOARDS:
                 tag = (s["ref"], s["value"])
                 if tag not in seen_lcsc_fail:
                     seen_lcsc_fail.add(tag)
