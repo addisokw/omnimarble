@@ -25,11 +25,10 @@ FP_SHARE = KICAD_SHARE / "footprints"
 PROJECTS = {
     "driver": HW_DIR / "omnimarble-driver",
     "rail": HW_DIR / "gate-rail",
-    "vbench": HW_DIR / "vbench-pwr",
 }
 # Hand-populated BARE boards (ordered as bare PCB, no JLC assembly) -- footprints
 # are still checked, but LCSC completeness is not required.
-BARE_BOARDS = {"vbench"}
+BARE_BOARDS = set()
 
 # Footprint-library prefixes / ref prefixes that are hand-installed or
 # non-orderable board features (no LCSC required)

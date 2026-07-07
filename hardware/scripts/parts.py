@@ -18,14 +18,6 @@ PARTS = {
         rds_on_max_ohm=0.0040, idm_pulse_a=760.0, rth_jc_k_w=0.48,
         qg_nc=112.0, tj_max_c=150.0,
     ),
-    "fet_switch_tht": dict(
-        mpn="IRFP4668PBF", mfr="Infineon", lcsc="", jlc="hand",
-        package="TO-247", desc="200V 130A NFET, TO-247 leaded (vbench power board pulse "
-        "switch; iron-solderable + bolt-on heatsink; 2-3 in parallel for ~500A pulse). "
-        "Bare board = hand-install; LCSC ext-stocked -- look up at order.",
-        qty=3, alt="IXFH80N20X3 (TO-247) or parallel more IRFP4668",
-        vds_v=200.0, rds_on_max_ohm=0.008, idm_pulse_a=520.0, qg_nc=161.0,
-    ),
     "diode_pulse": dict(
         mpn="MBR60100DC", mfr="YFW", lcsc="C6069541", jlc="ext",
         package="TO-263", desc="100V 60A Schottky, IFSM 450A (blocking x2, freewheel x2, bank clamp x1)",

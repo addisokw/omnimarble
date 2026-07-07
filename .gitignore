@@ -45,10 +45,3 @@ hardware/fab/jlc/gerbers/
 hardware/fab/drc_*.json
 hardware/omnimarble-driver/*-rev-*.ses
 hardware/omnimarble-driver/omnimarble-driver.ses
-
-# vbench loose gerbers (regenerable; zip is committed)
-hardware/fab/vbench/gerbers/
-hardware/vbench-pwr/*.dsn
-hardware/vbench-pwr/*.kicad_prl
-hardware/vbench-pwr/drc.json
-hardware/vbench-pwr/erc.rpt
