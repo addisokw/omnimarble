@@ -50,3 +50,5 @@ hardware/omnimarble-driver/omnimarble-driver.ses
 hardware/fab/vbench/gerbers/
 hardware/vbench-pwr/*.dsn
 hardware/vbench-pwr/*.kicad_prl
+hardware/vbench-pwr/drc.json
+hardware/vbench-pwr/erc.rpt
