@@ -224,7 +224,7 @@ with gr.Blocks(title="Coil Design Optimizer") as app:
                 label="Max Peak Current (A)",
             )
             thinnest_awg = gr.Dropdown(
-                choices=["18", "20", "22", "24", "26"],
+                choices=["14", "16", "18", "20", "22", "24", "26"],
                 value="22",
                 label="Thinnest Allowed Wire (AWG)",
                 info="Larger AWG = thinner wire. Selecting 22 excludes 24 and 26.",

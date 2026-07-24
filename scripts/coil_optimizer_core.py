@@ -53,6 +53,8 @@ MARBLE_CONDUCTIVITY = 6e6      # S/m, for eddy current calculation
 
 # AWG wire diameters (mm)
 AWG_DIAMETERS = {
+    14: 1.628,
+    16: 1.291,
     18: 1.024,
     20: 0.812,
     22: 0.644,
@@ -173,7 +175,7 @@ def generate_candidates(n_samples, rng, constraints=None):
         constraints = UserConstraints()
 
     # Filter AWG choices based on constraints
-    all_awg = [18, 20, 22, 24, 26]
+    all_awg = [14, 16, 18, 20, 22, 24, 26]
     awg_choices = [g for g in all_awg if g <= constraints.thinnest_wire_awg]
     if not awg_choices:
         awg_choices = [all_awg[0]]  # fallback to thickest wire
@@ -454,7 +456,7 @@ def build_difficulty(N, R_mean, L, awg, num_layers, inner_r):
         penalty += 0.15 * min((num_layers - 1) / 3, 1.0)
 
     # Non-standard wire gauge (20 AWG = easiest)
-    gauge_penalty = {18: 0.05, 20: 0.0, 22: 0.03, 24: 0.08, 26: 0.12}
+    gauge_penalty = {14: 0.15, 16: 0.10, 18: 0.05, 20: 0.0, 22: 0.03, 24: 0.08, 26: 0.12}
     penalty += gauge_penalty.get(awg, 0.1)
 
     return min(penalty, 1.0)

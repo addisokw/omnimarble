@@ -5,8 +5,8 @@ N-MOSFET with a dedicated gate driver**. Low-side is the whole trick — the FET
 source sits at ground, so the gate driver references ground and there's no
 bootstrap / high-side complication.
 
-Use this once the Stage-0/1 "does it fire" checks pass on a cheap module; this is
-the switch you sweep energy and timing against in Stage 2.
+Use this for Stage 1–2. A cheap prebuilt module can stand in for the Stage-0
+electronics bring-up, but not the real experiment — see *Prebuilt board?* below.
 
 ## Schematic
 
@@ -85,6 +85,34 @@ the switch you sweep energy and timing against in Stage 2.
    amps. Logic ground (Pico, driver) touches it at **one point only** — the bank
    negative — or pulse noise walks straight into your sensor readings.
 3. **Gate default-off.** Rgs guarantees Q1 is off before the driver powers up.
+
+## Prebuilt board? Stage-0 only
+
+Worth knowing after surveying the market: no off-the-shelf board gives you **both**
+adequate voltage **and** high pulse current at our bank voltage, because the cheap
+opto-isolated MOSFET switch modules are single-FET boards with a fixed volt-amp
+product:
+
+| Prebuilt variant | Fits our ≤45 V bank? | Pulse current? |
+|---|---|---|
+| 5–36 V modules (F5305S, ANMBEST) | ✗ under-volted | — |
+| **100 V / 9.4 A** isolated switch | ✓ | ✗ current-starved (9.4 A) |
+| 80 V / 18 A | ✓ | ✗ weak |
+| 40 V / 50 A · 30 V / 161 A | ✗ under-volted | ✓ (but too low V) |
+
+They're also opto-isolated at PWM speeds (~µs turn-off), which smears the precise
+cutoff this whole rig depends on. **Verdict:**
+- A **100 V / 9.4 A opto-isolated module** (3.3 V/5 V trigger) is a fine, *isolated,
+  zero-build* switch for **Stage 0** — dry-firing the logic and confirming Pico
+  timing + sensor reads at low energy without exposing the Pico.
+- It is **too current-starved and too timing-smeared for Stage 1–2**. The discrete
+  switch above is the only thing that delivers both the current headroom and the
+  deterministic ~ns cutoff the timing experiment measures.
+
+Also avoid the "IGBT driver boards" in this market — they're **inverter / welder
+back-ends** (continuous SPWM controllers, high-voltage bus, no single-shot trigger),
+not triggerable pulse switches, and an IGBT is the wrong device below ~250 V anyway
+(VCE(sat) floor + turn-off tail current).
 
 ## Safe first-light sequence
 

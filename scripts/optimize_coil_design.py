@@ -1,4 +1,4 @@
-"""Multi-objective coil design optimizer using the validated v7 PINN surrogate.
+"""Multi-objective coil design optimizer using the production PINN surrogate.
 
 Searches a 6D design space (N, inner_radius, L, wire_gauge, V0, C_uF) using
 Latin Hypercube Sampling. Balances launch velocity against voltage danger,
