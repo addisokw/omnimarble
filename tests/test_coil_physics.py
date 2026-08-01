@@ -58,12 +58,16 @@ def test_rlc_regime(cp):
 def test_rlc_current_peak_and_clamp(cp):
     # Analytic time of the damped-sine peak
     t_peak = math.atan2(cp.omega_d, cp.alpha) / cp.omega_d
+    assert cp.t_peak == pytest.approx(t_peak, rel=1e-12)
+
+    # peak_current is the TRUE peak of I(t) in every regime -- the same
+    # definition rlc_circuit and the bench both use. The undamped amplitude
+    # V/(omega_d*L) is kept separately; it is strictly larger.
     I_peak_true = cp.rlc_current(t_peak)
-    # cp.peak_current is the undamped amplitude V/(omega_d*L); the true damped
-    # peak is smaller by exp(-alpha*t_peak)*sin(omega_d*t_peak)
-    expected = cp.peak_current * math.exp(-cp.alpha * t_peak) * math.sin(cp.omega_d * t_peak)
-    assert I_peak_true == pytest.approx(expected, rel=1e-12)
-    assert 0 < I_peak_true < cp.peak_current
+    assert I_peak_true == pytest.approx(cp.peak_current, rel=1e-12)
+    assert 0 < cp.peak_current < cp.peak_current_undamped
+    assert cp.peak_current_undamped == pytest.approx(
+        cp.charge_voltage / (cp.omega_d * cp.inductance_H), rel=1e-12)
 
     # Local maximum: neighbors are lower
     assert cp.rlc_current(t_peak * 0.9) < I_peak_true

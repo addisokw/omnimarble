@@ -39,7 +39,6 @@ from rlc_circuit import (
     compute_rlc_params,
     coupled_rlc_step_substep,
     rlc_current,
-    rlc_current_with_cutoff,
     compute_winding_geometry,
     compute_dc_resistance,
     compute_ac_resistance,
@@ -218,6 +217,7 @@ def main():
     trigger_time = 0.0
     pulse_cut = False
     pulse_cut_time = 0.0
+    I_at_cut = 0.0
     prev_z_along = None
     approach_velocity = None
     exit_velocity = None
@@ -292,6 +292,9 @@ def main():
             if gate_triggered.get("cutoff"):
                 pulse_cut = True
                 pulse_cut_time = t
+                # Seed the freewheel decay from the LIVE coupled state -- see
+                # the decay branch below.
+                I_at_cut = abs(circuit_state["I"])
                 print(f"  t={t:.4f}s: [EM] PULSE CUT at z_along={z_along:.1f}mm")
 
         # Exit velocity from vel_out pair
@@ -322,9 +325,17 @@ def main():
                 )
                 current = circuit_state.get("_I_rms", abs(circuit_state["I"]))
             else:
-                t_rel = t - trigger_time
-                t_cut_rel = pulse_cut_time - trigger_time
-                current = rlc_current_with_cutoff(t_rel, t_cut_rel, rlc)
+                # Switch open: freewheel through the diode, decaying L/R from
+                # the current the COUPLED solver actually reached at the cut.
+                # rlc_current_with_cutoff() re-derives that seed from the
+                # uncoupled closed form, which throws away the back-EMF history
+                # and makes the current step at the seam. Harmless while the
+                # cutoff gate sits far past the end of the pulse; first-order
+                # once the cut lands at the current peak, as the rig's does.
+                decay = math.exp(
+                    -(rlc["total_resistance_ohm"] / rlc["inductance_H"])
+                    * (t - pulse_cut_time))
+                current = I_at_cut * decay
                 circuit_state["I"] = current
 
             V_cap = circuit_state["Q_cap"] / rlc["capacitance_F"]

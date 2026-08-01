@@ -22,6 +22,16 @@ COPPER_DENSITY_G_MM3 = 8.96e-3
 
 STEEL_DENSITY_G_MM3 = 7.8e-3
 
+# How close zeta must be to 1.0 to be called critically damped. Must match
+# rlc_circuit.compute_rlc_params or the two models classify the same circuit
+# differently and the cross-check test fails intermittently -- the bench rig's
+# 2-can point lands at zeta ~= 1.02, near enough to that seam to matter.
+CRITICAL_ZETA_TOL = 1e-6
+
+# Below this separation the overdamped two-exponential form is numerically 0/0
+# and the critically-damped limit is used instead.
+SPLIT_ROOT_TOL = 1e-12
+
 DEFAULT_GATES = {
     "vel_in_1": -60.0,
     "vel_in_2": -40.0,
@@ -127,23 +137,45 @@ class CoilPhysics:
         self.omega_0 = 1.0 / math.sqrt(L * C) if L > 0 and C > 0 else 0
         self.zeta = self.alpha / self.omega_0 if self.omega_0 > 0 else 999
 
+        V0 = self.charge_voltage
         if self.zeta < 1.0:
             self.omega_d = math.sqrt(self.omega_0 ** 2 - self.alpha ** 2)
             self.regime = "underdamped"
-            self.peak_current = (self.charge_voltage / (self.omega_d * L)) if L > 0 else 0
+            self.peak_current_undamped = (V0 / (self.omega_d * L)) if L > 0 else 0
             self.t_peak = math.atan2(self.omega_d, self.alpha) / self.omega_d
+            self.peak_current = (
+                self.peak_current_undamped
+                * math.exp(-self.alpha * self.t_peak)
+                * math.sin(self.omega_d * self.t_peak)
+            )
             self.t_zero_crossing = math.pi / self.omega_d
-        elif abs(self.zeta - 1.0) < 0.01:
+        elif abs(self.zeta - 1.0) < CRITICAL_ZETA_TOL:
             self.omega_d = 0
             self.regime = "critically_damped"
-            self.peak_current = (self.charge_voltage / L) / (self.alpha * math.e) if L > 0 else 0
             self.t_peak = 1.0 / self.alpha if self.alpha > 0 else 0
+            self.peak_current = (V0 / L) * self.t_peak * math.exp(-1.0) if L > 0 else 0
+            self.peak_current_undamped = self.peak_current
             self.t_zero_crossing = 5.0 / self.alpha if self.alpha > 0 else 0
         else:
             self.omega_d = 0
             self.regime = "overdamped"
-            self.peak_current = 0
+            # dI/dt = 0 -> s1*exp(s1*t) = s2*exp(s2*t) -> t = ln(s2/s1)/(s1-s2).
+            # Both roots are negative with s1 > s2, so s2/s1 > 1 and t_peak > 0.
+            # This branch used to hardcode peak_current = 0, which reported 0 A
+            # for every overdamped bank -- i.e. most of the rig's C-sweep.
+            s1 = -self.alpha + math.sqrt(self.alpha ** 2 - self.omega_0 ** 2)
+            s2 = -self.alpha - math.sqrt(self.alpha ** 2 - self.omega_0 ** 2)
             self.t_peak = 0
+            self.peak_current = 0
+            if abs(s1 - s2) > SPLIT_ROOT_TOL and s1 != 0 and s2 != 0 and L > 0:
+                t_peak = math.log(s2 / s1) / (s1 - s2)
+                if t_peak > 0:
+                    self.t_peak = t_peak
+                    self.peak_current = abs(
+                        (V0 / (L * (s1 - s2)))
+                        * (math.exp(s1 * t_peak) - math.exp(s2 * t_peak))
+                    )
+            self.peak_current_undamped = self.peak_current
             self.t_zero_crossing = 5.0 / self.alpha if self.alpha > 0 else 0
 
         self.stored_energy = 0.5 * C * self.charge_voltage ** 2
@@ -163,10 +195,15 @@ class CoilPhysics:
         else:
             s1 = -self.alpha + math.sqrt(self.alpha ** 2 - self.omega_0 ** 2)
             s2 = -self.alpha - math.sqrt(self.alpha ** 2 - self.omega_0 ** 2)
-            if abs(s1 - s2) > 1e-12:
+            if abs(s1 - s2) > SPLIT_ROOT_TOL:
                 I = (self.charge_voltage / (self.inductance_H * (s1 - s2))) * \
                     (math.exp(s1 * t_since_trigger) - math.exp(s2 * t_since_trigger))
             else:
-                I = 0.0
+                # s1 -> s2: the two-exponential form is 0/0. Its limit is the
+                # critically-damped waveform, so use that rather than returning
+                # a silent zero -- the rig's 2-can point sits at zeta ~= 1.02,
+                # close enough to land here.
+                I = (self.charge_voltage / self.inductance_H) * \
+                    t_since_trigger * math.exp(-self.alpha * t_since_trigger)
 
         return max(I, 0.0) if self.has_flyback_diode else I

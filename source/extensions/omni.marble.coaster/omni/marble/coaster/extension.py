@@ -265,6 +265,7 @@ class MarbleCoasterExtension(omni.ext.IExt):
         self._prev_B = 0.0
         self._pulse_cut = False
         self._pulse_cut_time = 0.0
+        self._I_at_cut = 0.0
 
         # PhysX force API (initialized on simulation start when stage is available)
         self._physx_sim = None
@@ -639,6 +640,7 @@ class MarbleCoasterExtension(omni.ext.IExt):
         self._sim_time = 0.0
         self._pulse_cut = False
         self._pulse_cut_time = 0.0
+        self._I_at_cut = 0.0
         self._log_counter = 0
         self._traj_rows = []
 
@@ -750,6 +752,7 @@ class MarbleCoasterExtension(omni.ext.IExt):
         self._sim_time = 0.0
         self._pulse_cut = False
         self._pulse_cut_time = 0.0
+        self._I_at_cut = 0.0
         self._circuit_I = 0.0
         p = self._params
         self._circuit_Q_cap = p.capacitance_uF * 1e-6 * p.charge_voltage
@@ -930,6 +933,9 @@ class MarbleCoasterExtension(omni.ext.IExt):
                 if self._gate_triggered.get("cutoff"):
                     self._pulse_cut = True
                     self._pulse_cut_time = self._sim_time
+                    # Seed the freewheel decay from the LIVE coupled-ODE state.
+                    # See the decay branch below for why this is captured here.
+                    self._I_at_cut = abs(self._circuit_I)
                     carb.log_warn(f"[EM] PULSE CUT at z_along={z_along:.1f}mm "
                                   f"t={self._sim_time:.4f}s")
 
@@ -956,9 +962,20 @@ class MarbleCoasterExtension(omni.ext.IExt):
                 self._coupled_rlc_step(dt, z_along, vel_axial)
                 current = getattr(self, '_circuit_I_rms', abs(self._circuit_I))
             else:
+                # Switch open: the coil freewheels through the diode and the
+                # current decays L/R from whatever it actually was at the cut.
+                #
+                # This used to re-derive the seed from the UNCOUPLED closed form
+                # (_rlc_current), discarding the back-EMF history the coupled
+                # RK4 solver had accumulated -- so the current stepped
+                # discontinuously at the seam. It was invisible while the cutoff
+                # gate sat far downstream (in the 300V run the cut lands 32ms
+                # after a ~240us pulse, by which point both seeds are ~0), but
+                # the rig cuts AT the current peak, where the two disagree by
+                # the full back-EMF contribution.
                 dt_cut = self._sim_time - self._pulse_cut_time
-                I_at_cut = self._rlc_current(self._pulse_cut_time - self._trigger_time)
-                current = I_at_cut * math.exp(-(p.R_total / p.inductance_H) * dt_cut)
+                current = self._I_at_cut * math.exp(
+                    -(p.R_total / p.inductance_H) * dt_cut)
                 self._circuit_I = current
 
             V_cap = self._circuit_Q_cap / (p.capacitance_uF * 1e-6)
