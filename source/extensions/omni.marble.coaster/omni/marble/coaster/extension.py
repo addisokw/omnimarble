@@ -39,6 +39,12 @@ from .coil_physics import (
 torch = None
 pinn_loader = None
 
+# CUDA build installed into Kit's Python. Kept in step with the project's
+# own .venv (pyproject/uv.lock) so Kit and the headless scripts run the
+# PINN on the same torch.
+TORCH_CUDA_VERSION = "2.10.0+cu128"
+TORCHVISION_CUDA_VERSION = "0.25.0+cu128"  # the pairing for torch 2.10.x
+
 
 def _find_project_root() -> Path:
     """Walk up from this file to the omnimarble project root.
@@ -378,10 +384,28 @@ class MarbleCoasterExtension(omni.ext.IExt):
         global torch, pinn_loader
 
         carb.log_warn("[PINN] Installing torch (first launch may take a few minutes)…")
+        # Pin the +cu128 build explicitly. Given a bare "torch" and only an
+        # --extra-index-url, pip is free to prefer the newer CPU-only wheel
+        # PyPI ships for Windows, which silently drops the PINN onto the CPU.
+        # The local-version tag exists only on the PyTorch index, so the pin
+        # forces the CUDA build while PyPI stays available for torch's deps.
         omni.kit.pipapi.install(
-            "torch",
+            f"torch=={TORCH_CUDA_VERSION}",
             extra_args=[
-                "--extra-index-url", "https://download.pytorch.org/whl/cu128",
+                "--index-url", "https://download.pytorch.org/whl/cu128",
+                "--extra-index-url", "https://pypi.org/simple",
+            ],
+        )
+        # physicsnemo imports timm, which imports torchvision. Pin the matching
+        # +cu128 build first — otherwise physicsnemo's own resolution pulls a
+        # PyPI torchvision built against a different torch and the import
+        # chain dies with ModuleNotFoundError deep inside timm.
+        omni.kit.pipapi.install(
+            f"torchvision=={TORCHVISION_CUDA_VERSION}",
+            module="torchvision",
+            extra_args=[
+                "--index-url", "https://download.pytorch.org/whl/cu128",
+                "--extra-index-url", "https://pypi.org/simple",
             ],
         )
         carb.log_warn("[PINN] Installing nvidia-physicsnemo…")
@@ -398,6 +422,18 @@ class MarbleCoasterExtension(omni.ext.IExt):
         pinn_loader = _pinn_loader
 
         carb.log_warn(f"[PINN] torch {torch.__version__} (CUDA {torch.version.cuda}), physicsnemo ready")
+
+        # pipapi skips the install when the module already imports, so a
+        # stale CPU-only wheel survives every relaunch. Say so loudly rather
+        # than quietly running the PINN ~an order of magnitude slower.
+        if not torch.cuda.is_available():
+            carb.log_error(
+                f"[PINN] torch {torch.__version__} has no CUDA support — the PINN "
+                f"will run on the CPU. Expected {TORCH_CUDA_VERSION}. Remove the "
+                f"stale torch from Kit's pip env "
+                f"(%LOCALAPPDATA%\\ov\\data\\Kit\\omnimarble\\1.0\\pip3-envs) "
+                f"and relaunch to reinstall the CUDA build."
+            )
 
     def _load_pinn(self) -> "torch.nn.Module":
         """Load the trained PINN checkpoint via the shared loader."""

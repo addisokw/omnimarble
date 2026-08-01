@@ -82,7 +82,9 @@ All computations use mm-based units:
 
 ### Prerequisites
 
-- Python 3.12+
+- Python 3.12 or 3.13 — **not 3.14**, which has no `usd-core` wheels. If your
+  system Python is newer, pin the project with `uv python pin 3.13` (uv
+  downloads a managed interpreter; `.python-version` is gitignored).
 - [uv](https://docs.astral.sh/uv/) package manager
 - NVIDIA GPU (CUDA) for PINN training and inference
 - [NVIDIA Kit SDK](https://github.com/NVIDIA-Omniverse/kit-app-template) for the Omniverse app
@@ -94,6 +96,13 @@ uv sync
 ```
 
 This installs torch (CUDA 12.8), nvidia-physicsnemo, scipy, matplotlib, numpy, and other dependencies from `pyproject.toml`.
+
+Verify the GPU is actually usable — a Blackwell card (RTX 50-series) needs
+`sm_120` in torch's arch list, which the pinned cu128 build provides:
+
+```bash
+uv run python -c "import torch; print(torch.__version__, torch.cuda.get_arch_list())"
+```
 
 ### 2. Train the PINN (or use existing checkpoint)
 
@@ -171,17 +180,56 @@ Headless optimization — prints top designs to console with Pareto plot saved t
 
 #### First-time setup
 
-```bash
-# Clone kit-app-template next to this project
-git clone https://github.com/NVIDIA-Omniverse/kit-app-template.git ../kit-app-template
-cd ../kit-app-template
+The Kit SDK is not vendored. `omnimarble.kit.bat` expects a
+`kit-app-template` checkout **as a sibling of this repo**, with our app and
+extension registered inside it. None of that wiring is tracked in git, so it
+has to be redone on each new machine.
 
-# Build Kit SDK (downloads ~10GB, one-time)
+Verified against kit-app-template **110.2.0**. Windows needs no Visual Studio
+— that template disables the C++ build step on `windows-x86_64`.
+
+```cmd
+REM 1. Clone kit-app-template next to this project
+git clone https://github.com/NVIDIA-Omniverse/kit-app-template.git ..\kit-app-template
+
+REM 2. A fresh clone has no source/ tree at all -- create it.
+mkdir ..\kit-app-template\source\apps
+mkdir ..\kit-app-template\source\extensions
+
+REM 3. Register the app. Template 110.x expects a FLAT .kit file in
+REM    source/apps -- not the nested apps/<name>/<name>.kit of older releases.
+copy source\apps\omnimarble\omnimarble.kit ..\kit-app-template\source\apps\
+
+REM 4. Link the extension back here so it stays live-editable. Path.resolve()
+REM    follows the junction, so the extension's config/coil_params.json
+REM    ancestor-walk still finds this project root.
+mklink /J ..\kit-app-template\source\extensions\omni.marble.coaster ^
+          source\extensions\omni.marble.coaster
+```
+
+Then register the app in the two build files in `../kit-app-template`.
+Extensions are auto-discovered from the directory layout, so only the app
+needs declaring:
+
+```lua
+-- premake5.lua -- append after the "Apps:" comment at the end
+define_app("omnimarble.kit")
+```
+
+```toml
+# repo.toml -- the section already exists with an empty list; fill it in
+[repo_precache_exts]
+apps = [
+    "${root}/source/apps/omnimarble.kit",
+]
+```
+
+Finally build (downloads ~10GB, one-time):
+
+```cmd
+cd ..\kit-app-template
 .\repo.bat build
-
-# Generate the launch script
-.\repo.bat launch --app omnimarble
-cd ../omnimarble
+cd ..\omnimarble
 ```
 
 #### Launch
@@ -191,6 +239,27 @@ omnimarble.kit.bat
 ```
 
 This launches Kit with the extension loaded directly from `source/extensions/` (live editing).
+
+**First launch is slow.** The extension pip-installs its own torch into Kit's
+embedded Python (3.12) at
+`%LOCALAPPDATA%\ov\data\Kit\omnimarble\1.0\pip3-envs\default-3.12` — a
+separate environment from this project's `.venv`. Both `torch` and
+`torchvision` are pinned to `+cu128` builds in `extension.py`
+(`TORCH_CUDA_VERSION` / `TORCHVISION_CUDA_VERSION`); without the pins pip
+prefers PyPI's CPU-only Windows wheel and the PINN runs ~13x slower with no
+other symptom. A healthy startup logs:
+
+```
+[PINN] torch 2.10.0+cu128 (CUDA 12.8), physicsnemo ready
+[PINN] Loaded on cuda, checkpoint: ...\pinn_best.pt
+```
+
+If it says `CUDA None` or `Loaded on cpu`, a stale wheel is cached:
+`omni.kit.pipapi.install` skips whenever the module already imports, so
+delete `torch*` from that `pip3-envs` directory and relaunch. Note that
+`torchvision` must go back too — `physicsnemo` imports `timm`, which imports
+`torchvision`, and its absence surfaces misleadingly as *"Checkpoint was
+trained with physicsnemo backend but nvidia-physicsnemo is not installed"*.
 
 #### In the Kit app
 
@@ -226,6 +295,12 @@ approach/exit velocity, boost ratio).
 A committed reference artifact from the real Kit/PhysX/PINN path:
 `results/trajectories/kit_launch_300V_470uF_20260702_174018.csv` — 300V run,
 approach 208 mm/s, gate-measured exit 937.5 mm/s (**4.5x boost**).
+
+Use it to check a fresh machine: rerun the autorun command above and diff.
+The gate-measured numbers and the `current_A` / `V_cap_V` / `Bz_T` /
+`wire_temp_C` columns should match exactly. Positions and velocities drift
+slightly (sub-0.1mm, well under 1% on velocity) — that is PhysX solver
+nondeterminism across machines, not a broken setup.
 
 #### What happens during simulation
 
