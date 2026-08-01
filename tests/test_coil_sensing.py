@@ -218,3 +218,121 @@ def test_estimator_is_unbiased_on_a_flat_pass():
         for i in range(5):
             station.record(i, i * (22.14 / 1000.0) / v_mps * 1e6)
         assert math.isclose(station.velocity_mps(), v_mps, rel_tol=1e-12)
+
+
+# -- firing controller --------------------------------------------------------
+
+from coil_sensing import FiringController  # noqa: E402
+
+FIRING = {
+    "required_channels": 5,
+    "last_channel_to_coil_mm": 35.0,
+    "trigger_lead_us": 0.0,
+    "trigger_slip_us": 2000.0,
+    "capture_window_ms": 200.0,
+    "trigger_timeout_ms": 3000.0,
+}
+
+
+def _pass_through(station, v_mps, t0_us=0.0, channels=5):
+    """Feed a constant-velocity pass, returning the last crossing time."""
+    step = (22.14 / 1000.0) / v_mps * 1e6
+    t = t0_us
+    for i in range(channels):
+        station.record(i, t)
+        t += step
+    return t - step
+
+
+def test_fires_when_the_marble_reaches_the_coil_face():
+    """The pulse is timed to land at the coil entry face, 35mm on."""
+    v = 1.006
+    station = VirtualStation("A", list(range(5)), 22.14)
+    last = _pass_through(station, v)
+    ctl = FiringController(FIRING, station)
+
+    assert ctl.update(last) == FiringController.ARMED
+    assert ctl.v_in_mps == pytest.approx(v, rel=1e-9)
+
+    expected_transit_us = 35.0 / 1000.0 / v * 1e6
+    assert ctl.fire_at_us == pytest.approx(last + expected_transit_us, rel=1e-9)
+
+    assert ctl.update(ctl.fire_at_us - 1.0) == FiringController.ARMED
+    assert ctl.update(ctl.fire_at_us) == FiringController.FIRED
+
+
+def test_partial_capture_aborts_the_shot():
+    """4/5 channels cannot time a shot, so the rig abandons it entirely."""
+    station = VirtualStation("A", list(range(5)), 22.14)
+    last = _pass_through(station, 1.0, channels=4)
+    ctl = FiringController(FIRING, station)
+    ctl.update(last)
+    assert ctl.update(last + 201_000.0) == FiringController.ABORTED
+    assert "4/5" in ctl.abort_reason
+    assert ctl.fire_at_us is None       # and no fire time is invented
+
+
+def test_no_marble_times_out():
+    station = VirtualStation("A", list(range(5)), 22.14)
+    ctl = FiringController(FIRING, station)
+    assert ctl.update(0.0) == FiringController.WAITING
+    assert ctl.update(3_000_001.0) == FiringController.ABORTED
+    assert "timeout" in ctl.abort_reason
+
+
+def test_late_poll_aborts_rather_than_firing_behind_the_marble():
+    """Past the slip allowance there is nothing left to push."""
+    station = VirtualStation("A", list(range(5)), 22.14)
+    last = _pass_through(station, 1.0)
+    ctl = FiringController(FIRING, station)
+    # 35mm at 1m/s is 35ms of transit; poll 40ms late, beyond the 2ms slip.
+    assert ctl.update(last + 40_000.0) == FiringController.ABORTED
+    assert "past the coil" in ctl.abort_reason
+
+
+def test_slower_marble_gets_a_longer_delay():
+    """The delay is computed from the fit, so it must track v_in."""
+    delays = []
+    for v in (0.5, 1.0, 2.0):
+        station = VirtualStation("A", list(range(5)), 22.14)
+        last = _pass_through(station, v)
+        ctl = FiringController(FIRING, station)
+        ctl.update(last)
+        delays.append(ctl.fire_at_us - last)
+    assert delays[0] > delays[1] > delays[2]
+    assert delays[0] == pytest.approx(2 * delays[1], rel=1e-9)
+
+
+def test_controller_uses_the_estimator_not_the_truth():
+    """A wrong pitch must mistime the shot -- that is the bias being modelled.
+
+    If the controller could see the marble's real speed it would fire correctly
+    despite a bad pitch, and the sim would hide a real rig failure mode.
+    """
+    v_true = 1.0
+    good = VirtualStation("A", list(range(5)), 22.14)
+    bad = VirtualStation("A", list(range(5)), 11.0)
+    last_good = _pass_through(good, v_true)
+    for i in range(5):
+        bad.record(i, good._ts[i])
+
+    ctl_good, ctl_bad = FiringController(FIRING, good), FiringController(FIRING, bad)
+    ctl_good.update(last_good)
+    ctl_bad.update(last_good)
+    # Half the pitch reads half the speed, so it waits ~twice as long.
+    assert ctl_bad.fire_at_us > ctl_good.fire_at_us
+    assert (ctl_bad.fire_at_us - last_good) == pytest.approx(
+        (22.14 / 11.0) * (ctl_good.fire_at_us - last_good), rel=1e-9)
+
+
+def test_suspect_fit_is_flagged_but_still_fires():
+    """A high residual warns; it does not abort (firmware/main.py:104-110)."""
+    station = VirtualStation("A", list(range(5)), 22.14)
+    t, v = 0.0, 1.0
+    for i in range(5):
+        station.record(i, t)
+        t += (22.14 / 1000.0) / v * 1e6
+        v *= 0.75
+    ctl = FiringController(FIRING, station)
+    assert ctl.update(station.last_tick()) == FiringController.ARMED
+    assert ctl.fit_suspect
