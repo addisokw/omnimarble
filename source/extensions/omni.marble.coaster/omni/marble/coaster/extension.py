@@ -79,6 +79,9 @@ RIG_SCENE_PATH = USD_DIR / "rig_scene.usda"
 # 0.300mm above the track axis so the ball's centre height is continuous.
 RIG_BALL_CENTRE_Y = 13.0159
 RIG_COIL_AXIS_Z = 9.9893
+# Manual-stepping batch per app frame. Affects responsiveness only --
+# every step is a fixed dt, so the result cannot depend on it.
+MANUAL_STEPS_PER_FRAME = 2000
 PINN_CHECKPOINT = OMNIMARBLE_PROJECT / "models" / "pinn_checkpoint" / "pinn_best.pt"
 TRAJECTORY_DIR = OMNIMARBLE_PROJECT / "results" / "trajectories"
 
@@ -272,6 +275,24 @@ class MarbleCoasterExtension(omni.ext.IExt):
         # reproduce trajectories captured before this was fixed.
         self._physx = None
         self._prev_marble_pos = None
+        # Manual stepping: drive PhysX ourselves instead of letting the
+        # timeline batch substeps. Default ON for station (rig) profiles, whose
+        # 191us pulse the timeline cannot resolve; opt-in otherwise.
+        self._manual_active = False
+        self._manual_time = 0.0
+        self._stage_update_node = None
+        self._scene_path_id = None
+        settings_now = carb.settings.get_settings()
+        self._manual_dt = float(
+            settings_now.get_as_float("/exts/omni.marble.coaster/manualStepUs")
+            or 20.0) * 1e-6
+        # Read as a STRING, not a bool. carb's get_as_bool returns False for a
+        # missing key rather than None, so "unset" and "explicitly false" are
+        # indistinguishable through it -- the same trap that makes the
+        # hardcoded defaults in CoilParams._get dead code. get_as_string gives
+        # "" when unset, which is the distinction we actually need here.
+        manual_setting = (settings_now.get_as_string(
+            "/exts/omni.marble.coaster/manualStepping") or "").strip().lower()
         self._use_physx_pose = carb.settings.get_settings().get_as_bool(
             "/exts/omni.marble.coaster/usePhysxPose") is not False
         try:
@@ -282,7 +303,15 @@ class MarbleCoasterExtension(omni.ext.IExt):
 
         self._params = CoilParams()
 
-        if self._profile is not None and self._profile.sensing_mode == "stations":
+        is_rig = (self._profile is not None
+                  and self._profile.sensing_mode == "stations")
+        if manual_setting in ("true", "1", "yes"):
+            self._manual_stepping = True
+        elif manual_setting in ("false", "0", "no"):
+            self._manual_stepping = False
+        else:
+            self._manual_stepping = is_rig    # unset: on for the rig
+        if is_rig:
             self._apply_rig_circuit()
 
         # Load PINN model (required — fail loudly if missing)
@@ -397,6 +426,15 @@ class MarbleCoasterExtension(omni.ext.IExt):
                 self._autorun_state = "running"
 
         elif state == "running":
+            # Under manual stepping nothing advances the simulation but us.
+            # Batched per frame so the UI stays responsive; the batch size only
+            # affects responsiveness, never the result, because each step is a
+            # fixed dt regardless of how much wall time the frame took. That
+            # independence from wall clock is the other half of what manual
+            # stepping buys.
+            if self._manual_active:
+                self._manual_step_batch(MANUAL_STEPS_PER_FRAME)
+
             done = self._sim_time >= self._autorun_max_sim_s
             # Stop shortly after the last exit gate fires so the CSV
             # captures the measured exit velocity plus some coast
@@ -834,15 +872,102 @@ class MarbleCoasterExtension(omni.ext.IExt):
         self._stage_id = UsdUtils.StageCache.Get().GetId(stage).ToLongInt()
         self._marble_prim_id = PhysicsSchemaTools.sdfPathToInt("/World/Marble")
 
-        self._subscribe_physics()
         self._params.log_specs()
 
+        if self._manual_stepping:
+            self._begin_manual_stepping()
+            return
+
+        self._subscribe_physics()
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
         self._status_label.text = "Simulation running (PhysX-native + PINN)..."
 
+    # -- manual stepping ---------------------------------------------------
+    #
+    # The timeline drives PhysX by handing it a whole frame of elapsed time,
+    # which it divides into 1/timeStepsPerSecond substeps -- but it only makes
+    # the body pose observable once the entire batch has been fetched. At 500
+    # steps/s against a ~31Hz tick that is 16 steps, so the pose is frozen for
+    # ~32ms at a time. The rig's pulse is 191us: 168x SHORTER than that, so the
+    # whole shot would be computed at one stale position.
+    #
+    # Manual stepping removes the batching entirely. simulate_scene() is
+    # documented to "simulate the exact elapsedTime passed. No substepping will
+    # happen", so one simulate/fetch pair per step gives per-step truth by
+    # construction -- and makes the run deterministic, since it no longer
+    # depends on how much wall time a frame took.
+    #
+    # This is necessarily offline: resolving a 191us pulse needs 25-50kHz, and
+    # PhysX at 10kHz already runs at ~0.05x real time. That is fine -- we are
+    # computing a trajectory, not driving hardware.
+
+    def _begin_manual_stepping(self):
+        """Unhook PhysX from the app tick and drive it ourselves."""
+        stage = omni.usd.get_context().get_stage()
+        self._manual_time = 0.0
+        self._scene_path_id = PhysicsSchemaTools.sdfPathToInt("/World/PhysicsScene")
+
+        try:
+            # Aliased import: a bare `import omni.physxstageupdate` would bind
+            # the name `omni` locally and shadow the module-level one for the
+            # whole function.
+            import omni.physxstageupdate as physxstageupdate
+            self._stage_update_node = \
+                physxstageupdate.get_physx_stage_update_node_interface()
+            if self._stage_update_node.is_node_attached():
+                self._stage_update_node.detach_node()
+        except Exception as ex:                            # noqa: BLE001
+            carb.log_error(f"[MANUAL] could not detach the stage-update node "
+                           f"({ex}); the timeline would fight our stepping")
+            self._manual_stepping = False
+            self._subscribe_physics()
+            omni.timeline.get_timeline_interface().play()
+            return
+
+        self._physx.start_simulation()
+        self._physx_sim.attach_stage(self._stage_id)
+        self._manual_active = True
+
+        carb.log_warn(
+            f"[MANUAL] driving PhysX directly at dt={self._manual_dt*1e6:.0f}us "
+            f"({1.0/self._manual_dt:.0f} Hz), stage-update node detached. "
+            f"The 191us pulse now gets "
+            f"{191e-6/self._manual_dt:.0f} samples.")
+        self._status_label.text = "Simulation running (manual PhysX stepping)..."
+
+    def _manual_step_batch(self, count):
+        """Advance `count` steps, one simulate/fetch pair each."""
+        if not self._manual_active:
+            return
+        dt = self._manual_dt
+        for _ in range(count):
+            self._physx_sim.simulate_scene(self._scene_path_id, dt,
+                                           self._manual_time)
+            self._physx_sim.fetch_results_scene(self._scene_path_id)
+            self._manual_time += dt
+            self._on_physics_step(dt)
+
+    def _end_manual_stepping(self):
+        """Hand PhysX back to the timeline."""
+        if not self._manual_active:
+            return
+        self._manual_active = False
+        try:
+            # Publish the final pose so the viewport is not left behind.
+            self._physx.update_transformations(True, True, False)
+            self._physx_sim.detach_stage()
+        except Exception as ex:                            # noqa: BLE001
+            carb.log_warn(f"[MANUAL] detach failed: {ex}")
+        try:
+            if self._stage_update_node is not None:
+                self._stage_update_node.attach_node()
+        except Exception as ex:                            # noqa: BLE001
+            carb.log_warn(f"[MANUAL] could not reattach the stage node: {ex}")
+
     def _stop_simulation(self):
         """Stop simulation and write the trajectory CSV."""
+        self._end_manual_stepping()
         timeline = omni.timeline.get_timeline_interface()
         timeline.stop()
         self._unsubscribe_physics()

@@ -30,8 +30,21 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
+# The active reference, captured AFTER the physics corrections (freewheel
+# resistance, eddy drag, magnetic saturation) and the PhysX solver config
+# changes (CPU dynamics, external forces every iteration, enhanced
+# determinism). Its gate-measured result is identical to the pre-fix run --
+# 208.33 -> 937.5 mm/s, 4.5x -- but the underlying columns moved, so the digest
+# had to be re-pinned.
 FIXTURE = (ROOT / "results" / "trajectories"
-           / "kit_launch_300V_470uF_20260702_174018.csv")
+           / "kit_launch_300V_470uF_20260801_225831.csv")
+
+# Kept deliberately: the run captured BEFORE those corrections. It is no longer
+# the reference -- it pins physics now known to be wrong -- but it is the
+# artefact the 4.5x boost claim was originally made against, and the pair
+# documents exactly what the corrections did.
+LEGACY_PREFIX_FIXTURE = (ROOT / "results" / "trajectories"
+                         / "kit_launch_300V_470uF_20260702_174018.csv")
 
 # Pure functions of (t, position) -> reproduce bit-for-bit on any machine.
 DETERMINISTIC_COLUMNS = (
@@ -77,7 +90,7 @@ EXPECTED_ROW_COUNT = 528
 #   uv run python -c "import sys; sys.path.insert(0,'tests'); \
 #     from test_trajectory_regression import *; \
 #     print(_digest(load_trajectory(FIXTURE)[2], DETERMINISTIC_COLUMNS))"
-_PINNED_DIGEST = "1b1236de45d36b27cd71bc169667d4f13dbde62c3b3abed3a84eafa40a670a82"
+_PINNED_DIGEST = "1c43879a1a976572dfcb5dc88ed02a2ef4ed998fe2364330d3d32cc5bf629cd4"
 
 
 def load_trajectory(path):
@@ -218,3 +231,27 @@ if __name__ == "__main__":
         sys.exit(1)
     print(f"OK: {Path(args.compare_to).name} matches "
           f"{Path(args.reference).name} within tolerance")
+
+
+def test_the_prefix_artefact_is_kept_and_still_makes_the_same_claim():
+    """The pre-correction run is retained, and the headline result is unchanged.
+
+    The physics corrections moved positions by ~1mm and Bz by ~1.4%, but the
+    gate-measured boost is identical -- because the gates are sampled on the
+    32ms observation cadence, which is far coarser than the change. That is
+    reassuring about the claim and damning about the cadence, and it is exactly
+    why the rig profile needs manual stepping.
+    """
+    if not LEGACY_PREFIX_FIXTURE.exists():
+        pytest.skip("pre-fix artefact not present")
+    old_meta, _, old_rows = load_trajectory(LEGACY_PREFIX_FIXTURE)
+    new_meta, _, new_rows = load_trajectory(FIXTURE)
+
+    for key in ("approach_velocity_mm_s", "exit_velocity_mm_s", "boost_ratio"):
+        assert old_meta[key] == new_meta[key], (
+            f"{key} changed between the pre- and post-fix references")
+    assert len(old_rows) == len(new_rows)
+
+    # ...while the underlying physics did move.
+    assert _digest(old_rows, DETERMINISTIC_COLUMNS) != \
+        _digest(new_rows, DETERMINISTIC_COLUMNS)
