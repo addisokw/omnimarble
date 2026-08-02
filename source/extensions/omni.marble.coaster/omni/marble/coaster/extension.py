@@ -267,6 +267,21 @@ class MarbleCoasterExtension(omni.ext.IExt):
         except ProfileError as ex:
             carb.log_error(f"[RIG] Could not load rig profile: {ex}")
 
+        # PhysX interface, for reading the marble pose per physics step rather
+        # than from the render-decoupled USD stage. Off switch:
+        #   --/exts/omni.marble.coaster/usePhysxPose=false
+        # which restores the old USD read (and its 32ms staleness) -- needed to
+        # reproduce trajectories captured before this was fixed.
+        self._physx = None
+        self._prev_marble_pos = None
+        self._use_physx_pose = carb.settings.get_settings().get_as_bool(
+            "/exts/omni.marble.coaster/usePhysxPose") is not False
+        try:
+            self._physx = omni.physx.get_physx_interface()
+        except Exception as ex:                           # noqa: BLE001
+            carb.log_warn(f"[PHYSX] interface unavailable ({ex}); "
+                          f"marble pose will come from USD and lag the step")
+
         self._params = CoilParams()
 
         if self._profile is not None and self._profile.sensing_mode == "stations":
@@ -704,7 +719,17 @@ class MarbleCoasterExtension(omni.ext.IExt):
         if physics_scene:
             physx_scene = PhysxSchema.PhysxSceneAPI.Apply(physics_scene)
             physx_scene.CreateEnableCCDAttr(True)
-            physx_scene.CreateTimeStepsPerSecondAttr(500)
+            # PhysX runs this many 1/N-second substeps per app tick, but the
+            # body pose is only observable once the whole tick's advance has
+            # been fetched. So the number of substeps per tick IS the
+            # observation staleness: at 500 steps/s against a ~31Hz tick the
+            # pose freezes for 16 steps (~32ms) at a time. Overridable so the
+            # trade-off between integration resolution and observation
+            # resolution can be measured rather than assumed.
+            steps = int(carb.settings.get_settings().get_as_int(
+                "/exts/omni.marble.coaster/physicsStepsPerSecond") or 0) or 500
+            physx_scene.CreateTimeStepsPerSecondAttr(steps)
+            carb.log_warn(f"[PHYSX] timeStepsPerSecond={steps}, CCD on")
             physx_scene.CreateEnableStabilizationAttr(True)
 
         marble_prim = stage.GetPrimAtPath("/World/Marble")
@@ -979,15 +1004,51 @@ class MarbleCoasterExtension(omni.ext.IExt):
         if not marble_prim:
             return
 
-        # Read marble state
-        xform = UsdGeom.Xformable(marble_prim)
-        world_transform = xform.ComputeLocalToWorldTransform(Usd.TimeCode.Default())
-        pos = world_transform.ExtractTranslation()
-        marble_pos = [pos[0], pos[1], pos[2]]
+        # --- Read marble state, from PhysX rather than from USD -------------
+        #
+        # PhysX steps on its own thread and writes transforms back to the USD
+        # stage cache when it finishes, decoupled from the render tick. Reading
+        # USD therefore gives a pose that is frozen for ~16 physics steps
+        # (~32ms) and then jumps ~20mm at once. That is fatal here: the rig's
+        # pulse is 191us, 168x SHORTER than that interval, so the whole shot
+        # would be computed at one stale position.
+        #
+        # Enabling Time Steps Interpolation does NOT fix this -- it smooths the
+        # decoupled poses for the VIEWPORT by synthesising intermediates, which
+        # is exactly what a measurement must not consume. Query the engine.
+        marble_pos = None
+        if self._physx is not None and self._use_physx_pose:
+            try:
+                xf = self._physx.get_rigidbody_transformation("/World/Marble")
+                if xf and xf.get("ret_val"):
+                    p3 = xf["position"]
+                    marble_pos = [p3[0], p3[1], p3[2]]
+            except Exception as ex:                       # noqa: BLE001
+                if not getattr(self, "_physx_pose_warned", False):
+                    self._physx_pose_warned = True
+                    carb.log_warn(f"[PHYSX] pose query unavailable ({ex}); "
+                                  f"falling back to the USD transform, which "
+                                  f"lags the physics step")
+                self._use_physx_pose = False
 
-        rb_api = UsdPhysics.RigidBodyAPI(marble_prim)
-        vel_attr = rb_api.GetVelocityAttr()
-        cur_vel = vel_attr.Get() if vel_attr else None
+        if marble_pos is None:
+            xform = UsdGeom.Xformable(marble_prim)
+            world_transform = xform.ComputeLocalToWorldTransform(Usd.TimeCode.Default())
+            pos = world_transform.ExtractTranslation()
+            marble_pos = [pos[0], pos[1], pos[2]]
+
+        # Velocity from USD is decoupled the same way, so differentiate the
+        # per-step poses instead. With a true per-step position this is the
+        # more trustworthy of the two.
+        cur_vel = None
+        if self._use_physx_pose and self._prev_marble_pos is not None and dt > 0:
+            cur_vel = [(marble_pos[i] - self._prev_marble_pos[i]) / dt
+                       for i in range(3)]
+        if cur_vel is None:
+            rb_api = UsdPhysics.RigidBodyAPI(marble_prim)
+            vel_attr = rb_api.GetVelocityAttr()
+            cur_vel = vel_attr.Get() if vel_attr else None
+        self._prev_marble_pos = list(marble_pos)
 
         # Coil-local coordinates
         p = self._params
