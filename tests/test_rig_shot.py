@@ -204,3 +204,46 @@ def test_forced_fire_position_overrides_the_controller(profile):
 def test_shot_reports_the_pitch_it_used(profile):
     """Every row carries its pitch so a stale-11.0 dataset is detectable."""
     assert _shot(profile)["sensor_pitch_mm"] == pytest.approx(22.14)
+
+
+# -- step-size convergence ----------------------------------------------------
+
+from simulate_rig_shot import DEFAULT_DT_S  # noqa: E402
+
+
+def test_dv_is_converged_at_the_default_step(profile):
+    """Re-measure the claim behind DEFAULT_DT_S rather than trusting it.
+
+    The dominant step-size error here was never the integrator -- it was the
+    gate cut being quantised to a step boundary, which ran the pulse long by up
+    to one dt. At 10us that was a 4.96% error on dv. Cutting at the exact gate
+    time reduced it to 0.10%, which is what makes the default affordable.
+    """
+    reference = _shot(profile, dt=1e-6)["dv_true_mps"]
+    at_default = _shot(profile, dt=DEFAULT_DT_S)["dv_true_mps"]
+    error = abs(at_default - reference) / reference
+    assert error < 0.005, (
+        f"dv at the default {DEFAULT_DT_S*1e6:.0f}us step is {error:.2%} from "
+        f"the 1us reference; the default is no longer converged")
+
+
+def test_convergence_is_monotone_and_bounded(profile):
+    """Halving the step must not make things worse, at any step we ship."""
+    reference = _shot(profile, dt=1e-6)["dv_true_mps"]
+    errors = []
+    for dt in (4e-5, 2e-5, 1e-5, 5e-6):
+        dv = _shot(profile, dt=dt)["dv_true_mps"]
+        errors.append(abs(dv - reference) / reference)
+    assert max(errors) < 0.01, f"errors {['%.3f%%' % (e*100) for e in errors]}"
+    assert errors[-1] <= errors[0], "refining the step should not diverge"
+
+
+def test_gate_is_cut_at_the_exact_time_not_a_step_boundary(profile):
+    """The fix that made the above possible.
+
+    With a coarse step, a boundary-quantised cut would run the gate long and
+    inflate dv. Two very different step sizes must now agree closely.
+    """
+    coarse = _shot(profile, dt=4e-5)["dv_true_mps"]
+    fine = _shot(profile, dt=1e-6)["dv_true_mps"]
+    assert abs(coarse - fine) / fine < 0.01

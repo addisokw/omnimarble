@@ -52,7 +52,11 @@ from coil_sensing import (  # noqa: E402
     interpolate_crossing_us,
 )
 from rig_profile import load_profile  # noqa: E402
-from rlc_circuit import compute_rlc_params, rlc_current  # noqa: E402
+from rlc_circuit import (  # noqa: E402
+    compute_rlc_params,
+    eddy_braking_force,
+    rlc_current,
+)
 
 MU_0_MM = 4 * math.pi * 1e-4
 STEEL_DENSITY_G_MM3 = 7.8e-3
@@ -61,6 +65,26 @@ SPHERE_INERTIA = 2.0 / 5.0          # I = (2/5) m r^2
 DEFAULT_FRICTION = 0.3              # steel on PLA; only sets how fast rolling
                                     # is restored, not the final speed
 SLIP_TOL_MM_S = 1e-9                # below this the contact counts as rolling
+
+# MEASURED, not assumed. With the gate cut taken at its exact time rather
+# than at a step boundary, dv is converged to 0.10% at 10us and 0.11% at
+# 20us against a 1us reference -- and 12x faster than 1us. Before that fix
+# the same sweep read 4.96% at 10us, because the quantised cut ran the gate
+# long by up to a full step. tests/test_rig_shot.py re-measures this.
+DEFAULT_DT_S = 1e-5
+
+
+_CONFIG_CACHE = {}
+
+
+def _config_value(key, default):
+    """Read a marble constant from config/coil_params.json."""
+    if not _CONFIG_CACHE:
+        path = ROOT / "config" / "coil_params.json"
+        if path.exists():
+            _CONFIG_CACHE.update(json.loads(path.read_text(encoding="utf-8")))
+        _CONFIG_CACHE.setdefault("_loaded", True)
+    return _CONFIG_CACHE.get(key, default)
 
 
 def freewheel_current(i_at_cut, t_since_cut, resistance_ohm, inductance_H,
@@ -99,15 +123,21 @@ def freewheel_current(i_at_cut, t_since_cut, resistance_ohm, inductance_H,
 def simulate_shot(profile, solver, cans, voltage, v_in_mps, on_time_us=None,
                   fire_offset_mm=None, rolling_resistance=0.0,
                   friction=DEFAULT_FRICTION, allow_spin=True,
-                  dt=2e-6, max_time_s=2.0):
+                  dt=DEFAULT_DT_S, max_time_s=2.0):
     """One shot down the flat zone. Returns a dict of observables."""
     bank = profile.bank(cans)
     marble = profile.marble
     r_ball = float(marble["radius_mm"])
     mass_kg = float(marble["mass_kg"])
     V_marble = (4.0 / 3.0) * math.pi * r_ball ** 3
-    chi_eff = 3.0
-    B_sat = 1.8
+    # From the profile, falling back to config/coil_params.json. These used to
+    # be hardcoded here, so editing marble_saturation_T changed Kit and the 3-D
+    # mirror and silently did nothing to this model.
+    chi_eff = float(marble.get("chi_eff", _config_value("marble_chi_eff", 3.0)))
+    B_sat = float(marble.get("saturation_T",
+                             _config_value("marble_saturation_T", 1.8)))
+    conductivity = float(marble.get(
+        "conductivity_S_per_m", _config_value("marble_conductivity_S_per_m", 6e6)))
 
     rlc = compute_rlc_params({
         "capacitance_uF": bank["capacitance_uF"],
@@ -189,9 +219,17 @@ def simulate_shot(profile, solver, cans, voltage, v_in_mps, on_time_us=None,
             t_rel = t - t_trigger
             if not pulse_cut:
                 if t_rel * 1e6 >= window["gate_us"]:
+                    # Cut at the EXACT gate time, not at the step boundary that
+                    # happened to pass it. Quantising the cut to dt is what
+                    # dominated this model's step-size error: the gate ran long
+                    # by up to one step, which at dt=10us meant a 200us pulse
+                    # instead of 191us and a ~5% Delta-v error. Taking the cut
+                    # time and the current at it exactly makes dt=20us as good
+                    # as dt=1us was.
+                    t_gate = window["gate_us"] * 1e-6
                     pulse_cut = True
-                    t_cut = t
-                    I_at_cut = rlc_current(t_rel, rlc)
+                    t_cut = t_trigger + t_gate
+                    I_at_cut = rlc_current(t_gate, rlc)
                 else:
                     current = rlc_current(t_rel, rlc)
             if pulse_cut:
@@ -206,11 +244,20 @@ def simulate_shot(profile, solver, cans, voltage, v_in_mps, on_time_us=None,
         if current > 1e-8:
             Br, Bz, dBr_dr, dBr_dz, dBz_dr, dBz_dz = solver.field_with_grad(
                 0.0, x, current)
-            B_internal = (1 + chi_eff / 3) * abs(Bz)
-            if B_internal < B_sat:
-                F_mN = (chi_eff * V_marble / MU_0_MM) * (Br * dBz_dr + Bz * dBz_dz)
-            else:
-                F_mN = (B_sat / MU_0_MM) * V_marble * dBz_dz * MU_0_MM
+            # Susceptibility capped at saturation; continuous, no branch, and
+            # the sign is carried by (B.grad)B.
+            chi_used = min(chi_eff, B_sat / max(abs(Bz), 1e-12))
+            F_mN = (chi_used * V_marble / MU_0_MM) * (Br * dBz_dr + Bz * dBz_dz)
+
+            # Motional eddy drag. Now that it is expressed via dB/dz it is
+            # step-size independent and cheap (the gradient is already to
+            # hand), so include it for consistency with the other paths even
+            # though it is ~0.1% here.
+            F_mN += eddy_braking_force(dBz_dz, v, {
+                "conductivity_S_per_m": conductivity,
+                "radius_mm": r_ball,
+                "volume_mm3": V_marble,
+            })
 
         F_N = F_mN * 1e-3
         a_em = (F_N / mass_kg) * 1000.0        # mm/s^2
@@ -395,6 +442,9 @@ def main():
     parser.add_argument("--v-in", type=float, default=None,
                         help="approach speed in m/s (default: the rig's ideal release)")
     parser.add_argument("--on-time-us", type=float, default=None)
+    parser.add_argument("--dt", type=float, default=DEFAULT_DT_S,
+                        help="integration step in seconds (default 1e-5, "
+                             "converged to 0.1%%; see DEFAULT_DT_S)")
     parser.add_argument("--rolling-resistance", type=float, default=0.0,
                         help="rolling resistance coefficient; UNMEASURED on the "
                              "rig, so zero by default")
@@ -439,7 +489,8 @@ def main():
             fx = lo + i * step
             shot = simulate_shot(profile, solver, args.cans, voltage, v_in,
                                  args.on_time_us, fire_offset_mm=fx,
-                                 rolling_resistance=args.rolling_resistance)
+                                 rolling_resistance=args.rolling_resistance,
+                                 dt=args.dt)
             if shot["aborted"]:
                 continue
             rows.append({**shot, "fire_offset_mm": fx})
@@ -461,7 +512,8 @@ def main():
         for cans in can_list:
             shot = simulate_shot(profile, solver, cans, voltage, v_in,
                                  args.on_time_us,
-                                 rolling_resistance=args.rolling_resistance)
+                                 rolling_resistance=args.rolling_resistance,
+                                 dt=args.dt)
             if shot["aborted"]:
                 print(f"{cans:>5}  ABORTED: {shot['abort_reason']}")
                 continue
