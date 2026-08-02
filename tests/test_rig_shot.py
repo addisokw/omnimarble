@@ -30,20 +30,32 @@ MU_0_MM = 4 * math.pi * 1e-4
 class ConstantForceSolver:
     """Uniform axial dBz/dz over a window, so the impulse is exactly known.
 
-    Scaled to give a Delta-v of order 0.02 m/s, matching what the real coil
-    delivers. Magnitude matters here: at an unrealistically strong force the
-    ball is still slipping when it reaches station B, and conclusions that hold
-    on the real rig (notably mu-independence) stop holding.
+    The field SCALES WITH CURRENT, as the real one does: the PINN is trained on
+    B/I and the loader multiplies by I, so force goes as I^2. An earlier version
+    of this stub returned a fixed field regardless of current, which quietly
+    turned every test into a measurement of "how long is the current above
+    1e-8" rather than of the impulse -- and made a correct change to the
+    freewheel tail look like a 3.7x regression.
+
+    Scaled so a ~211A peak gives a Delta-v of order 0.02 m/s, matching the real
+    coil. Magnitude matters: at an unrealistically strong force the ball is
+    still slipping when it reaches station B, and conclusions that hold on the
+    real rig (notably mu-independence) stop holding.
     """
 
-    def __init__(self, dbz_dz=6.7e-4, bz=0.05, window=(-25.0, -5.0)):
-        self.dbz_dz = dbz_dz
-        self.bz = bz
+    REF_CURRENT_A = 211.0
+
+    def __init__(self, dbz_dz=7.2e-3, bz=0.05, window=(-25.0, -5.0)):
+        # Stored per-amp, so the caller still thinks in field units at the
+        # reference current.
+        self.dbz_dz_per_A = dbz_dz / self.REF_CURRENT_A
+        self.bz_per_A = bz / self.REF_CURRENT_A
         self.window = window
 
     def field_with_grad(self, r, z, current_A):
         if self.window[0] <= z <= self.window[1]:
-            return (0.0, self.bz, 0.0, 0.0, 0.0, self.dbz_dz)
+            return (0.0, self.bz_per_A * current_A, 0.0, 0.0, 0.0,
+                    self.dbz_dz_per_A * current_A)
         return (0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 
 

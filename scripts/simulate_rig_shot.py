@@ -63,6 +63,39 @@ DEFAULT_FRICTION = 0.3              # steel on PLA; only sets how fast rolling
 SLIP_TOL_MM_S = 1e-9                # below this the contact counts as rolling
 
 
+def freewheel_current(i_at_cut, t_since_cut, resistance_ohm, inductance_H,
+                      diode_vf_V=0.0):
+    """Coil current after the switch opens, freewheeling through the diode.
+
+    TWO things the naive exp(-R_loop*t/L) gets wrong, and the tail carries a
+    large share of the impulse so both matter:
+
+    1. R is the COIL's resistance, not the discharge loop's. Once the switch
+       opens the capacitor bank is out of the circuit and its ESR no longer
+       participates, so the current decays more slowly than the loop figure
+       implies (tau 167us vs 109us on this rig).
+    2. A diode is not a resistor. Its ~0.8V forward drop adds a constant
+       opposing term, so L di/dt = -(I*R + Vf) and the current reaches
+       EXACTLY ZERO in finite time rather than decaying asymptotically:
+
+           I(t) = (I0 + Vf/R) * exp(-R t / L) - Vf/R
+
+       That matters for a tail this long: at 211A it truncates the decay at
+       ~557us instead of trailing off indefinitely.
+
+    Falls back to the pure exponential when Vf is zero.
+    """
+    if t_since_cut <= 0.0:
+        return i_at_cut
+    if inductance_H <= 0.0 or resistance_ohm <= 0.0:
+        return 0.0
+    decay = math.exp(-(resistance_ohm / inductance_H) * t_since_cut)
+    if diode_vf_V <= 0.0:
+        return max(i_at_cut * decay, 0.0)
+    offset = diode_vf_V / resistance_ohm
+    return max((i_at_cut + offset) * decay - offset, 0.0)
+
+
 def simulate_shot(profile, solver, cans, voltage, v_in_mps, on_time_us=None,
                   fire_offset_mm=None, rolling_resistance=0.0,
                   friction=DEFAULT_FRICTION, allow_spin=True,
@@ -162,9 +195,10 @@ def simulate_shot(profile, solver, cans, voltage, v_in_mps, on_time_us=None,
                 else:
                     current = rlc_current(t_rel, rlc)
             if pulse_cut:
-                decay = math.exp(-(rlc["total_resistance_ohm"]
-                                   / rlc["inductance_H"]) * (t - t_cut))
-                current = I_at_cut * decay
+                current = freewheel_current(
+                    I_at_cut, t - t_cut,
+                    bank["freewheel_resistance_ohm"], rlc["inductance_H"],
+                    bank["diode_vf_V"])
             i_peak = max(i_peak, current)
 
         # -- EM force ------------------------------------------------------

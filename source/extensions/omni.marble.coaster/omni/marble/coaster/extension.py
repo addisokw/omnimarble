@@ -1247,9 +1247,21 @@ class MarbleCoasterExtension(omni.ext.IExt):
                 # after a ~240us pulse, by which point both seeds are ~0), but
                 # the rig cuts AT the current peak, where the two disagree by
                 # the full back-EMF contribution.
+                # Decay through the FREEWHEEL loop -- the coil and its leads,
+                # NOT the discharge loop. The capacitor bank is out of circuit
+                # once the switch opens, so its ESR no longer participates and
+                # the tail lasts longer than R_total implies. The diode's
+                # forward drop is a constant opposing term, so the current
+                # reaches exactly zero in finite time rather than trailing off.
                 dt_cut = self._sim_time - self._pulse_cut_time
-                current = self._I_at_cut * math.exp(
-                    -(p.R_total / p.inductance_H) * dt_cut)
+                r_fw = getattr(p, "R_freewheel", p.R_total)
+                decay = math.exp(-(r_fw / p.inductance_H) * dt_cut)
+                vf = p.diode_vf_V if p.has_flyback_diode else 0.0
+                if vf > 0.0 and r_fw > 0.0:
+                    offset = vf / r_fw
+                    current = max((self._I_at_cut + offset) * decay - offset, 0.0)
+                else:
+                    current = max(self._I_at_cut * decay, 0.0)
                 self._circuit_I = current
 
             V_cap = self._circuit_Q_cap / (p.capacitance_uF * 1e-6)

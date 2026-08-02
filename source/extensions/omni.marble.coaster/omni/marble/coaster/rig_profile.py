@@ -99,11 +99,25 @@ class RigProfile:
         else:
             loop_r = (float(loop_at_1can) - can_esr) + esr
 
+        # Once the switch opens the bank is OUT of the circuit -- the current
+        # freewheels through the coil and the diode alone, so the bank's ESR no
+        # longer participates and the decay is slower than the discharge loop
+        # would suggest (tau 167us on the coil's own 107 mOhm, against 109us if
+        # you wrongly reuse the 164 mOhm loop figure). The tail carries a large
+        # share of the impulse, so this distinction is worth real Delta-v.
+        #
+        # The coil's resistance is frequency dependent (107 mOhm at 1kHz,
+        # 140 at 10kHz); the ring-down sits near 1/(2*pi*tau) ~ 950 Hz, so the
+        # 1kHz figure is the right one here.
+        freewheel_r = float(measured.get("coil_resistance_ohm", loop_r))
+
         return {
             "cans": cans,
             "capacitance_uF": can_uF * cans,
             "esr_ohm": esr,
             "loop_resistance_ohm": loop_r,
+            "freewheel_resistance_ohm": freewheel_r,
+            "diode_vf_V": float(self.circuit.get("diode_vf_V", 0.84)),
             "inductance_uH": float(measured["inductance_uH"]),
         }
 

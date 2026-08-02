@@ -63,6 +63,7 @@ class CoilPhysics:
                  capacitance_uF=470.0, charge_voltage=50.0,
                  esr=0.01, wiring_resistance=0.02,
                  switch_type="MOSFET", has_flyback_diode=True,
+                 diode_vf_V=0.84,
                  marble_radius=5.0, chi_eff=3.0, B_sat=1.8, conductivity=6e6,
                  ambient_temp=20.0, gates=None):
         self.inner_radius = inner_radius
@@ -78,6 +79,9 @@ class CoilPhysics:
         self.wiring_resistance = wiring_resistance
         self.switch_type = switch_type
         self.has_flyback_diode = has_flyback_diode
+        # MBR60100 Schottky, the part the bench rig actually fits. Only
+        # used for the freewheel decay, where it truncates the tail.
+        self.diode_vf_V = diode_vf_V
 
         self.marble_radius = marble_radius
         self.chi_eff = chi_eff
@@ -130,6 +134,13 @@ class CoilPhysics:
         # Total resistance
         self.R_total = self.R_dc + self.esr + self.wiring_resistance
 
+        # Resistance of the FREEWHEEL loop, which is not the discharge loop.
+        # Once the switch opens the capacitor bank is out of the circuit, so
+        # its ESR no longer participates and the current decays more slowly
+        # than R_total implies. Using R_total here understates the tail, and
+        # the tail carries a large share of the impulse.
+        self.R_freewheel = self.R_dc + self.wiring_resistance
+
         # Provenance, so a caller can tell a measurement from an estimate.
         # apply_measured() flips these and keeps the derived value alongside.
         self.L_source = "derived"
@@ -139,7 +150,8 @@ class CoilPhysics:
 
         self._recompute_rlc()
 
-    def apply_measured(self, inductance_uH=None, total_resistance_ohm=None):
+    def apply_measured(self, inductance_uH=None, total_resistance_ohm=None,
+                       coil_resistance_ohm=None):
         """Override the geometry-derived L and R with measured values.
 
         The bench is the arbiter. The rig's coil measures 17.9 uH where the
@@ -158,6 +170,10 @@ class CoilPhysics:
             self.R_total_derived = self.R_total
             self.R_total = float(total_resistance_ohm)
             self.R_source = "measured"
+        if coil_resistance_ohm is not None:
+            # The freewheel loop is the coil plus its leads; the bank's ESR is
+            # out of circuit once the switch opens.
+            self.R_freewheel = float(coil_resistance_ohm)
         self._recompute_rlc()
 
     def _recompute_rlc(self):
