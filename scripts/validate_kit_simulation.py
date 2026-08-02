@@ -34,6 +34,17 @@ if not TRACK_STL.exists():
     TRACK_STL = ROOT / "data" / "track.stl"
 
 sys.path.insert(0, str(ROOT / "scripts"))
+# The sensing/profile modules live with the Kit extension so that Kit and this
+# headless mirror share one implementation rather than two that drift.
+sys.path.insert(0, str(ROOT / "source" / "extensions" / "omni.marble.coaster"
+                       / "omni" / "marble" / "coaster"))
+from coil_sensing import (
+    FiringController,
+    VirtualStation,
+    crossed as channel_crossed,
+    interpolate_crossing_us,
+)
+from rig_profile import load_profile
 from analytical_bfield import MU_0_MM, solenoid_field
 from rlc_circuit import (
     compute_rlc_params,
@@ -98,8 +109,16 @@ def check_collision(pos, vel, radius, mesh):
     return False, pos, vel
 
 
-def build_rlc_from_config(params: dict) -> dict:
-    """Derive RLC parameters from config."""
+def build_rlc_from_config(params: dict, measured: dict = None) -> dict:
+    """Derive RLC parameters from config, letting measured values win.
+
+    `measured` may carry `inductance_uH` and/or `loop_resistance_ohm` read off
+    the real coil. They override the geometry-derived estimates, because the
+    bench is the arbiter: the rig's coil measures 17.9 uH where the geometry
+    model predicts 17.3, and its loop resistance (0.164 ohm, the whole
+    discharge path) is not the same quantity as the coil's own DC resistance
+    plus a guessed ESR.
+    """
     geom = compute_winding_geometry(params)
     R_dc = compute_dc_resistance(geom["wire_length_mm"], geom["wire_cross_section_mm2"],
                                   params.get("ambient_temperature_C", 20.0))
@@ -122,16 +141,24 @@ def build_rlc_from_config(params: dict) -> dict:
                                      geom["num_layers"], freq_Hz)
     R_total_ac = ac_info["R_ac_ohm"] + R_esr + R_wiring
 
+    measured = measured or {}
+    L_uH_used = measured.get("inductance_uH", L_uH)
+    R_total_used = measured.get("loop_resistance_ohm", R_total_ac)
+
     rlc = compute_rlc_params({
         "capacitance_uF": params.get("capacitance_uF", 470.0),
         "charge_voltage_V": params.get("charge_voltage_V", 50.0),
-        "inductance_uH": L_uH,
-        "total_resistance_ohm": R_total_ac,
+        "inductance_uH": L_uH_used,
+        "total_resistance_ohm": R_total_used,
     })
     rlc["_wire_mass_g"] = geom["wire_mass_g"]
     rlc["_R_dc_base"] = R_dc
     rlc["_R_esr"] = R_esr
     rlc["_R_wiring"] = R_wiring
+    rlc["_L_source"] = "measured" if "inductance_uH" in measured else "derived"
+    rlc["_R_source"] = "measured" if "loop_resistance_ohm" in measured else "derived"
+    rlc["_L_derived_uH"] = L_uH
+    rlc["_R_derived_ohm"] = R_total_ac
     return rlc
 
 
@@ -142,12 +169,42 @@ def main():
                              "(default); analytical is a PINN-independent cross-check")
     parser.add_argument("--voltage", type=float, default=None,
                         help="Override charge voltage (V), e.g. 300 for a launch-demo run")
+    parser.add_argument("--rig-profile", default=None,
+                        help="named profile from config/rig_profile.json "
+                             "(default: that file's default_profile)")
+    parser.add_argument("--cans", type=int, default=None,
+                        help="populated capacitor cans, 1..5 (station profiles only). "
+                             "Bank ESR parallels as 1/n, so this moves R as well as C")
+    parser.add_argument("--on-time-us", type=float, default=None,
+                        help="gate on-time request in us (station profiles only)")
     args = parser.parse_args()
+
+    profile = load_profile(ROOT, args.rig_profile)
 
     params = json.loads(CONFIG_PATH.read_text())
     if args.voltage is not None:
         params["charge_voltage_V"] = args.voltage
-    rlc = build_rlc_from_config(params)
+
+    measured = None
+    bank = None
+    if profile.sensing_mode == "stations":
+        # The rig's circuit, not config/coil_params.json. cans moves C and R
+        # together because the bank's ESR parallels down as 1/n.
+        bank = profile.bank(args.cans)
+        params["capacitance_uF"] = bank["capacitance_uF"]
+        if args.voltage is None:
+            params["charge_voltage_V"] = profile.circuit["charge_voltage_V"]
+        v_max = profile.circuit.get("voltage_max_V")
+        if v_max and params["charge_voltage_V"] > v_max:
+            raise SystemExit(
+                f"charge voltage {params['charge_voltage_V']}V exceeds the "
+                f"{v_max}V board invariant for profile {profile.name!r}")
+        measured = {
+            "inductance_uH": bank["inductance_uH"],
+            "loop_resistance_ohm": bank["loop_resistance_ohm"],
+        }
+
+    rlc = build_rlc_from_config(params, measured)
 
     solver = None
     if args.field == "pinn":
@@ -156,9 +213,14 @@ def main():
         solver = WarpBFieldSolver(params, chi_eff=3.0)
 
     chi_eff = 3.0
-    marble_radius = MARBLE_RADIUS
+    marble_radius = float(profile.marble.get("radius_mm", MARBLE_RADIUS))
     V_marble = (4 / 3) * math.pi * marble_radius ** 3
-    marble_mass_kg = V_marble * 7.8e-3 * 1e-3
+    if profile.marble.get("mass_kg") is not None:
+        # The rig's ball mass is stated rather than derived. It is ASSUMED
+        # steel upstream, not weighed -- dv scales directly with it.
+        marble_mass_kg = float(profile.marble["mass_kg"])
+    else:
+        marble_mass_kg = V_marble * 7.8e-3 * 1e-3
     marble_mass_g = marble_mass_kg * 1000
 
     coil_pos = np.array(params["position_mm"], dtype=float)
@@ -176,13 +238,38 @@ def main():
         "vel_out_1": 60.0, "vel_out_2": 120.0,
     })
 
+    # Station sensing (rig profiles). The gate path above is untouched so the
+    # legacy profile keeps reproducing the committed 300V fixture exactly.
+    stations = {}
+    firing_ctl = None
+    gate_window = None
+    if profile.sensing_mode == "stations":
+        for name, spec in profile.station_specs().items():
+            stations[name] = VirtualStation(
+                name, spec["channel_x_mm"], spec["pitch_mm"], rev=spec["order_rev"])
+        firing_ctl = FiringController(
+            profile.firing, stations[profile.sensing["station_in"]])
+        gate_window = profile.gate_window_us(args.on_time_us)
+
     print(f"=== Headless Kit Simulation Validation (field={args.field}) ===")
+    print(f"Profile: {profile.name} ({profile.sensing_mode} / {profile.firing_mode})")
     print(f"Track: {TRACK_STL.name}")
-    print(f"Marble: {marble_mass_g:.2f}g, chi_eff={chi_eff}, B_sat={B_sat}T")
-    print(f"RLC: {rlc['regime']}, zeta={rlc['zeta']:.4f}, I_peak={rlc['peak_current_A']:.0f}A")
+    print(f"Marble: {marble_mass_g:.2f}g, r={marble_radius}mm, "
+          f"chi_eff={chi_eff}, B_sat={B_sat}T")
+    print(f"RLC: {rlc['regime']}, zeta={rlc['zeta']:.4f}, I_peak={rlc['peak_current_A']:.0f}A "
+          f"(L {rlc['_L_source']}, R {rlc['_R_source']})")
     print(f"Stored energy: {rlc['stored_energy_J']:.2f} J")
     print(f"Coil center: {coil_pos}")
-    print(f"IR Gates: {gates}")
+    if bank is not None:
+        print(f"Bank: {bank['cans']} can(s), {bank['capacitance_uF']:.0f}uF, "
+              f"loop R {bank['loop_resistance_ohm']*1000:.0f}mOhm, "
+              f"L {bank['inductance_uH']}uH")
+        print(f"Gate: {gate_window['on_time_us']:.0f}us requested -> "
+              f"{gate_window['gate_us']:.0f}us physical")
+        for name, st in stations.items():
+            print(f"Station {name}: channels {st.channel_x_mm}")
+    else:
+        print(f"IR Gates: {gates}")
 
     # Load track
     mesh = load_track_mesh()
@@ -258,8 +345,23 @@ def main():
         radial_vec = relative - z_along * coil_axis
         r = float(np.linalg.norm(radial_vec))
 
-        # --- Multi-gate IR sensor detection ---
-        if prev_z_along is not None:
+        # --- IR sensing ---
+        if profile.sensing_mode == "stations":
+            # Interpolate the crossing WITHIN the step. Sampling t directly
+            # would quantise every timestamp to the step (2mm at 1m/s against
+            # a 22.14mm pitch, ~9% per channel) and the estimator would be
+            # measuring the solver rather than the marble.
+            if prev_z_along is not None:
+                for station in stations.values():
+                    for idx, ch_x in enumerate(station.channel_x_mm):
+                        if station._got[idx]:
+                            continue
+                        if channel_crossed(prev_z_along, z_along, ch_x):
+                            t_cross_us = interpolate_crossing_us(
+                                prev_z_along, z_along, ch_x, t * 1e6, dt * 1e6)
+                            if t_cross_us is not None:
+                                station.record(idx, t_cross_us)
+        elif prev_z_along is not None:
             for gate_name, gate_pos in gates.items():
                 if gate_triggered[gate_name]:
                     continue
@@ -280,15 +382,46 @@ def main():
                 approach_velocity = dist / dt_gates
                 print(f"  t={t:.4f}s: [IR] Approach velocity: {approach_velocity:.1f} mm/s")
 
+        # --- Firing ---
+        if firing_ctl is not None:
+            if not triggered and firing_ctl.state not in (
+                    FiringController.FIRED, FiringController.ABORTED):
+                state = firing_ctl.update(t * 1e6)
+                if state == FiringController.FIRED:
+                    triggered = True
+                    trigger_time = t
+                    approach_velocity = firing_ctl.v_in_mps * 1000.0
+                    print(f"  t={t:.4f}s: [EM] COIL FIRED at z_along={z_along:.1f}mm, "
+                          f"v_in={approach_velocity:.0f}mm/s "
+                          f"(slack {firing_ctl.slack_us:.0f}us)")
+                    if firing_ctl.fit_suspect:
+                        print(f"  WARNING: station fit residual "
+                              f"{firing_ctl.residual_us:.0f}us -- the straight-line "
+                              f"fit is not describing the motion, so v_in and the "
+                              f"fire timing are suspect")
+                elif state == FiringController.ABORTED:
+                    print(f"  t={t:.4f}s: [EM] SHOT ABORTED: {firing_ctl.abort_reason}")
+
+            # Fixed on-time cutoff: the switch is held for the PHYSICAL window,
+            # which is the logged request minus the measured ~9us overhead.
+            if triggered and not pulse_cut and switch_type == "MOSFET":
+                if (t - trigger_time) * 1e6 >= gate_window["gate_us"]:
+                    pulse_cut = True
+                    pulse_cut_time = t
+                    I_at_cut = abs(circuit_state["I"])
+                    print(f"  t={t:.4f}s: [EM] PULSE CUT after "
+                          f"{gate_window['gate_us']:.0f}us at "
+                          f"z_along={z_along:.1f}mm, I={I_at_cut:.0f}A")
+
         # Entry gate -> fire coil
-        if not triggered and gate_triggered.get("entry"):
+        if firing_ctl is None and not triggered and gate_triggered.get("entry"):
             triggered = True
             trigger_time = t
             v_str = f", v_approach={approach_velocity:.0f}mm/s" if approach_velocity else ""
             print(f"  t={t:.4f}s: [EM] COIL FIRED at z_along={z_along:.1f}mm{v_str}")
 
         # Cutoff gate -> kill pulse
-        if triggered and not pulse_cut and switch_type == "MOSFET":
+        if firing_ctl is None and triggered and not pulse_cut and switch_type == "MOSFET":
             if gate_triggered.get("cutoff"):
                 pulse_cut = True
                 pulse_cut_time = t
@@ -297,10 +430,25 @@ def main():
                 I_at_cut = abs(circuit_state["I"])
                 print(f"  t={t:.4f}s: [EM] PULSE CUT at z_along={z_along:.1f}mm")
 
+        # Exit velocity: station B's own fit, so v_out inherits exactly the
+        # same estimator (and the same biases) as v_in.
+        if firing_ctl is not None and exit_velocity is None:
+            station_out = stations[profile.sensing["station_out"]]
+            if station_out.complete():
+                v_out_mps = station_out.velocity_mps()
+                if v_out_mps:
+                    exit_velocity = v_out_mps * 1000.0
+                    boost = (exit_velocity / approach_velocity
+                             if approach_velocity else 0)
+                    dv = exit_velocity - (approach_velocity or 0.0)
+                    print(f"  t={t:.4f}s: [IR] EXIT VELOCITY: {exit_velocity:.1f} mm/s "
+                          f"= {v_out_mps:.3f} m/s (dv={dv/1000:.3f} m/s, "
+                          f"boost {boost:.2f}x)")
+
         # Exit velocity from vel_out pair
         t_o1 = gate_times.get("vel_out_1")
         t_o2 = gate_times.get("vel_out_2")
-        if t_o1 is not None and t_o2 is not None and exit_velocity is None:
+        if firing_ctl is None and t_o1 is not None and t_o2 is not None and exit_velocity is None:
             dt_out = t_o2 - t_o1
             if abs(dt_out) > 1e-6:
                 dist_out = gates["vel_out_2"] - gates["vel_out_1"]
