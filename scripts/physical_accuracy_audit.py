@@ -270,7 +270,7 @@ def main():
     # Eddy currents
     eddy_params = {"conductivity_S_per_m": params.get("marble_conductivity_S_per_m", 6e6),
                    "radius_mm": marble_radius, "volume_mm3": V_marble_mm3}
-    F_eddy = eddy_braking_force(100.0, 1000.0, eddy_params)
+    F_eddy = eddy_braking_force(0.01, 1000.0, eddy_params)  # dB/dz, T/mm
     print(f"\n  Eddy braking at dB/dt=100 T/s, v=1000mm/s: {F_eddy:.4f} mN")
     assert F_eddy < 0, "Eddy force should oppose motion"
     print(f"  PASS: Eddy force opposes motion")

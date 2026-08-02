@@ -211,38 +211,36 @@ class PINNForceComputer:
                       vel_axial: float = 0.0) -> tuple:
         """Compute (F_r, F_z, Bz) in (mN, mN, T) from a single PINN graph build.
 
-        dB/dt for eddy braking is computed here from the fresh Bz and the
-        caller's previous |B| (backward difference), so the whole step needs
-        exactly one PINN evaluation. Returning Bz also lets the per-step loop
-        log the field without a second forward pass.
+        Returning Bz lets the per-step loop log the field without a second
+        forward pass. `prev_B` and `dt` are accepted for call compatibility and
+        no longer used: eddy drag is computed from dB/dz, not from a
+        step-differenced dB/dt (see rlc_circuit.eddy_braking_force).
         """
         p = self.params
 
         Br, Bz, dBr_dr, dBr_dz, dBz_dr, dBz_dz = self._pinn_field_with_grad(r, z, current)
-        dBdt = (abs(Bz) - prev_B) / dt if dt > 0 else 0.0
 
-        # Saturation check
-        B_internal = (1 + p.chi_eff / 3) * abs(Bz)
-        if B_internal < p.B_sat:
-            prefactor = p.chi_eff * p.V_marble / MU_0_MM
-            F_r = prefactor * (Br * dBr_dr + Bz * dBr_dz)
-            F_z = prefactor * (Br * dBz_dr + Bz * dBz_dz)
-        else:
-            M_sat = p.B_sat / MU_0_MM
-            F_z = M_sat * p.V_marble * dBz_dz * MU_0_MM
-            prefactor = p.chi_eff * p.V_marble / MU_0_MM
-            F_r = prefactor * (Br * dBr_dr + Bz * dBr_dz)
+        # F = (chi_eff * V / mu_0) * (B.grad)B, with the susceptibility capped
+        # so the magnetisation cannot exceed saturation:
+        #     chi_used = min(chi_eff, B_sat/|B|)
+        # which is continuous at chi_eff*|B| = B_sat and needs no branch. The
+        # previous saturated branch computed M_sat = B_sat/mu_0 then multiplied
+        # by mu_0 again -- low by ~796x -- and switched on a different
+        # criterion from the one where the branches meet, so the force jumped
+        # ~800x at the threshold. The sign is already carried by (B.grad)B.
+        chi_used = min(p.chi_eff, p.B_sat / max(abs(Bz), 1e-12))
+        prefactor = chi_used * p.V_marble / MU_0_MM
+        F_r = prefactor * (Br * dBr_dr + Bz * dBr_dz)
+        F_z = prefactor * (Br * dBz_dr + Bz * dBz_dz)
 
-        # Eddy current braking
-        if abs(dBdt) > 1e-10 and abs(vel_axial) > 1e-6:
+        # Motional eddy drag, from dB/dz so it does not depend on the step size.
+        # ~0.07% of the drive at this rig's operating point.
+        if abs(vel_axial) > 1e-6:
             r_m = p.marble_radius * 1e-3
             V_m3 = p.V_marble * 1e-9
-            F_eddy_N = -p.conductivity * V_m3 * r_m ** 2 * dBdt ** 2 / 20.0
-            F_eddy_mN = F_eddy_N * 1000
-            if vel_axial > 0:
-                F_z += F_eddy_mN
-            else:
-                F_z -= F_eddy_mN
+            F_eddy_N = (p.conductivity * V_m3 * r_m ** 2 / 20.0) \
+                * abs(vel_axial * 1e-3) * (dBz_dz * 1e3) ** 2
+            F_z -= math.copysign(F_eddy_N * 1000.0, vel_axial)
 
         return float(F_r), float(F_z), float(Bz)
 
@@ -975,7 +973,9 @@ class MarbleCoasterExtension(omni.ext.IExt):
 
         def derivs(I_v, Q_v):
             V_cap = Q_v / C
-            back_emf = dLdx * (vel_axial * 1e-3) * I_v
+            # [H/mm]*[mm/s] is already V/A; an extra 1e-3 here made the
+            # coupling 1000x too small. See rlc_circuit.coupled_rlc_step.
+            back_emf = dLdx * vel_axial * I_v
             dI = (V_cap - R * I_v - back_emf) / L_eff
             dQ = -I_v
             return dI, dQ

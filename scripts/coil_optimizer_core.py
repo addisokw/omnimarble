@@ -372,9 +372,8 @@ def simulate_launch(z_field, Bz_per_A, dBz_dz_per_A, rlc):
         F_mN = saturated_force(Bz, dBz_dz, marble_params)
 
         # Eddy braking force
-        dBdt = (Bz - Bz_prev) / dt  # T/s
         Bz_prev = Bz
-        F_eddy = eddy_braking_force(dBdt, v, marble_eddy_params)
+        F_eddy = eddy_braking_force(dBz_dz, v, marble_eddy_params)
         F_total = F_mN + F_eddy
 
         # 1 mN = 1e-3 N; a = F/m in m/s^2, then *1000 for mm/s^2
@@ -647,9 +646,8 @@ def rerank_with_coupled_ode(top_candidates, model, device, field_cache,
 
             # Saturated force + eddy braking
             F_mN = saturated_force(Bz, dBz_dz, marble_params)
-            dBdt = (Bz - Bz_prev) / dt
             Bz_prev = Bz
-            F_eddy = eddy_braking_force(dBdt, v, marble_eddy_params)
+            F_eddy = eddy_braking_force(dBz_dz, v, marble_eddy_params)
             F_total = F_mN + F_eddy
 
             a = F_total / MARBLE_MASS_KG  # mm/s^2

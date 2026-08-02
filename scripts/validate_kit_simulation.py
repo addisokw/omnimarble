@@ -500,13 +500,12 @@ def main():
                     Br, Bz, dBr_dr, dBr_dz, dBz_dr, dBz_dz = solver.field_with_grad(
                         r, z_along, current,
                     )
-                    B_internal = (1 + chi_eff / 3) * abs(Bz)
-                    if B_internal < B_sat:
-                        prefactor = chi_eff * V_marble / MU_0_MM
-                        F_z_mN = prefactor * (Br * dBz_dr + Bz * dBz_dz)
-                    else:
-                        M_sat = B_sat / MU_0_MM
-                        F_z_mN = M_sat * V_marble * dBz_dz * MU_0_MM
+                    # Cap the susceptibility so the magnetisation cannot
+                    # exceed saturation; continuous at chi*|B| = B_sat, and the
+                    # sign is already carried by (B.grad)B.
+                    chi_used = min(chi_eff, B_sat / max(abs(Bz), 1e-12))
+                    prefactor = chi_used * V_marble / MU_0_MM
+                    F_z_mN = prefactor * (Br * dBz_dr + Bz * dBz_dz)
                 else:
                     # Analytical cross-check: axial force from Bz * dBz/dz
                     # (finite difference), with saturation
@@ -519,11 +518,10 @@ def main():
 
                     F_z_mN = saturated_force(Bz, dBz_dz, marble_params)
 
-                B_now = abs(Bz)
-                dBdt = (B_now - prev_B) / dt if dt > 0 else 0
-                prev_B = B_now
                 vel_axial = float(np.dot(vel, coil_axis))
-                F_eddy = eddy_braking_force(dBdt, vel_axial, marble_params)
+                # From dB/dz, so the term is step-size independent. It used to
+                # take a backward-differenced dB/dt and so scaled as 1/dt^2.
+                F_eddy = eddy_braking_force(dBz_dz, vel_axial, marble_params)
                 F_z_mN += F_eddy
 
                 force_N = F_z_mN * 1e-3

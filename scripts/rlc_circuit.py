@@ -438,8 +438,13 @@ def coupled_rlc_step(state: dict, dt: float, params: dict, rlc: dict,
     def derivatives(I, Q_cap, pos_z, vel_z):
         L_eff = L_effective(pos_z, params, rlc)
         dLdx = dL_dx(pos_z, params, rlc)
-        # Back-EMF term: dL/dx * dx/dt * I
-        back_emf = dLdx * (vel_z * 1e-3) * I  # vel in mm/s, dLdx in H/mm -> V
+        # Back-EMF: dL/dx * dx/dt * I. dLdx is H/mm and vel_z is mm/s, so
+        # [H/mm]*[mm/s] is ALREADY H/s = V/A -- the extra 1e-3 that used to be
+        # here was a second conversion of an already-consistent product, making
+        # the coupling 1000x too small. Numerically the term is tiny either way
+        # (0.008% of the loop voltage at this rig's 1 m/s), but with the factor
+        # in place the "coupled" solver was not meaningfully coupled at all.
+        back_emf = dLdx * vel_z * I
         V_cap = Q_cap / C
         dI = (V_cap - R * I - back_emf) / L_eff
         dQ_cap = -I  # cap discharges
@@ -531,23 +536,18 @@ def saturated_force(B_external: float, dBdz: float, marble_params: dict) -> floa
     V = marble_params.get("volume_mm3", (4 / 3) * math.pi * 5.0 ** 3)
     B_sat = marble_params.get("saturation_T", 1.8)
 
-    # Internal B-field (demagnetization for a sphere)
-    B_internal = (1 + chi_eff / 3) * abs(B_external)
-
-    if B_internal < B_sat:
-        # Linear regime
-        F_mN = (chi_eff * V / MU_0_MM) * B_external * dBdz
-    else:
-        # Saturated regime: M = M_sat = B_sat / mu_0 (approximately)
-        # Force = M_sat * V * dB/dz
-        # M_sat in A/mm = B_sat / MU_0_MM
-        M_sat = B_sat / MU_0_MM
-        F_mN = M_sat * V * dBdz * MU_0_MM  # back to mN units
-        # Preserve sign from B_external
-        if B_external < 0:
-            F_mN = -abs(F_mN) * (1 if dBdz >= 0 else -1)
-
-    return F_mN
+    # F = V * M * dB/dz, with the magnetisation capped at saturation:
+    #     M = min(chi_eff * H, M_sat),  H = |B|/mu_0,  M_sat = B_sat/mu_0
+    #
+    # Writing it as a capped magnitude makes the transition CONTINUOUS by
+    # construction. The previous form computed M_sat = B_sat/MU_0_MM and then
+    # multiplied by MU_0_MM again, cancelling to B_sat*V*dB/dz -- low by a
+    # factor 1/mu_0 (~796x) -- and switched on a different criterion from the
+    # one at which the two branches are equal, so the force also jumped ~800x
+    # at the threshold. Unreachable at the rig (it needs ~1650 A against a
+    # 211 A peak) but reachable on the legacy high-voltage path.
+    M_eff = min(chi_eff * abs(B_external), B_sat) / MU_0_MM   # A/mm
+    return math.copysign(1.0, B_external) * M_eff * V * dBdz
 
 
 def saturation_factor(B_external: float, chi_eff: float, B_sat: float) -> float:
@@ -579,41 +579,59 @@ def saturation_factor(B_external: float, chi_eff: float, B_sat: float) -> float:
 # Eddy current braking
 # ============================================================
 
-def eddy_braking_force(dBdt: float, marble_vel_z: float, marble_params: dict) -> float:
-    """Compute eddy current braking force on a conductive spherical marble.
+EDDY_SPHERE_COEFF = 20.0   # P = sigma V r^2 (dB/dt)^2 / K, K ~ 15-20 for a sphere
 
-    F_eddy ~ -sigma * V * r^2 * (dB/dt)^2 / 20  (approximate for a sphere)
 
-    The force always opposes motion (decelerating).
+def eddy_braking_force(dBdz: float, marble_vel_z: float, marble_params: dict) -> float:
+    """Motional eddy-current drag on a conductive sphere, from energy balance.
+
+    A sphere in a time-varying field dissipates P = sigma*V*r^2*(dB/dt)^2 / K.
+    For a body MOVING through a static gradient the field it sees changes at
+    dB/dt = v * dB/dz, and the drag follows from F*v = P:
+
+        F = (sigma * V * r^2 / K) * v * (dB/dz)^2
+
+    which is PROPORTIONAL TO VELOCITY, as any drag law must be.
+
+    This previously took dB/dt directly and returned
+    `-sigma*V*r^2*(dB/dt)^2/20`, which was wrong three ways:
+
+      * [S/m][m^3][m^2][T^2/s^2] is a POWER, not a force -- it was labelled N
+        and multiplied by 1000 to "mN";
+      * it did not depend on |v| at all, only on its sign;
+      * callers formed dB/dt as a backward difference over the physics step, so
+        the term scaled as 1/dt^2 -- a step-size artefact rather than physics.
+        It looked small only because the 3-D mirror steps at 2ms and smeared
+        dB/dt down; evaluated at the 1-D model's 2us it came to ~20 N against a
+        ~1.5 N drive, i.e. it would have annihilated the shot.
+
+    Taking dB/dz instead of dB/dt makes the term step-size independent by
+    construction. At the rig's operating point it is ~0.5 mN against a ~500 mN
+    drive -- 0.07%, genuinely negligible, which is the honest answer.
 
     Args:
-        dBdt: time rate of change of B at marble center (T/s)
-        marble_vel_z: marble velocity along coil axis (mm/s)
+        dBdz: axial field gradient at the marble centre (T/mm)
+        marble_vel_z: marble velocity along the coil axis (mm/s)
         marble_params: dict with conductivity_S_per_m, radius_mm, volume_mm3
 
     Returns:
-        Braking force in mN (negative = opposing positive velocity).
+        Braking force in mN, signed to oppose the motion.
     """
+    if marble_vel_z == 0.0 or dBdz == 0.0:
+        return 0.0
+
     sigma = marble_params.get("conductivity_S_per_m", 6e6)
     r_mm = marble_params.get("radius_mm", 5.0)
     V_mm3 = marble_params.get("volume_mm3", (4 / 3) * math.pi * r_mm ** 3)
 
-    # Convert to SI for the force calculation
     r_m = r_mm * 1e-3
     V_m3 = V_mm3 * 1e-9
+    dBdz_SI = dBdz * 1e3            # T/mm -> T/m
+    v_SI = marble_vel_z * 1e-3      # mm/s -> m/s
 
-    # F_eddy = -sigma * V * r^2 * (dB/dt)^2 / 20
-    F_N = -sigma * V_m3 * r_m ** 2 * dBdt ** 2 / 20.0
-
-    # Direction: opposes velocity
-    if marble_vel_z > 0:
-        F_mN = F_N * 1000  # N -> mN, already negative
-    elif marble_vel_z < 0:
-        F_mN = -F_N * 1000  # flip sign to oppose negative velocity
-    else:
-        F_mN = 0.0
-
-    return F_mN
+    F_N = (sigma * V_m3 * r_m ** 2 / EDDY_SPHERE_COEFF) * abs(v_SI) * dBdz_SI ** 2
+    # Always opposes the motion.
+    return -math.copysign(F_N * 1000.0, marble_vel_z)
 
 
 # ============================================================
@@ -971,7 +989,7 @@ if __name__ == "__main__":
     print("\n--- Test 10: Eddy current braking ---")
     eddy_p = {"conductivity_S_per_m": 6e6, "radius_mm": 5.0,
               "volume_mm3": (4/3)*math.pi*5**3}
-    F_eddy = eddy_braking_force(100.0, 1000.0, eddy_p)
+    F_eddy = eddy_braking_force(0.01, 1000.0, eddy_p)   # dB/dz in T/mm
     print(f"  F_eddy at dB/dt=100 T/s, v=1000mm/s: {F_eddy:.4f} mN")
     assert F_eddy < 0, "Eddy force should oppose positive velocity"
 

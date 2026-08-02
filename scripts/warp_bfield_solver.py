@@ -96,7 +96,7 @@ class WarpBFieldSolver:
         return B_mag, dBz_dz
 
     def get_force(self, current_A: float, marble_pos: np.ndarray,
-                  marble_vel: np.ndarray = None, dBdt: float = 0.0) -> tuple:
+                  marble_vel: np.ndarray = None, dBdz: float = 0.0) -> tuple:
         """Compute full force on marble including saturation and eddy currents.
 
         Returns:
@@ -133,7 +133,7 @@ class WarpBFieldSolver:
                 coil_axis = coil_axis / np.linalg.norm(coil_axis)
                 vel_axial = float(np.dot(marble_vel, coil_axis))
 
-            F_eddy = eddy_braking_force(dBdt, vel_axial, marble_params)
+            F_eddy = eddy_braking_force(dBdz, vel_axial, marble_params)
             F_z += F_eddy
 
         return float(F_r), float(F_z)
