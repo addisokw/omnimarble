@@ -34,6 +34,12 @@ from .coil_physics import (
     CoilPhysics,
     gate_crossed,
 )
+from .coil_sensing import (
+    FiringController,
+    VirtualStation,
+    interpolate_crossing_us,
+)
+from .rig_profile import ProfileError, load_profile
 
 # Late-bound after pipapi install in on_startup()
 torch = None
@@ -243,7 +249,21 @@ class MarbleCoasterExtension(omni.ext.IExt):
         # Install torch + physicsnemo into Kit's Python via pipapi (cached after first run)
         self._install_ml_deps()
 
+        # Which physical rig this run is imitating. Defaults to the file's
+        # default_profile (legacy), so the committed 300V reference trajectory
+        # keeps reproducing unless the profile is changed deliberately.
+        self._profile = None
+        profile_name = carb.settings.get_settings().get_as_string(
+            "/exts/omni.marble.coaster/rigProfile") or None
+        try:
+            self._profile = load_profile(OMNIMARBLE_PROJECT, profile_name)
+        except ProfileError as ex:
+            carb.log_error(f"[RIG] Could not load rig profile: {ex}")
+
         self._params = CoilParams()
+
+        if self._profile is not None and self._profile.sensing_mode == "stations":
+            self._apply_rig_circuit()
 
         # Load PINN model (required — fail loudly if missing)
         self._pinn_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -447,8 +467,52 @@ class MarbleCoasterExtension(omni.ext.IExt):
                       f"derived_b={metadata['derived_b']}")
         return model
 
+    def _apply_rig_circuit(self):
+        """Replace the config-derived circuit and marble with the rig's.
+
+        Selected by can count: bank ESR parallels as 1/n, so adding cans moves
+        loop resistance as well as capacitance and the C-sweep varies both
+        together. Treating R as fixed would attribute that shift to capacitance
+        and appear to validate for the wrong reason.
+        """
+        settings = carb.settings.get_settings()
+        cans = int(settings.get_as_int("/exts/omni.marble.coaster/rigCans") or 0)
+        bank = self._profile.bank(cans or None)
+
+        p = self._params
+        p.capacitance_uF = bank["capacitance_uF"]
+        p.charge_voltage = self._profile.circuit["charge_voltage_V"]
+        p.marble_radius = self._profile.marble["radius_mm"]
+        p.recompute_derived()
+        p.apply_measured(inductance_uH=bank["inductance_uH"],
+                         total_resistance_ohm=bank["loop_resistance_ohm"])
+
+        # The rig's ball mass is stated upstream, not derived from radius --
+        # and it is ASSUMED steel rather than weighed. dv scales directly with
+        # it, so carry the stated value and say where it came from.
+        mass_kg = self._profile.marble.get("mass_kg")
+        if mass_kg is not None:
+            p.marble_mass_kg = float(mass_kg)
+
+        v_max = self._profile.circuit.get("voltage_max_V")
+        if v_max and p.charge_voltage > v_max:
+            carb.log_error(
+                f"[RIG] charge voltage {p.charge_voltage}V exceeds the {v_max}V "
+                f"board invariant")
+
+        carb.log_warn(
+            f"[RIG] {bank['cans']} can(s): C={bank['capacitance_uF']:.0f}uF, "
+            f"L={p.inductance_uH:.1f}uH ({p.L_source}), "
+            f"R_loop={p.R_total*1000:.0f}mOhm ({p.R_source}), "
+            f"zeta={p.zeta:.3f} {p.regime}, I_peak={p.peak_current:.0f}A")
+        carb.log_warn(
+            f"[RIG] Marble {p.marble_radius*2:.1f}mm, "
+            f"{p.marble_mass_kg*1000:.2f}g"
+            + (" (ASSUMED steel, not weighed)"
+               if self._profile.marble.get("mass_is_assumed") else ""))
+
     def _init_gate_state(self):
-        """Initialize / reset all IR gate tracking state."""
+        """Initialize / reset all IR sensing state, for either sensing mode."""
         self._prev_z_along = None
         self._gate_times = {}
         self._gate_triggered = {}
@@ -459,6 +523,27 @@ class MarbleCoasterExtension(omni.ext.IExt):
         self._exit_velocity = None
         self._gate_exit_measured = False
         self._predicted_fire_time = None
+
+        # Station sensing (rig profiles). Left empty for the legacy gate
+        # profile so that path stays exactly as it was.
+        self._stations = {}
+        self._firing_ctl = None
+        self._gate_window = None
+        if self._profile is not None and self._profile.sensing_mode == "stations":
+            for name, spec in self._profile.station_specs().items():
+                self._stations[name] = VirtualStation(
+                    name, spec["channel_x_mm"], spec["pitch_mm"],
+                    rev=spec["order_rev"])
+            self._firing_ctl = FiringController(
+                self._profile.firing,
+                self._stations[self._profile.sensing["station_in"]])
+            self._gate_window = self._profile.gate_window_us()
+            carb.log_warn(
+                f"[RIG] Profile '{self._profile.name}': 2x"
+                f"{self._profile.sensing['n_channels']}-channel stations, "
+                f"pitch {self._profile.sensing['pitch_mm']}mm, "
+                f"gate {self._gate_window['on_time_us']:.0f}us requested -> "
+                f"{self._gate_window['gate_us']:.0f}us physical")
 
     def on_shutdown(self):
         carb.log_info("[omni.marble.coaster] Shutting down")
@@ -880,7 +965,23 @@ class MarbleCoasterExtension(omni.ext.IExt):
         prev_z = self._prev_z_along
         self._prev_z_along = z_along
 
-        if prev_z is not None:
+        if self._firing_ctl is not None:
+            # Station sensing. The crossing time is interpolated WITHIN the
+            # step: at 500Hz a raw step timestamp quantises to ~2mm at 1m/s
+            # against a 22.14mm pitch, a ~9% per-channel error that would make
+            # the estimator measure the solver rather than the marble.
+            if prev_z is not None:
+                for station in self._stations.values():
+                    for idx, ch_x in enumerate(station.channel_x_mm):
+                        if station._got[idx]:
+                            continue
+                        if gate_crossed(prev_z, z_along, ch_x):
+                            t_cross = interpolate_crossing_us(
+                                prev_z, z_along, ch_x,
+                                self._sim_time * 1e6, dt * 1e6)
+                            if t_cross is not None:
+                                station.record(idx, t_cross)
+        elif prev_z is not None:
             for gate_name, gate_pos in p.gates.items():
                 if self._gate_triggered.get(gate_name):
                     continue
@@ -890,10 +991,54 @@ class MarbleCoasterExtension(omni.ext.IExt):
                     carb.log_warn(f"[IR] Gate '{gate_name}' crossed at z_along={z_along:.1f}mm "
                                   f"t={self._sim_time:.4f}s")
 
+        # Station firing: fit v_in from the full pass, then time the pulse to
+        # land at the coil's entry face.
+        if self._firing_ctl is not None and not self._triggered:
+            state = self._firing_ctl.update(self._sim_time * 1e6)
+            if state == FiringController.FIRED:
+                self._triggered = True
+                self._trigger_time = self._sim_time
+                self._approach_velocity = self._firing_ctl.v_in_mps * 1000.0
+                carb.log_warn(
+                    f"[EM] COIL FIRED at z_along={z_along:.1f}mm "
+                    f"t={self._sim_time:.4f}s, v_in={self._approach_velocity:.0f}mm/s "
+                    f"(slack {self._firing_ctl.slack_us:.0f}us)")
+                if self._firing_ctl.fit_suspect:
+                    carb.log_warn(
+                        f"[IR] WARNING: station fit residual "
+                        f"{self._firing_ctl.residual_us:.0f}us -- the fit is not "
+                        f"describing the motion, so v_in and the fire timing "
+                        f"are suspect")
+            elif state == FiringController.ABORTED:
+                if not getattr(self, "_abort_logged", False):
+                    self._abort_logged = True
+                    carb.log_warn(f"[EM] SHOT ABORTED: {self._firing_ctl.abort_reason}")
+
+        # Station exit velocity: station B's own fit, so v_out inherits exactly
+        # the same estimator and biases as v_in.
+        #
+        # Only after a shot actually FIRED. An aborted shot has no trustworthy
+        # v_in, so there is no dv to quote -- the rig discards such shots
+        # entirely rather than logging a record. Reporting v_out alone here
+        # would put a number next to the word "boost" that means nothing.
+        if (self._firing_ctl is not None and self._triggered
+                and self._approach_velocity and self._exit_velocity is None):
+            st_out = self._stations[self._profile.sensing["station_out"]]
+            if st_out.complete():
+                v_out = st_out.velocity_mps()
+                if v_out:
+                    self._exit_velocity = v_out * 1000.0
+                    dv = self._exit_velocity - self._approach_velocity
+                    carb.log_warn(
+                        f"[IR] EXIT VELOCITY: {self._exit_velocity:.1f} mm/s "
+                        f"= {v_out:.3f} m/s (dv={dv/1000:.4f} m/s, "
+                        f"boost {self._exit_velocity/self._approach_velocity:.2f}x)")
+
         # Compute approach velocity from vel_in pair
         t1 = self._gate_times.get("vel_in_1")
         t2 = self._gate_times.get("vel_in_2")
-        if t1 is not None and t2 is not None and self._approach_velocity is None:
+        if (self._firing_ctl is None and t1 is not None and t2 is not None
+                and self._approach_velocity is None):
             dt_gates = t2 - t1
             if abs(dt_gates) > 1e-6:
                 dist = p.gates["vel_in_2"] - p.gates["vel_in_1"]
@@ -908,7 +1053,8 @@ class MarbleCoasterExtension(omni.ext.IExt):
                               f"(fire at t={self._predicted_fire_time:.4f}s)")
 
         # Entry gate: trigger the coil
-        if not self._triggered and self._gate_triggered.get("entry"):
+        if (self._firing_ctl is None and not self._triggered
+                and self._gate_triggered.get("entry")):
             self._triggered = True
             self._trigger_time = self._sim_time
             vel_str = f", v_approach={self._approach_velocity:.0f}mm/s" if self._approach_velocity else ""
@@ -930,19 +1076,32 @@ class MarbleCoasterExtension(omni.ext.IExt):
         if self._triggered:
             # Cutoff gate: kill the pulse
             if p.switch_type == "MOSFET" and not self._pulse_cut:
-                if self._gate_triggered.get("cutoff"):
+                if self._firing_ctl is not None:
+                    # Fixed on-time: the switch is held for the PHYSICAL gate
+                    # window, which is the logged request minus the measured
+                    # ~9us overhead. Conflating the two is a silent 4.5% error
+                    # at the rig's 200us operating point.
+                    elapsed_us = (self._sim_time - self._trigger_time) * 1e6
+                    cut_now = elapsed_us >= self._gate_window["gate_us"]
+                else:
+                    cut_now = bool(self._gate_triggered.get("cutoff"))
+                if cut_now:
                     self._pulse_cut = True
                     self._pulse_cut_time = self._sim_time
                     # Seed the freewheel decay from the LIVE coupled-ODE state.
                     # See the decay branch below for why this is captured here.
                     self._I_at_cut = abs(self._circuit_I)
+                    detail = (f"after {self._gate_window['gate_us']:.0f}us, "
+                              f"I={self._I_at_cut:.0f}A"
+                              if self._firing_ctl is not None else "")
                     carb.log_warn(f"[EM] PULSE CUT at z_along={z_along:.1f}mm "
-                                  f"t={self._sim_time:.4f}s")
+                                  f"t={self._sim_time:.4f}s {detail}")
 
             # Compute gate-measured exit velocity from vel_out pair
             t_o1 = self._gate_times.get("vel_out_1")
             t_o2 = self._gate_times.get("vel_out_2")
-            if t_o1 is not None and t_o2 is not None and not getattr(self, '_gate_exit_measured', False):
+            if (self._firing_ctl is None and t_o1 is not None and t_o2 is not None
+                    and not getattr(self, '_gate_exit_measured', False)):
                 dt_out = t_o2 - t_o1
                 if abs(dt_out) > 1e-6:
                     self._gate_exit_measured = True

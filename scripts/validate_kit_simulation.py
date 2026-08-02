@@ -432,7 +432,12 @@ def main():
 
         # Exit velocity: station B's own fit, so v_out inherits exactly the
         # same estimator (and the same biases) as v_in.
-        if firing_ctl is not None and exit_velocity is None:
+        #
+        # Only after a shot actually fired. An aborted shot has no trustworthy
+        # v_in, so quoting a dv against it would be meaningless -- the rig
+        # discards such shots rather than logging them.
+        if (firing_ctl is not None and triggered and approach_velocity
+                and exit_velocity is None):
             station_out = stations[profile.sensing["station_out"]]
             if station_out.complete():
                 v_out_mps = station_out.velocity_mps()

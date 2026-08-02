@@ -130,6 +130,38 @@ class CoilPhysics:
         # Total resistance
         self.R_total = self.R_dc + self.esr + self.wiring_resistance
 
+        # Provenance, so a caller can tell a measurement from an estimate.
+        # apply_measured() flips these and keeps the derived value alongside.
+        self.L_source = "derived"
+        self.R_source = "derived"
+        self.inductance_uH_derived = self.inductance_uH
+        self.R_total_derived = self.R_total
+
+        self._recompute_rlc()
+
+    def apply_measured(self, inductance_uH=None, total_resistance_ohm=None):
+        """Override the geometry-derived L and R with measured values.
+
+        The bench is the arbiter. The rig's coil measures 17.9 uH where the
+        geometry model predicts 17.3, and its LOOP resistance (0.164 ohm, the
+        whole discharge path) is not the same quantity as coil DC resistance
+        plus a guessed ESR -- so it is substituted wholesale rather than added
+        to. Only the RLC block is recomputed; the winding geometry is untouched
+        so the derived values stay inspectable alongside.
+        """
+        if inductance_uH is not None:
+            self.inductance_uH_derived = self.inductance_uH
+            self.inductance_uH = float(inductance_uH)
+            self.inductance_H = self.inductance_uH * 1e-6
+            self.L_source = "measured"
+        if total_resistance_ohm is not None:
+            self.R_total_derived = self.R_total
+            self.R_total = float(total_resistance_ohm)
+            self.R_source = "measured"
+        self._recompute_rlc()
+
+    def _recompute_rlc(self):
+        """Damping, regime, peak current and stored energy from C, L, R."""
         # RLC parameters
         C = self.capacitance_uF * 1e-6
         L = self.inductance_H
