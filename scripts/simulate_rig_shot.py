@@ -266,6 +266,85 @@ def simulate_shot(profile, solver, cans, voltage, v_in_mps, on_time_us=None,
     }
 
 
+# Mirrors omnimarble-vbench/firmware/shotlog.py COLUMNS verbatim and in order.
+# Duplicated with a citation rather than imported: vbench already accepts
+# hand-sync across the repo boundary, and the schema is about to GROW (its
+# NEXT_SESSION.md section 3 adds v_post_10ms, v_post_50ms, v_post_extrap,
+# charge_r_ohm and psu_i_limit_ma). Everything downstream therefore matches on
+# column NAME intersection, never on position or an exact set.
+RIG_COLUMNS = [
+    "shot_id", "t_ms", "cans", "C_uF", "v_bank_pre", "v_bank_post",
+    "on_time_us", "v_in_mps", "v_out_mps", "dv_mps",
+    "n_ch_in", "n_ch_out", "resid_in_us", "resid_out_us", "sensor_pitch_mm",
+    "i_peak_A", "coil_L_uH", "coil_R_mohm", "loop_R_mohm", "note",
+]
+
+# Sim-only, all prefixed so a merged frame is unambiguous. The *_true and
+# *_bias columns are the ones the rig CANNOT produce: they separate measurement
+# error from physics error, which is what makes a sim-vs-real gap diagnosable.
+SIM_COLUMNS = [
+    "sim_source", "sim_rig_profile",
+    "sim_v_in_true_mps", "sim_v_out_true_mps", "sim_dv_true_mps",
+    "sim_v_in_bias_mps", "sim_v_out_bias_mps",
+    "sim_gate_us", "sim_fire_x_mm", "sim_zeta", "sim_regime",
+    "sim_i_peak_A_model", "sim_stored_energy_J", "sim_marble_energy_J",
+    "sim_efficiency_pct",
+]
+
+
+def to_shot_row(shot, profile, shot_id=0):
+    """Map a simulated shot onto the rig's own schema, plus sim-only extras."""
+    v_in, v_out = shot["v_in_mps"], shot["v_out_mps"]
+    stored = shot["stored_energy_J"]
+    return {
+        "shot_id": shot_id,
+        "t_ms": "",
+        "cans": shot["cans"],
+        "C_uF": round(shot["C_uF"], 1),
+        "v_bank_pre": shot["voltage_V"],
+        "v_bank_post": "",
+        "on_time_us": round(shot["on_time_us"]),
+        "v_in_mps": None if v_in is None else round(v_in, 4),
+        "v_out_mps": None if v_out is None else round(v_out, 4),
+        "dv_mps": None if shot["dv_mps"] is None else round(shot["dv_mps"], 5),
+        "n_ch_in": shot["n_ch_in"],
+        "n_ch_out": shot["n_ch_out"],
+        "resid_in_us": None if shot["resid_in_us"] is None
+                       else round(shot["resid_in_us"], 1),
+        "resid_out_us": None if shot["resid_out_us"] is None
+                        else round(shot["resid_out_us"], 1),
+        "sensor_pitch_mm": shot["sensor_pitch_mm"],
+        # DELIBERATELY EMPTY. On the rig this is the operator's scope reading;
+        # filling it with the model's own number would make a merged plot
+        # compare the model against itself.
+        "i_peak_A": "",
+        "coil_L_uH": shot["L_uH"],
+        "coil_R_mohm": round(
+            profile.circuit["measured"]["coil_resistance_ohm"] * 1000, 1),
+        "loop_R_mohm": round(shot["loop_R_mohm"], 1),
+        "note": "simulated",
+        "sim_source": "flat_bore_1d",
+        "sim_rig_profile": profile.name,
+        "sim_v_in_true_mps": round(shot["v_in_true_mps"], 5),
+        "sim_v_out_true_mps": round(shot["v_out_true_mps"], 5),
+        "sim_dv_true_mps": round(shot["dv_true_mps"], 5),
+        "sim_v_in_bias_mps": None if v_in is None
+                             else round(v_in - shot["v_in_true_mps"], 6),
+        "sim_v_out_bias_mps": None if v_out is None
+                              else round(v_out - shot["v_out_true_mps"], 6),
+        "sim_gate_us": round(shot["gate_us"], 1),
+        "sim_fire_x_mm": None if shot["fire_x_mm"] is None
+                         else round(shot["fire_x_mm"], 3),
+        "sim_zeta": round(shot["zeta"], 4),
+        "sim_regime": shot["regime"],
+        "sim_i_peak_A_model": round(shot["i_peak_model_A"], 1),
+        "sim_stored_energy_J": round(stored, 4),
+        "sim_marble_energy_J": round(shot["marble_energy_J"], 8),
+        "sim_efficiency_pct": round(shot["marble_energy_J"] / stored * 100, 6)
+                              if stored else 0.0,
+    }
+
+
 def _fmt(value, spec=".4f"):
     return "--" if value is None else format(value, spec)
 
@@ -373,11 +452,13 @@ def main():
 
     if args.shots_out and rows:
         args.shots_out.parent.mkdir(parents=True, exist_ok=True)
+        out_rows = [to_shot_row(shot, profile, i) for i, shot in enumerate(rows)]
         with open(args.shots_out, "w", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=list(rows[0]))
+            writer = csv.DictWriter(f, fieldnames=RIG_COLUMNS + SIM_COLUMNS)
             writer.writeheader()
-            writer.writerows(rows)
-        print(f"\nwrote {len(rows)} rows to {args.shots_out}")
+            writer.writerows(out_rows)
+        print(f"\nwrote {len(out_rows)} rows to {args.shots_out} "
+              f"(rig schema + sim_* columns)")
     return 0
 
 
