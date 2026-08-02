@@ -8,6 +8,7 @@ reason". These tests pin the scaling against the measured endpoints.
 """
 
 import json
+import math
 from pathlib import Path
 
 import pytest
@@ -176,3 +177,69 @@ def _write_tmp(vbench_data):
     handle.close()
     _TMP.append(handle.name)
     return handle.name
+
+
+# -- track geometry -----------------------------------------------------------
+
+def test_ramp_rise_produces_the_quoted_release_velocity(vbench):
+    """v = sqrt(g*h/0.7), not sqrt(2gh) -- a ROLLING ball puts 2/7 into spin.
+
+    Getting this wrong by using the sliding formula would overstate the release
+    speed by sqrt(1.4) = 18%, and every dv would be compared against the wrong
+    approach velocity.
+    """
+    track = vbench.track
+    h = track["ramp_rise_mm"] / 1000.0
+    v_rolling = math.sqrt(9.81 * h / 0.7)
+    assert v_rolling == pytest.approx(track["release_v_ideal_mps"], rel=0.005)
+
+    v_sliding = math.sqrt(2 * 9.81 * h)
+    assert v_sliding / v_rolling == pytest.approx(math.sqrt(1.4), rel=1e-6)
+
+
+def test_measurement_zone_is_flat_across_both_stations(vbench):
+    """A slope through a station would put the ball under acceleration and the
+    least-squares fit would stop measuring what it thinks it measures."""
+    lo, hi = vbench.track["flat_zone_x_mm"]
+    for spec in vbench.station_specs().values():
+        for x in spec["channel_x_mm"]:
+            assert lo <= x <= hi, f"channel at {x} is outside the flat zone"
+
+
+def test_ball_clears_both_bores(vbench):
+    """The ball must fit the track bore and the coil bore with real clearance."""
+    diameter = vbench.marble["diameter_mm"]
+    assert vbench.track["track_bore_mm"] > diameter
+    assert vbench.coil["bore_radius_mm"] * 2 > diameter
+    # The coil bore is the looser of the two, so the ball sits lower in it --
+    # which is why the rig offsets the coil axis rather than mounting the two
+    # concentric.
+    assert vbench.coil["bore_radius_mm"] * 2 > vbench.track["track_bore_mm"]
+
+
+def test_coil_winding_sits_inside_the_former_faces(vbench):
+    """The winding spans +/-15mm but the flanged former faces are at +/-22.78.
+
+    That 7.78mm overhang is why "fire at the coil mouth" is ambiguous, and why
+    the rig's entry-face fire point is short of the impulse optimum.
+    """
+    half_winding = vbench.coil["length_mm"] / 2.0
+    assert vbench.coil["face_in_x_mm"] == pytest.approx(-vbench.coil["face_out_x_mm"])
+    assert abs(vbench.coil["face_in_x_mm"]) > half_winding
+    overhang = abs(vbench.coil["face_in_x_mm"]) - half_winding
+    assert overhang == pytest.approx(7.78, abs=0.01)
+
+
+def test_stations_are_symmetric_about_the_coil(vbench):
+    specs = vbench.station_specs()
+    a = sorted(specs["A"]["channel_x_mm"])
+    b = sorted(specs["B"]["channel_x_mm"])
+    assert a == pytest.approx([-x for x in reversed(b)])
+
+
+def test_station_separation_matches_the_bench_figure(vbench):
+    """204mm between station centres -- the distance over which vbench flags an
+    unmeasured rolling-resistance systematic of order 10% of dv."""
+    specs = vbench.station_specs()
+    centres = [sum(s["channel_x_mm"]) / len(s["channel_x_mm"]) for s in specs.values()]
+    assert abs(centres[1] - centres[0]) == pytest.approx(204.12, abs=0.5)
