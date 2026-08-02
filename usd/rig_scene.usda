@@ -1,0 +1,126 @@
+#usda 1.0
+(
+    metersPerUnit = 0.001
+    subLayers = [
+        @./rig_track_geometry.usda@,
+        @./rig_marble_actor.usda@
+    ]
+    upAxis = "Z"
+)
+
+def Xform "World"
+{
+    def PhysicsScene "PhysicsScene"
+    {
+        vector3f physics:gravityDirection = (0, 0, -1)
+        float physics:gravityMagnitude = 9810
+    }
+
+    over "Track"
+    {
+        over "MainTrack" (
+            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            uniform token physics:approximation = "none"
+            color3f[] primvars:displayColor = [(0.62, 0.64, 0.68)]
+        }
+
+        over "Part_1" (
+            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            uniform token physics:approximation = "none"
+            color3f[] primvars:displayColor = [(0.62, 0.64, 0.68)]
+        }
+
+        over "Part_2" (
+            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            uniform token physics:approximation = "none"
+            color3f[] primvars:displayColor = [(0.62, 0.64, 0.68)]
+        }
+
+        over "Part_3" (
+            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            uniform token physics:approximation = "none"
+            color3f[] primvars:displayColor = [(0.62, 0.64, 0.68)]
+        }
+
+        over "Part_4" (
+            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            uniform token physics:approximation = "none"
+            color3f[] primvars:displayColor = [(0.62, 0.64, 0.68)]
+        }
+
+        over "Part_5" (
+            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            uniform token physics:approximation = "none"
+            color3f[] primvars:displayColor = [(0.62, 0.64, 0.68)]
+        }
+    }
+
+    def "PhysicsMaterial" (
+        prepend apiSchemas = ["PhysicsMaterialAPI"]
+    )
+    {
+        float physics:dynamicFriction = 0.25
+        float physics:restitution = 0.2
+        float physics:staticFriction = 0.3
+    }
+
+    def Xform "Lights"
+    {
+        uniform token purpose = "default"
+
+        def DomeLight "DomeLight"
+        {
+            color3f inputs:color = (0.86, 0.9, 1)
+            float inputs:intensity = 900
+        }
+
+        def DistantLight "KeyLight"
+        {
+            float inputs:angle = 1.5
+            color3f inputs:color = (1, 0.97, 0.92)
+            float inputs:intensity = 2400
+            float3 xformOp:rotateXYZ = (-45, 0, 25)
+            uniform token[] xformOpOrder = ["xformOp:rotateXYZ"]
+        }
+
+        def DistantLight "FillLight"
+        {
+            color3f inputs:color = (0.75, 0.82, 1)
+            float inputs:intensity = 700
+            float3 xformOp:rotateXYZ = (-20, 0, -140)
+            uniform token[] xformOpOrder = ["xformOp:rotateXYZ"]
+        }
+    }
+
+    over "Marble"
+    {
+        over "Geom"
+        {
+            color3f[] primvars:displayColor = [(0.8, 0.82, 0.85)]
+        }
+    }
+
+    def Cylinder "CoilMarker"
+    {
+        uniform token axis = "X"
+        double height = 30
+        color3f[] primvars:displayColor = [(0.85, 0.45, 0.1)]
+        uniform token purpose = "guide"
+        double radius = 15
+        double3 xformOp:translate = (0, 13.0159, 9.9893)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
+}
+

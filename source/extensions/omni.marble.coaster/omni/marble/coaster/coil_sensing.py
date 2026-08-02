@@ -166,6 +166,27 @@ def interpolate_crossing_us(prev_x, x, target_x, t_us, dt_us):
     return (t_us - dt_us) + frac * dt_us
 
 
+def crossing_from_velocity_us(x, target_x, velocity_mm_s, t_us):
+    """Crossing time inferred from the ball's SPEED rather than the step.
+
+    Needed in Kit, where the marble's transform is read from USD and USD only
+    syncs at the render tick: the position sits frozen for ~16 physics steps
+    and then jumps ~20mm at once. interpolate_crossing_us() would place that
+    crossing inside the 2ms step the jump was reported in, which is wrong by
+    most of a 32ms window -- and against a 22.14mm pitch that is nearly a whole
+    channel.
+
+    Velocity does stay current, so back the crossing out of it instead:
+    exact under constant velocity, which the rig's flat measurement zone is
+    built to provide.
+
+    Returns None if the ball is not moving.
+    """
+    if not velocity_mm_s:
+        return None
+    return t_us - ((x - target_x) / velocity_mm_s) * 1e6
+
+
 def crossed(prev_x, x, target_x):
     """True if the segment [prev_x, x] spans target_x, in either direction."""
     return (prev_x < target_x <= x) or (x <= target_x < prev_x)

@@ -336,3 +336,53 @@ def test_suspect_fit_is_flagged_but_still_fires():
     ctl = FiringController(FIRING, station)
     assert ctl.update(station.last_tick()) == FiringController.ARMED
     assert ctl.fit_suspect
+
+
+# -- crossing time from velocity ----------------------------------------------
+
+from coil_sensing import crossing_from_velocity_us  # noqa: E402
+
+
+def test_velocity_crossing_beats_step_interpolation_on_stale_positions():
+    """Kit reads the marble transform from USD, which syncs at the RENDER tick.
+
+    The position sits frozen for ~16 physics steps and then jumps ~20mm at
+    once. Subdividing the 2ms step the jump was reported in places the crossing
+    at the wrong end of a 32ms window -- against a 22.14mm pitch that is nearly
+    a whole channel, and it is what made a constant 634 mm/s read as 566.
+    Velocity stays current, so it recovers the true crossing.
+    """
+    v = 634.0                      # mm/s, genuinely constant
+    target = -57.78
+    dt_us = 2000.0                 # one 500Hz step
+    stale_window_us = 32000.0      # ~31Hz USD sync
+
+    # The jump is reported at t_report, having really occurred over the window.
+    x_before = target - 0.4 * v * stale_window_us / 1e6
+    x_after = x_before + v * stale_window_us / 1e6
+    t_report = 400000.0
+    true_crossing = t_report - ((x_after - target) / v) * 1e6
+
+    from_velocity = crossing_from_velocity_us(x_after, target, v, t_report)
+    assert from_velocity == pytest.approx(true_crossing, rel=1e-9)
+
+    # Step interpolation assumes the whole jump happened in dt, so it lands
+    # within 2ms of the report -- out by most of the 32ms window.
+    from_step = interpolate_crossing_us(x_before, x_after, target, t_report, dt_us)
+    assert abs(from_step - true_crossing) > 0.5 * stale_window_us
+
+
+def test_velocity_crossing_recovers_constant_velocity_exactly():
+    station = VirtualStation("A", list(range(5)), 22.14)
+    v = 633.0
+    x = -160.0
+    t = 0.0
+    for i in range(5):
+        target = -146.34 + i * 22.14
+        t_at = t + (target - x) / v * 1e6
+        station.record(i, crossing_from_velocity_us(target, target, v, t_at))
+    assert station.velocity_mps() == pytest.approx(v / 1000.0, rel=1e-9)
+
+
+def test_velocity_crossing_needs_motion():
+    assert crossing_from_velocity_us(0.0, -10.0, 0.0, 1000.0) is None

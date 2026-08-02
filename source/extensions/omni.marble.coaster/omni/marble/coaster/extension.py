@@ -37,6 +37,7 @@ from .coil_physics import (
 from .coil_sensing import (
     FiringController,
     VirtualStation,
+    crossing_from_velocity_us,
     interpolate_crossing_us,
 )
 from .rig_profile import ProfileError, load_profile
@@ -72,6 +73,12 @@ OMNIMARBLE_PROJECT = _find_project_root()
 SCRIPTS_DIR = OMNIMARBLE_PROJECT / "scripts"
 USD_DIR = OMNIMARBLE_PROJECT / "usd"
 SCENE_PATH = USD_DIR / "marble_coaster_scene.usda"
+# Built from the bench rig's own CAD by scripts/setup_rig_scene.py.
+RIG_SCENE_PATH = USD_DIR / "rig_scene.usda"
+# rig_geometry.json datums: the ball-centre line, and the coil axis riding
+# 0.300mm above the track axis so the ball's centre height is continuous.
+RIG_BALL_CENTRE_Y = 13.0159
+RIG_COIL_AXIS_Z = 9.9893
 PINN_CHECKPOINT = OMNIMARBLE_PROJECT / "models" / "pinn_checkpoint" / "pinn_best.pt"
 TRAJECTORY_DIR = OMNIMARBLE_PROJECT / "results" / "trajectories"
 
@@ -615,15 +622,42 @@ class MarbleCoasterExtension(omni.ext.IExt):
                     word_wrap=True,
                 )
 
+    def _scene_path(self):
+        """Which USD scene this profile runs in."""
+        if self._profile is not None and self._profile.sensing_mode == "stations":
+            return RIG_SCENE_PATH
+        return SCENE_PATH
+
     def _load_scene(self):
-        """Load the marble coaster USD scene."""
-        scene_path = str(SCENE_PATH).replace("\\", "/")
-        if not SCENE_PATH.exists():
+        """Load the USD scene for the active profile."""
+        path = self._scene_path()
+        scene_path = str(path).replace("\\", "/")
+        if not path.exists():
             self._status_label.text = f"Scene not found: {scene_path}"
+            if path is RIG_SCENE_PATH:
+                carb.log_error(
+                    f"[RIG] {path.name} missing -- build it with "
+                    f"'uv run python scripts/setup_rig_scene.py'")
             return
 
         omni.usd.get_context().open_stage(scene_path)
-        self._status_label.text = f"Loaded: {SCENE_PATH.name}"
+        self._status_label.text = f"Loaded: {path.name}"
+
+        if self._profile is not None and self._profile.sensing_mode == "stations":
+            # The rig track is authored in the rig's own frame: coil centre at
+            # the origin, x along travel. Setting the axis to +x makes the
+            # sim's z_along identically the rig's x, so the profile's published
+            # channel positions need no conversion.
+            self._coil_position = [0.0, RIG_BALL_CENTRE_Y, RIG_COIL_AXIS_Z]
+            self._coil_axis = [1.0, 0.0, 0.0]
+            carb.log_warn(
+                f"[RIG] Coil at {self._coil_position} axis +x; "
+                f"z_along == rig x")
+            # Deliberately NOT reading the coil back from USD: that path
+            # overwrites capacitance and charge voltage from the legacy
+            # coil_geometry layer and would undo the measured circuit.
+            return
+
         self._read_coil_from_usd()
 
     def _read_coil_from_usd(self):
@@ -650,8 +684,14 @@ class MarbleCoasterExtension(omni.ext.IExt):
                 if attr and attr.Get() is not None:
                     setattr(self._params, field, attr.Get())
 
-            self._params.R_mean = (self._params.inner_radius + self._params.outer_radius) / 2
-            carb.log_info(f"Coil position: {self._coil_position}")
+            # Recompute everything downstream of the values just overwritten.
+            # This used to set R_mean by hand and stop, leaving inductance,
+            # zeta, regime and peak current describing the PREVIOUS circuit --
+            # invisible while the USD layer happened to agree with the config,
+            # and silently wrong the moment it did not.
+            self._params.recompute_derived()
+            carb.log_info(f"Coil position: {self._coil_position}, "
+                          f"zeta={self._params.zeta:.4f} {self._params.regime}")
 
     def _configure_physx(self):
         """Apply PhysxSchema settings."""
@@ -961,24 +1001,38 @@ class MarbleCoasterExtension(omni.ext.IExt):
         radial_vec = [relative[i] - z_along * coil_axis_n[i] for i in range(3)]
         r = math.sqrt(sum(v * v for v in radial_vec))
 
+        # Axial speed now, for locating channel crossings in time.
+        vel_axial_now = 0.0
+        if cur_vel is not None:
+            vel_axial_now = sum(cur_vel[i] * coil_axis_n[i] for i in range(3))
+
         # --- Multi-Gate IR Sensor System ---
         prev_z = self._prev_z_along
         self._prev_z_along = z_along
 
         if self._firing_ctl is not None:
-            # Station sensing. The crossing time is interpolated WITHIN the
-            # step: at 500Hz a raw step timestamp quantises to ~2mm at 1m/s
-            # against a 22.14mm pitch, a ~9% per-channel error that would make
-            # the estimator measure the solver rather than the marble.
+            # Station sensing.
             if prev_z is not None:
                 for station in self._stations.values():
                     for idx, ch_x in enumerate(station.channel_x_mm):
                         if station._got[idx]:
                             continue
                         if gate_crossed(prev_z, z_along, ch_x):
-                            t_cross = interpolate_crossing_us(
-                                prev_z, z_along, ch_x,
-                                self._sim_time * 1e6, dt * 1e6)
+                            # Infer the crossing from SPEED, not from the step.
+                            # The marble transform comes from USD and USD only
+                            # syncs at the render tick, so z_along sits frozen
+                            # for ~16 physics steps and then jumps ~20mm --
+                            # comparable to a whole 22.14mm channel pitch.
+                            # Velocity stays current, so it locates the
+                            # crossing far better than subdividing a step the
+                            # motion did not actually happen in.
+                            t_cross = crossing_from_velocity_us(
+                                z_along, ch_x, vel_axial_now,
+                                self._sim_time * 1e6)
+                            if t_cross is None:
+                                t_cross = interpolate_crossing_us(
+                                    prev_z, z_along, ch_x,
+                                    self._sim_time * 1e6, dt * 1e6)
                             if t_cross is not None:
                                 station.record(idx, t_cross)
         elif prev_z is not None:
