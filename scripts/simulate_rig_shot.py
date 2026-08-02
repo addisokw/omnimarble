@@ -74,6 +74,46 @@ SLIP_TOL_MM_S = 1e-9                # below this the contact counts as rolling
 DEFAULT_DT_S = 1e-5
 
 
+# Unmeasured effects that bound how much a predicted dv can be trusted. All are
+# deliberately ZERO in the model -- inventing values would launder guesses into
+# predictions -- but a dv quoted without them is overconfident.
+UNCERTAINTY_TERMS = (
+    # (label, signed low, signed high, note)
+    ("rolling resistance", -0.32, 0.0,
+     "C_rr 0.001-0.002 over the 204mm between stations; vbench flags it "
+     "unmeasured (NEXT_SESSION.md section 8)"),
+    ("air drag", -0.10, 0.0,
+     ">=6.6% as a free sphere, and the ball is 12.7mm in a 13.4mm bore, so it "
+     "may act as a piston rather than a sphere in free air"),
+    ("ball mass", -0.01, 0.01,
+     "8.42g is ASSUMED solid steel, not weighed; dv goes as 1/m"),
+    ("magnetisation lag", -0.08, 0.0,
+     "magnetic diffusion in the ball is 3-15us against a 191us rise"),
+    ("track slope", -0.28, 0.28,
+     "0.1 deg of residual slope is 28% of dv; the sim assumes the flat zone is "
+     "exactly flat and delegates that to the rig build"),
+)
+
+
+def uncertainty_band(dv_mps):
+    """Signed low/high bounds on a predicted dv, from unmodelled effects."""
+    low = sum(lo for _, lo, _, _ in UNCERTAINTY_TERMS)
+    high = sum(hi for _, _, hi, _ in UNCERTAINTY_TERMS)
+    return dv_mps * (1.0 + low), dv_mps * (1.0 + high)
+
+
+def print_uncertainty(dv_mps):
+    lo, hi = uncertainty_band(dv_mps)
+    print()
+    print(f"Predicted dv {dv_mps*1000:.1f} mm/s, but the honest range is "
+          f"{lo*1000:.1f} to {hi*1000:.1f} mm/s.")
+    print("Unmodelled, all zero in the model by choice:")
+    for label, low, high, note in UNCERTAINTY_TERMS:
+        span = f"{low:+.0%}" if low == high else f"{low:+.0%}/{high:+.0%}"
+        print(f"  {label:<20}{span:>12}  {note}")
+    print("Quoting dv without this band overstates what the twin knows.")
+
+
 _CONFIG_CACHE = {}
 
 
@@ -120,10 +160,58 @@ def freewheel_current(i_at_cut, t_since_cut, resistance_ohm, inductance_H,
     return max((i_at_cut + offset) * decay - offset, 0.0)
 
 
+
+def finite_size_factor(solver, z_centre, radius, current,
+                       n_r=6, n_theta=6):
+    """Volume-averaged axial force density over the ball, divided by the point value.
+
+    Both force paths evaluate (B.grad)B at the ball's CENTRE and multiply by the
+    full volume -- a point-dipole approximation. This ball is not small against
+    the field: radius 6.35mm against the coil's ~15mm scale, so (a/lambda)^2 is
+    0.18 and the approximation is worth about +10% at the rig's fire position.
+    MEASURED, not estimated: see scripts/check_finite_size.py.
+
+    Applied as a single factor per shot, which is exact enough here because the
+    ball moves ~0.2mm during the pulse while the correction varies by ~0.5%/mm.
+    It must be recomputed per fire position though -- the correction runs from
+    +11% just outside the coil to -25% at the centre, and passes through ZERO at
+    the winding end where the force density is at an extremum.
+
+    Gauss-Legendre in (rho, cos theta); the field is axisymmetric so the
+    azimuthal integral is exact.
+    """
+    import numpy as np
+
+    rho_nodes, rho_w = np.polynomial.legendre.leggauss(n_r)
+    cos_nodes, cos_w = np.polynomial.legendre.leggauss(n_theta)
+    rho_scale = 0.5 * radius
+
+    def density(r, z):
+        # chi cancels in the ratio, so it is left out.
+        Br, Bz, _, _, dBz_dr, dBz_dz = solver.field_with_grad(r, z, current)
+        return Br * dBz_dr + Bz * dBz_dz
+
+    point = density(0.0, z_centre)
+    if abs(point) < 1e-12:
+        return 1.0
+
+    total = weight = 0.0
+    for node, wr in zip(rho_nodes, rho_w):
+        rr = rho_scale * (node + 1.0)
+        for ct, wt in zip(cos_nodes, cos_w):
+            st = math.sqrt(max(0.0, 1.0 - ct * ct))
+            jac = rr * rr * rho_scale
+            total += density(rr * st, z_centre + rr * ct) * jac * wr * wt
+            weight += jac * wr * wt
+    if weight == 0.0:
+        return 1.0
+    return (total / weight) / point
+
+
 def simulate_shot(profile, solver, cans, voltage, v_in_mps, on_time_us=None,
                   fire_offset_mm=None, rolling_resistance=0.0,
                   friction=DEFAULT_FRICTION, allow_spin=True,
-                  dt=DEFAULT_DT_S, max_time_s=2.0):
+                  finite_size=True, dt=DEFAULT_DT_S, max_time_s=2.0):
     """One shot down the flat zone. Returns a dict of observables."""
     bank = profile.bank(cans)
     marble = profile.marble
@@ -175,6 +263,7 @@ def simulate_shot(profile, solver, cans, voltage, v_in_mps, on_time_us=None,
     i_peak = 0.0
     prev_x = None
     slip_work_mm_s = 0.0
+    fs_factor = 1.0    # finite-size correction, set at the fire position
 
     # Optional override: fire when the ball reaches this x instead of using the
     # controller. Used by --scan-fire-offset to map the impulse optimum.
@@ -202,10 +291,16 @@ def simulate_shot(profile, solver, cans, voltage, v_in_mps, on_time_us=None,
             if forced_fire_x is not None:
                 if prev_x is not None and channel_crossed(prev_x, x, forced_fire_x):
                     triggered, t_trigger, fire_x = True, t, x
+                    if finite_size:
+                        fs_factor = finite_size_factor(
+                            solver, fire_x, r_ball, rlc["peak_current_A"] or 1.0)
             else:
                 state = controller.update(t * 1e6)
                 if state == FiringController.FIRED:
                     triggered, t_trigger, fire_x = True, t, x
+                    if finite_size:
+                        fs_factor = finite_size_factor(
+                            solver, fire_x, r_ball, rlc["peak_current_A"] or 1.0)
                 elif state == FiringController.ABORTED:
                     return {
                         "aborted": True,
@@ -247,7 +342,10 @@ def simulate_shot(profile, solver, cans, voltage, v_in_mps, on_time_us=None,
             # Susceptibility capped at saturation; continuous, no branch, and
             # the sign is carried by (B.grad)B.
             chi_used = min(chi_eff, B_sat / max(abs(Bz), 1e-12))
-            F_mN = (chi_used * V_marble / MU_0_MM) * (Br * dBz_dr + Bz * dBz_dz)
+            # fs_factor corrects the point-dipole approximation; it is 1.0
+            # until the shot fires and the ball's position is known.
+            F_mN = ((chi_used * V_marble / MU_0_MM)
+                    * (Br * dBz_dr + Bz * dBz_dz) * fs_factor)
 
             # Motional eddy drag. Now that it is expressed via dB/dz it is
             # step-size independent and cheap (the gradient is already to
@@ -340,6 +438,7 @@ def simulate_shot(profile, solver, cans, voltage, v_in_mps, on_time_us=None,
         "n_ch_out": st_out.n_captured(),
         "sensor_pitch_mm": profile.sensing["pitch_mm"],
         "fire_x_mm": fire_x,
+        "finite_size_factor": fs_factor,
         "i_peak_model_A": i_peak,
         "stored_energy_J": rlc["stored_energy_J"],
         "marble_energy_J": 0.5 * float(profile.marble["mass_kg"])
@@ -528,6 +627,7 @@ def main():
 
         if rows:
             r0 = rows[0]
+            print_uncertainty(r0["dv_true_mps"])
             eff = (r0["marble_energy_J"] / r0["stored_energy_J"] * 100
                    if r0["stored_energy_J"] else 0)
             print(f"\nEfficiency at {r0['cans']} can(s): {eff:.4f}% "

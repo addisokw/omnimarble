@@ -68,6 +68,12 @@ def _shot(profile, **kwargs):
     kwargs.setdefault("cans", 1)
     kwargs.setdefault("voltage", 50.0)
     kwargs.setdefault("v_in_mps", 1.006)
+    # ConstantForceSolver has a hard field edge at -25mm, and the ball spans
+    # -29.1..-16.4 when fired at -22.78 -- so a finite-size average over it
+    # would be integrating a discontinuity rather than a field. These tests are
+    # about the mechanics; finite size has its own tests below, on a smooth
+    # field.
+    kwargs.setdefault("finite_size", False)
     return simulate_shot(profile, ConstantForceSolver(), **kwargs)
 
 
@@ -247,3 +253,56 @@ def test_gate_is_cut_at_the_exact_time_not_a_step_boundary(profile):
     coarse = _shot(profile, dt=4e-5)["dv_true_mps"]
     fine = _shot(profile, dt=1e-6)["dv_true_mps"]
     assert abs(coarse - fine) / fine < 0.01
+
+
+# -- finite size --------------------------------------------------------------
+
+from simulate_rig_shot import finite_size_factor  # noqa: E402
+
+
+class GradientSolver:
+    """Field with a curved axial profile, so finite size actually matters."""
+
+    def __init__(self, peak_z=-15.0, width=12.0):
+        self.peak_z, self.width = peak_z, width
+
+    def field_with_grad(self, r, z, current_A):
+        # A smooth bump in dBz/dz centred on peak_z, plus a mild radial taper.
+        u = (z - self.peak_z) / self.width
+        shape = math.exp(-u * u)
+        radial = 1.0 - 0.02 * (r / 6.35) ** 2
+        return (0.0, 0.05 * current_A * shape * radial, 0.0, 0.0, 0.0,
+                7.2e-3 * current_A * shape * radial)
+
+
+def test_finite_size_factor_is_unity_for_a_point_ball():
+    """A vanishing radius must recover the point value exactly."""
+    solver = GradientSolver()
+    assert finite_size_factor(solver, -22.78, 1e-6, 211.0) == pytest.approx(
+        1.0, abs=1e-9)
+
+
+def test_finite_size_factor_is_converged_in_quadrature_order():
+    """The default order must already be at the answer."""
+    solver = GradientSolver()
+    values = [finite_size_factor(solver, -22.78, 6.35, 211.0, n_r=n, n_theta=n)
+              for n in (4, 6, 8, 12)]
+    for value in values[1:]:
+        assert value == pytest.approx(values[-1], rel=1e-3)
+
+
+def test_finite_size_scales_dv(profile):
+    """The correction must actually reach dv, and by exactly its own factor.
+
+    Run on the smooth GradientSolver, since the flat-window stub's field edge
+    falls inside the ball.
+    """
+    def shot(finite_size):
+        return simulate_shot(profile, GradientSolver(), cans=1, voltage=50.0,
+                             v_in_mps=1.006, finite_size=finite_size)
+
+    with_fs, without = shot(True), shot(False)
+    assert without["finite_size_factor"] == 1.0
+    assert with_fs["finite_size_factor"] != 1.0
+    ratio = with_fs["dv_true_mps"] / without["dv_true_mps"]
+    assert ratio == pytest.approx(with_fs["finite_size_factor"], rel=0.02)

@@ -181,6 +181,24 @@ def main():
 
     profile = load_profile(ROOT, args.rig_profile)
 
+    # This mirror is the LEGACY-gates model and is not fit for the rig.
+    # It has no rotational dynamics, so it keeps the full velocity gain where
+    # the rig's ball keeps 5/7 -- a ~40% disagreement on dv by construction --
+    # and it steps at 2ms against a 191us gate, so the pulse is cut an order of
+    # magnitude late and the impulse over-delivered. Refuse rather than emit a
+    # confident wrong number.
+    if profile.sensing_mode == "stations":
+        raise SystemExit("\n".join([
+            f"profile {profile.name!r} describes the bench rig, and this 3-D "
+            f"mirror cannot model it:",
+            "  - no rotational dynamics: the rig's rolling ball keeps only 5/7 "
+            "of the velocity gain, so dv would be ~40% high",
+            "  - dt=2ms against a 191us gate, so the pulse runs ~10x long and "
+            "the impulse is over-delivered",
+            "Use scripts/simulate_rig_shot.py, which models the flat bore in "
+            "1-D at 10us.",
+        ]))
+
     params = json.loads(CONFIG_PATH.read_text())
     if args.voltage is not None:
         params["charge_voltage_V"] = args.voltage
