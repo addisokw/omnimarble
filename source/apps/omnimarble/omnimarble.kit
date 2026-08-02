@@ -61,9 +61,14 @@ renderer.gpuEnumeration.glInterop.enabled = false
 rtx.ecoMode.enabled = true
 rtx.hydra.mdlMaterialWarmup = true
 
-# Physics defaults
-persistent.physics.updateToUsd = true
-persistent.physics.useFastCache = true
+# Physics defaults.
+#
+# These were `persistent.physics.updateToUsd` and `persistent.physics.useFastCache`,
+# and NEITHER did anything: omni.physx 110.1.1 registers `/physics/updateToUsd`
+# (no `persistent` branch), and `useFastCache` does not exist in this version at
+# all -- it is a Kit 103/104 name, replaced by the separate omni.physx.fabric
+# extension. Both were verified absent from omni.physx.plugin.dll.
+physics.updateToUsd = true
 
 [settings.app]
 content.emptyStageOnStart = false

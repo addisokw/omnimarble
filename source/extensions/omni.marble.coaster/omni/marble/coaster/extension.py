@@ -730,6 +730,35 @@ class MarbleCoasterExtension(omni.ext.IExt):
             carb.log_warn(f"[PHYSX] timeStepsPerSecond={steps}, CCD on")
             physx_scene.CreateEnableStabilizationAttr(True)
 
+            # CPU dynamics. GPU dynamics is ON by default in PhysX 110, and
+            # under it the body pose lives in GPU buffers whose readback is
+            # deliberately elided -- which is why get_rigidbody_transformation()
+            # returned the same stale value as USD. This scene is one marble;
+            # CPU PhysX is faster here anyway, and it restores both readback
+            # and determinism.
+            physx_scene.CreateEnableGPUDynamicsAttr(False)
+
+            # With TGS an external force is otherwise integrated only on the
+            # FIRST solver iteration. Ours varies sharply with position, so
+            # that materially changes the result.
+            try:
+                physx_scene.CreateEnableExternalForcesEveryIterationAttr(True)
+            except AttributeError:
+                carb.log_warn("[PHYSX] enableExternalForcesEveryIteration not "
+                              "available in this PhysX build")
+
+            physx_scene.CreateEnableEnhancedDeterminismAttr(True)
+
+            if self._physx is not None:
+                try:
+                    suppressed = self._physx.is_readback_suppressed()
+                    carb.log_warn(f"[PHYSX] GPU readback suppressed: {suppressed}"
+                                  + ("  <-- poses cannot be fresh; the pose "
+                                     "reads below will be stale"
+                                     if suppressed else ""))
+                except Exception:                          # noqa: BLE001
+                    pass
+
         marble_prim = stage.GetPrimAtPath("/World/Marble")
         if marble_prim:
             physx_rb = PhysxSchema.PhysxRigidBodyAPI.Apply(marble_prim)
@@ -917,7 +946,18 @@ class MarbleCoasterExtension(omni.ext.IExt):
         if self._physx_sub is not None:
             return
         physx = omni.physx.get_physx_interface()
-        self._physx_sub = physx.subscribe_physics_step_events(self._on_physics_step)
+        # Subscribe POST-step where available. subscribe_physics_step_events
+        # gives no ordering guarantee at all -- neither that the previous step's
+        # results have been fetched nor that our force lands before the solver
+        # runs. The pre/post variant at least makes the phase explicit.
+        try:
+            self._physx_sub = physx.subscribe_physics_on_step_events(
+                self._on_physics_step, False, 0)      # pre_step=False -> post
+        except AttributeError:
+            carb.log_warn("[PHYSX] ordered step events unavailable; falling "
+                          "back to the unordered subscription")
+            self._physx_sub = physx.subscribe_physics_step_events(
+                self._on_physics_step)
 
     def _unsubscribe_physics(self):
         self._physx_sub = None
