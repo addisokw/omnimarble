@@ -49,7 +49,8 @@ FIRMWARE_CONSTANTS = (
 # under which the electrolytic loses ~12% of its capacitance and gains ~30%
 # ESR. L is NOT in this list -- it was confirmed at 1 kHz and 10 kHz and does
 # not move. Optional, so an older firmware/config.py still imports.
-OPTIONAL_CONSTANTS = ("BANK_UNIT_UF_PULSE", "LOOP_R_MOHM_PULSE")
+OPTIONAL_CONSTANTS = ("BANK_UNIT_UF_PULSE", "LOOP_R_MOHM_PULSE",
+                      "SENSOR_DETECT_HALFWIDTH_MM")
 
 
 def sha256(path):
@@ -157,10 +158,20 @@ def build_profile(vbench):
             "stations": stations,
             # Half the optical chord a 12.7mm ball presents, measured at 3.3V
             # (vbench docs/IR_BOARD_ROLL_TEST.md): 9.68mm wide.
-            "detect_halfwidth_mm": 9.68 / 2.0,
+            # Half the ball's OPTICAL width at the trigger station. The
+            # channel fires on the leading edge, so the centre is this far
+            # upstream when it does. Was hardcoded to 9.68/2 (the Leonardo
+            # jig figure); the rig's station A measures 10.4, and A is what
+            # times the shot.
+            "detect_halfwidth_mm": float(
+                fw.get("SENSOR_DETECT_HALFWIDTH_MM", 9.68 / 2.0)),
             "resid_warn_us": float(fw["SENSOR_RESID_WARN_US"]),
         },
         "firing": {
+            # Duplicated from sensing on purpose: the firing controller needs it
+            # to reach the ball's CENTRE rather than the sensor it tripped.
+            "detect_halfwidth_mm": float(
+                fw.get("SENSOR_DETECT_HALFWIDTH_MM", 9.68 / 2.0)),
             "mode": "fixed_on_time",
             "trigger_station": fw["STATION_IN"],
             "required_channels": int(sensor["channels"]),

@@ -240,6 +240,11 @@ def simulate_shot(profile, solver, cans, voltage, v_in_mps, on_time_us=None,
                              rev=spec["order_rev"])
         for name, spec in specs.items()
     }
+    # Channels trip on the leading edge; the stations need to know by how much.
+    _half = float(profile.sensing.get("detect_halfwidth_mm", 0.0))
+    for _st in stations.values():
+        _st.detect_halfwidth_mm = _half
+
     st_in = stations[profile.sensing["station_in"]]
     st_out = stations[profile.sensing["station_out"]]
     controller = FiringController(profile.firing, st_in)
@@ -275,14 +280,25 @@ def simulate_shot(profile, solver, cans, voltage, v_in_mps, on_time_us=None,
             break
 
         # -- sensing (interpolated within the step, never sampled at it) ----
+        #
+        # A channel goes low when the ball's LEADING EDGE enters the beam, i.e.
+        # when its CENTRE -- which is what `x` tracks -- is still a half-width
+        # short of the sensor. Detecting at ch_x exactly would model a point
+        # marble and fire every shot late relative to the hardware, which is
+        # the mirror image of the firmware bug this pairs with.
+        #
+        # The offset is uniform across channels, so v_in is unchanged; only the
+        # absolute timing reference moves.
         if prev_x is not None:
             for station in stations.values():
+                half = getattr(station, "detect_halfwidth_mm", 0.0)
                 for idx, ch_x in enumerate(station.channel_x_mm):
                     if station._got[idx]:
                         continue
-                    if channel_crossed(prev_x, x, ch_x):
+                    trip_x = ch_x - half
+                    if channel_crossed(prev_x, x, trip_x):
                         t_cross = interpolate_crossing_us(
-                            prev_x, x, ch_x, t * 1e6, dt * 1e6)
+                            prev_x, x, trip_x, t * 1e6, dt * 1e6)
                         if t_cross is not None:
                             station.record(idx, t_cross)
 

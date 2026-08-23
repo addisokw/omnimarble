@@ -59,6 +59,7 @@ class VirtualStation:
         self.n = len(self.channel_x_mm)
         self._ts = [0.0] * self.n      # first-edge timestamp, us
         self._got = [False] * self.n
+        self.detect_halfwidth_mm = 0.0
 
     def reset(self):
         self._ts = [0.0] * self.n
@@ -239,7 +240,21 @@ class FiringController:
         self.firing = profile_firing
         self.station = station
         self.required = int(profile_firing.get("required_channels", REQUIRED_CHANNELS))
-        self.distance_mm = float(profile_firing["last_channel_to_coil_mm"])
+        # The channel fired on the ball's LEADING EDGE, so its CENTRE was still
+        # a half-width upstream of the sensor -- the centre has that much
+        # further to travel than the sensor-to-coil geometry says.
+        #
+        # `detect_halfwidth_mm` had been sitting in the profile UNREFERENCED.
+        # The firmware made the same omission, so the twin agreed with itself
+        # and the error was invisible until the rig was fired: two shots landed
+        # at 4.4-6.0 mm/s against a predicted 15.7, and the 5.2 mm offset
+        # accounts for essentially all of it. The coil face sits on the steep
+        # flank of the impulse-vs-position curve, so a few mm early is worth
+        # most of the dv.
+        self.detect_halfwidth_mm = float(
+            profile_firing.get("detect_halfwidth_mm", 0.0))
+        self.distance_mm = (float(profile_firing["last_channel_to_coil_mm"])
+                            + self.detect_halfwidth_mm)
         self.lead_us = float(profile_firing.get("trigger_lead_us", 0.0))
         self.slip_us = float(profile_firing.get("trigger_slip_us", 2000.0))
         self.capture_window_us = float(
