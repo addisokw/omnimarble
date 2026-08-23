@@ -68,8 +68,17 @@ def test_bank_esr_parallels_and_loop_resistance_falls(vbench):
 
 
 def test_bank_capacitance_scales_with_cans(vbench):
+    """Cans add in parallel, whatever the per-can figure currently is.
+
+    Deliberately reads the single-can value rather than hardcoding it. It used
+    to assert 1909 uF -- the LCR's 100 Hz small-signal reading -- which broke
+    when the profile moved to the large-signal value the discharge actually
+    sees (1640 uF; see vbench firmware/config.py BANK_UNIT_UF_PULSE). The
+    linearity is the invariant here; the constant is a measurement.
+    """
+    one = vbench.bank(1)["capacitance_uF"]
     for n in range(1, 6):
-        assert vbench.bank(n)["capacitance_uF"] == pytest.approx(1909.0 * n)
+        assert vbench.bank(n)["capacitance_uF"] == pytest.approx(one * n)
     assert len(vbench.bank_options()) == 5
 
 

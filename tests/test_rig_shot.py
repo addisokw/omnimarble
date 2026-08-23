@@ -158,11 +158,21 @@ def test_more_cans_deliver_more_impulse(profile):
 
 
 def test_sweep_spans_both_damping_regimes(profile):
-    """The C-sweep crosses zeta = 1 between one and two cans."""
-    regimes = [_shot(profile, cans=n)["regime"] for n in (1, 2, 5)]
-    assert regimes[0] == "underdamped"
-    assert regimes[1] != "underdamped"
-    assert regimes[2] == "overdamped"
+    """The C-sweep crosses zeta = 1 somewhere, and crosses it only once.
+
+    This used to pin the crossing between one and two cans. That moved when the
+    bank capacitance went from its 1909 uF small-signal value to the 1640 uF
+    the discharge actually sees: zeta scales as sqrt(C), so less capacitance
+    keeps more of the sweep underdamped. Where the crossing falls is a
+    consequence of measured components, not a property worth asserting -- that
+    the sweep spans both regimes, and does not oscillate between them, is.
+    """
+    regimes = [_shot(profile, cans=n)["regime"] for n in range(1, 6)]
+    assert regimes[0] == "underdamped", "one can must stay underdamped"
+    assert regimes[-1] == "overdamped", "five cans must reach overdamped"
+    # exactly one transition, i.e. monotone in damping
+    changes = sum(1 for a, b in zip(regimes, regimes[1:]) if a != b)
+    assert changes == 1, "damping should cross zeta=1 once: %r" % (regimes,)
 
 
 def test_no_sweep_point_reports_a_zero_peak(profile):

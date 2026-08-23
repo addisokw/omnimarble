@@ -44,6 +44,13 @@ FIRMWARE_CONSTANTS = (
     "BANK_POSITIONS",
 )
 
+# Large-signal bank values, preferred when the firmware defines them. The
+# bench C and loop R are small-signal readings; the sim models a 200 A shot,
+# under which the electrolytic loses ~12% of its capacitance and gains ~30%
+# ESR. L is NOT in this list -- it was confirmed at 1 kHz and 10 kHz and does
+# not move. Optional, so an older firmware/config.py still imports.
+OPTIONAL_CONSTANTS = ("BANK_UNIT_UF_PULSE", "LOOP_R_MOHM_PULSE")
+
 
 def sha256(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -57,7 +64,8 @@ def parse_firmware_config(path):
         if not isinstance(node, ast.Assign):
             continue
         for target in node.targets:
-            if isinstance(target, ast.Name) and target.id in FIRMWARE_CONSTANTS:
+            if isinstance(target, ast.Name) and target.id in (
+                    FIRMWARE_CONSTANTS + OPTIONAL_CONSTANTS):
                 try:
                     found[target.id] = ast.literal_eval(node.value)
                 except ValueError:
@@ -175,7 +183,8 @@ def build_profile(vbench):
             "former_length_mm": coil["former_length_mm"],
         },
         "circuit": {
-            "can_capacitance_uF": float(fw["BANK_UNIT_UF"]),
+            "can_capacitance_uF": float(
+                fw.get("BANK_UNIT_UF_PULSE", fw["BANK_UNIT_UF"])),
             "can_esr_ohm": profile_bank_esr,
             "bank_positions": int(fw["BANK_POSITIONS"]),
             "cans_populated": 1,
