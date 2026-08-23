@@ -104,10 +104,11 @@ def build_profile(vbench):
             "order_rev": bool(fw["STATION_ORDER_REV"][name]),
         }
 
-    # The pair must be mirrored; if both read the same way a board is in
-    # backwards or a loom is swapped (firmware/config.py:105-124).
-    if len({s["order_rev"] for s in stations.values()}) != len(stations):
-        raise SystemExit("STATION_ORDER_REV must differ between the two stations")
+    # No constraint on the order_rev pair. It was once required to differ,
+    # inferring from the opposite-flank mounts that one board must be reversed.
+    # Mirror-image mount parts mean both arrays sit the same way round instead,
+    # and the rig measured both False on 2026-08-23. Whatever the firmware says
+    # is the ground truth -- it is set from a roll, not derived.
 
     coil = geom["coil"]
     ball = geom["ball"]

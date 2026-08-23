@@ -173,14 +173,17 @@ def _validate(name, profile):
         if len(stations) < 2:
             raise ProfileError(f"{name}: expected two stations")
 
-        # The boards face each other, so their order flags must be opposite. If
-        # both read the same way a board is in backwards or a loom is swapped
-        # -- vbench calls this "a free consistency check, so use it".
-        flags = {st["order_rev"] for st in stations.values()}
-        if len(flags) != 2:
-            raise ProfileError(
-                f"{name}: the two stations must have opposite order_rev; "
-                "matching flags mean a board is reversed")
+        # order_rev is NOT constrained to be opposite between the stations.
+        # This used to require exactly that, on the reasoning that the mounts
+        # sit on opposite flanks so one board must be turned around. The flanks
+        # are right, the inference was not: the rig was built with mirror-image
+        # mount PARTS, so both arrays sit the same way round relative to the
+        # track axis. Measured on the rig 2026-08-23, both stations read
+        # channel-increasing WITH travel -- see vbench firmware/config.py for
+        # the three independent confirmations from the first roll.
+        #
+        # There is nothing to validate here from geometry alone: the pair
+        # depends on which mount parts were printed, and only a roll settles it.
 
         # No channel may sit inside the coil former, or it would be measuring
         # the ball while the field is acting on it.

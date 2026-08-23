@@ -71,7 +71,7 @@
               -57.78
             ],
             "clear_of_coil_mm": 35.0,
-            "order_rev": true
+            "order_rev": false
           },
           "B": {
             "role": "v_out",

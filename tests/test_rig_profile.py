@@ -97,7 +97,11 @@ def test_gate_window_subtracts_the_measured_overhead(vbench):
 def test_stations_are_mirrored_and_clear_of_the_coil(vbench):
     specs = vbench.station_specs()
     assert set(specs) == {"A", "B"}
-    assert specs["A"]["order_rev"] != specs["B"]["order_rev"]
+    # The POSITIONS mirror about the coil; the order flags do not have to.
+    # A's flag was True here until the rig was rolled -- see
+    # test_the_shipped_profile_matches_the_rig_as_measured.
+    assert specs["A"]["channel_x_mm"] == [-x for x in
+                                          reversed(specs["B"]["channel_x_mm"])]
 
     face_in = vbench.coil["face_in_x_mm"]
     face_out = vbench.coil["face_out_x_mm"]
@@ -137,12 +141,32 @@ def _vbench_data():
     return doc["profiles"]["vbench_v0"]
 
 
-def test_rejects_matching_station_order_flags():
-    """Both stations reading the same direction means a board is reversed."""
+def test_accepts_matching_station_order_flags():
+    """Matching flags are legal: the built rig measured both False.
+
+    This assertion is inverted from what it was. The loader used to REQUIRE the
+    pair to differ, reasoning that the mounts sit on opposite flanks so one
+    board must be turned around. The flanks are right; the inference was not --
+    mirror-image mount parts put both arrays the same way round relative to the
+    track axis, and the first roll (2026-08-23) measured both stations reading
+    channel-increasing WITH travel.
+
+    Keeping a test here at all matters: the pair cannot be derived from
+    geometry, so a loader that rejects a legal build is worse than one that
+    checks nothing.
+    """
     data = _vbench_data()
-    data["sensing"]["stations"]["B"]["order_rev"] = True
-    with pytest.raises(ProfileError, match="opposite order_rev"):
-        load_profile(ROOT, "vbench_v0", path=_write_tmp(data))
+    for st in data["sensing"]["stations"].values():
+        st["order_rev"] = True
+    prof = load_profile(ROOT, "vbench_v0", path=_write_tmp(data))
+    assert all(s["order_rev"] for s in prof.station_specs().values())
+
+
+def test_the_shipped_profile_matches_the_rig_as_measured():
+    """Both stations False -- see vbench firmware/config.py for the evidence."""
+    prof = load_profile(ROOT, "vbench_v0")
+    assert {n: s["order_rev"] for n, s in prof.station_specs().items()} == {
+        "A": False, "B": False}
 
 
 def test_rejects_a_channel_inside_the_coil():
