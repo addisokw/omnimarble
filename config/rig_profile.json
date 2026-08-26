@@ -44,7 +44,7 @@
       "provenance": {
         "rig_geometry": {
           "path": "track/rig_geometry.json",
-          "sha256": "1e05563dfb06041b91311950c0b4ed51436dbe0d3b348ae658c43b2ae9b1d314"
+          "sha256": "6bd283697c8ef7e61305ae816d889137f1021f3f4b10e5729fa755330285140d"
         },
         "firmware_config": {
           "path": "firmware/config.py",
@@ -130,9 +130,9 @@
       "marble": {
         "diameter_mm": 12.7,
         "radius_mm": 6.35,
-        "mass_kg": 0.00842,
-        "mass_is_assumed": true,
-        "mass_note": "mass is not stated anywhere in the repo; assumed steel"
+        "mass_kg": 0.0085,
+        "mass_is_assumed": false,
+        "mass_note": "mass_kg MEASURED on a scale 2026-08-25 at 8.50 g. The old assumed 8.42 g came from solid-steel density and a 12.7 mm diameter; the real ball is 1.0% heavier. dv goes as 1/m, so this LOWERS every predicted dv by 0.9% -- it widens the gap to the rig rather than closing it, which is worth knowing: mass is now eliminated as an explanation for the ~1.2x under-prediction."
       },
       "track": {
         "flat_zone_x_mm": [

@@ -216,8 +216,10 @@ def build_profile(vbench):
         "marble": {
             "diameter_mm": float(ball["diameter_mm"]),
             "radius_mm": float(ball["diameter_mm"]) / 2.0,
-            "mass_kg": float(ball["mass_kg_assumed"]),
-            "mass_is_assumed": True,
+            # Prefer a weighed mass when the rig has one. Falls back to the
+            # solid-steel estimate so an older rig_geometry.json still imports.
+            "mass_kg": float(ball.get("mass_kg", ball["mass_kg_assumed"])),
+            "mass_is_assumed": "mass_kg" not in ball,
             "mass_note": ball.get("_note", ""),
         },
         "track": {

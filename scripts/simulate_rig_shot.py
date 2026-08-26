@@ -85,8 +85,6 @@ UNCERTAINTY_TERMS = (
     ("air drag", -0.10, 0.0,
      ">=6.6% as a free sphere, and the ball is 12.7mm in a 13.4mm bore, so it "
      "may act as a piston rather than a sphere in free air"),
-    ("ball mass", -0.01, 0.01,
-     "8.42g is ASSUMED solid steel, not weighed; dv goes as 1/m"),
     ("magnetisation lag", -0.08, 0.0,
      "magnetic diffusion in the ball is 3-15us against a 191us rise"),
     ("track slope", -0.28, 0.28,
