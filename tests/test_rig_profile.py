@@ -55,8 +55,16 @@ def test_vbench_describes_the_measured_rig(vbench):
 
 
 def test_bank_esr_parallels_and_loop_resistance_falls(vbench):
-    """0.164 ohm at 1 can -> 0.126 ohm at 5, matching the bench."""
-    assert vbench.bank(1)["loop_resistance_ohm"] == pytest.approx(0.164, abs=1e-9)
+    """0.178 ohm at 1 can (the pulse-fit pair) -> 0.126 at 5 (scaled fallback).
+
+    1-3 cans come from pulse_measured_by_cans -- the (C, R) pair each blank-
+    fire fit was pinned to, kept together because splitting them rebuilds the
+    inconsistency the table exists to remove. 4-5 cans fall back to the
+    ESR/n scaling from the 1-can DC loop until the bench measures them.
+    """
+    assert vbench.bank(1)["loop_resistance_ohm"] == pytest.approx(0.178, abs=1e-9)
+    assert vbench.bank(2)["loop_resistance_ohm"] == pytest.approx(0.152, abs=1e-9)
+    assert vbench.bank(3)["loop_resistance_ohm"] == pytest.approx(0.141, abs=1e-9)
     assert vbench.bank(5)["loop_resistance_ohm"] == pytest.approx(0.126, abs=0.001)
 
     resistances = [vbench.bank(n)["loop_resistance_ohm"] for n in range(1, 6)]
@@ -67,18 +75,24 @@ def test_bank_esr_parallels_and_loop_resistance_falls(vbench):
         assert vbench.bank(n)["esr_ohm"] == pytest.approx(0.048 / n, rel=1e-12)
 
 
-def test_bank_capacitance_scales_with_cans(vbench):
-    """Cans add in parallel, whatever the per-can figure currently is.
+def test_bank_capacitance_follows_the_measured_droop(vbench):
+    """Pulse capacitance is SUB-LINEAR in can count, and that is measured.
 
-    Deliberately reads the single-can value rather than hardcoding it. It used
-    to assert 1909 uF -- the LCR's 100 Hz small-signal reading -- which broke
-    when the profile moved to the large-signal value the discharge actually
-    sees (1640 uF; see vbench firmware/config.py BANK_UNIT_UF_PULSE). The
-    linearity is the invariant here; the constant is a measurement.
+    This test used to assert linear scaling ("cans add in parallel"), and
+    linearity was wrong by 6-8%: each can carries less current as cans are
+    added, so each droops less, and the per-can effective capacitance RISES
+    with n (1640 -> 1753.5 -> 1783.3 across 1/2/3, trending toward the
+    1883.75 uF small-signal figure). 1-3 cans read the bench table verbatim;
+    4-5 fall back to n x 1640 until measured.
     """
-    one = vbench.bank(1)["capacitance_uF"]
-    for n in range(1, 6):
-        assert vbench.bank(n)["capacitance_uF"] == pytest.approx(one * n)
+    assert vbench.bank(1)["capacitance_uF"] == pytest.approx(1640.0)
+    assert vbench.bank(2)["capacitance_uF"] == pytest.approx(3507.0)
+    assert vbench.bank(3)["capacitance_uF"] == pytest.approx(5350.0)
+    per_can = [vbench.bank(n)["capacitance_uF"] / n for n in (1, 2, 3)]
+    assert per_can == sorted(per_can), "droop must shrink as cans are added"
+    assert all(c < 1883.75 for c in per_can), "pulse C cannot exceed small-signal"
+    for n in (4, 5):
+        assert vbench.bank(n)["capacitance_uF"] == pytest.approx(1640.0 * n)
     assert len(vbench.bank_options()) == 5
 
 

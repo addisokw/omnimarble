@@ -99,6 +99,22 @@ class RigProfile:
         else:
             loop_r = (float(loop_at_1can) - can_esr) + esr
 
+        # Prefer the bench's per-configuration large-signal constants over the
+        # n x per-can scaling. Electrolytic droop makes pulse capacitance
+        # SUB-LINEAR in can count (each can carries less current, so each
+        # droops less: C_pulse/C_smallsig measured 0.859 / 0.931 / 0.958 at
+        # 1/2/3 cans), which the linear scaling cannot express -- it
+        # understated C by 6.5% at 2 cans and 8% at 3, making the simulated
+        # discharge too fast exactly where the on-time sweeps probe it. The
+        # loop resistance in the same table is the value the SAME fit was
+        # pinned to, so the pair is self-consistent; mixing table C with
+        # scaled R would rebuild the inconsistency this exists to remove.
+        pulse = circuit.get("pulse_measured_by_cans", {}).get(str(cans))
+        capacitance_uF = can_uF * cans
+        if pulse is not None:
+            capacitance_uF = float(pulse["capacitance_uF"])
+            loop_r = float(pulse["loop_resistance_ohm"])
+
         # Once the switch opens the bank is OUT of the circuit -- the current
         # freewheels through the coil and the diode alone, so the bank's ESR no
         # longer participates and the decay is slower than the discharge loop
@@ -113,7 +129,7 @@ class RigProfile:
 
         return {
             "cans": cans,
-            "capacitance_uF": can_uF * cans,
+            "capacitance_uF": capacitance_uF,
             "esr_ohm": esr,
             "loop_resistance_ohm": loop_r,
             "freewheel_resistance_ohm": freewheel_r,

@@ -50,6 +50,8 @@ FIRMWARE_CONSTANTS = (
 # ESR. L is NOT in this list -- it was confirmed at 1 kHz and 10 kHz and does
 # not move. Optional, so an older firmware/config.py still imports.
 OPTIONAL_CONSTANTS = ("BANK_UNIT_UF_PULSE", "LOOP_R_MOHM_PULSE",
+                      "BANK_2CAN_UF_PULSE", "LOOP_R_MOHM_PULSE_2CAN",
+                      "BANK_3CAN_UF_PULSE", "LOOP_R_MOHM_PULSE_3CAN",
                       "SENSOR_DETECT_HALFWIDTH_MM")
 
 
@@ -196,6 +198,21 @@ def build_profile(vbench):
         "circuit": {
             "can_capacitance_uF": float(
                 fw.get("BANK_UNIT_UF_PULSE", fw["BANK_UNIT_UF"])),
+            # Per-configuration large-signal pairs, taken from the firmware's
+            # measured constants where they exist. See rig_profile.bank() for
+            # why n x per-can cannot express the droop trend these carry.
+            "pulse_measured_by_cans": {
+                str(n): {
+                    "capacitance_uF": float(fw[c_key]),
+                    "loop_resistance_ohm": float(fw[r_key]) / 1000.0,
+                }
+                for n, c_key, r_key in (
+                    (1, "BANK_UNIT_UF_PULSE", "LOOP_R_MOHM_PULSE"),
+                    (2, "BANK_2CAN_UF_PULSE", "LOOP_R_MOHM_PULSE_2CAN"),
+                    (3, "BANK_3CAN_UF_PULSE", "LOOP_R_MOHM_PULSE_3CAN"),
+                )
+                if c_key in fw and r_key in fw
+            },
             "can_esr_ohm": profile_bank_esr,
             "bank_positions": int(fw["BANK_POSITIONS"]),
             "cans_populated": 1,

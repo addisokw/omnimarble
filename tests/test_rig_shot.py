@@ -184,7 +184,9 @@ def test_no_sweep_point_reports_a_zero_peak(profile):
 def test_loop_resistance_falls_as_cans_are_added(profile):
     values = [_shot(profile, cans=n)["loop_R_mohm"] for n in range(1, 6)]
     assert values == sorted(values, reverse=True)
-    assert values[0] == pytest.approx(164.0, abs=0.5)
+    # 178 = the 1-can PULSE-fit loop R (paired with its fitted C), not the
+    # 164 DC-injected figure -- see pulse_measured_by_cans in the profile.
+    assert values[0] == pytest.approx(178.0, abs=0.5)
 
 
 def test_fixed_on_time_makes_dv_largely_independent_of_approach_speed(profile):
