@@ -206,10 +206,55 @@ def finite_size_factor(solver, z_centre, radius, current,
     return (total / weight) / point
 
 
+def load_measured_current(path):
+    """Scope capture -> I(t_rel) with t_rel=0 at gate-on, plus the peak.
+
+    THE point of this mode: the bench proved no linear RLC describes the real
+    discharge across voltages (I_peak scales sub-linearly, R rises with pulse
+    speed, L reads differently per extraction). Rather than modelling a
+    circuit the circuit refuses to be, inject the measured waveform and let
+    the remaining disagreement with the marble data be what it then must be:
+    the FIELD model, alone.
+
+    Alignment: gate-on is found as the first sustained current rise (the
+    scope trigger sits elsewhere -- on the bank edge). The shunt only carries
+    the BANK loop, so the freewheel tail after gate-off is invisible here by
+    construction; the caller keeps using the modelled tail, seeded with the
+    measured current at the cut.
+    """
+    import csv as _csv
+    with open(path) as f:
+        rows = list(_csv.DictReader(f))
+    T = [float(r["t_s"]) for r in rows]
+    I = [float(r["i_A"]) for r in rows]
+    k_on = next(k for k in range(len(I) - 8)
+                if I[k] > 6 and I[k + 3] > I[k] and I[k + 8] > 12)
+    t_on = T[k_on] - 5e-6
+    ts = [t - t_on for t in T]
+    peak = max(I)
+
+    def current_at(t_rel):
+        if t_rel <= ts[0] or t_rel >= ts[-1]:
+            return 0.0
+        # binary search then linear interpolation
+        lo, hi = 0, len(ts) - 1
+        while hi - lo > 1:
+            mid = (lo + hi) // 2
+            if ts[mid] <= t_rel:
+                lo = mid
+            else:
+                hi = mid
+        f = (t_rel - ts[lo]) / (ts[hi] - ts[lo])
+        return max(I[lo] + f * (I[hi] - I[lo]), 0.0)
+
+    return current_at, peak
+
+
 def simulate_shot(profile, solver, cans, voltage, v_in_mps, on_time_us=None,
                   fire_offset_mm=None, rolling_resistance=0.0,
                   friction=DEFAULT_FRICTION, allow_spin=True,
-                  finite_size=True, dt=DEFAULT_DT_S, max_time_s=2.0):
+                  finite_size=True, dt=DEFAULT_DT_S, max_time_s=2.0,
+                  current_fn=None, current_peak=None):
     """One shot down the flat zone. Returns a dict of observables."""
     bank = profile.bank(cans)
     marble = profile.marble
@@ -307,14 +352,16 @@ def simulate_shot(profile, solver, cans, voltage, v_in_mps, on_time_us=None,
                     triggered, t_trigger, fire_x = True, t, x
                     if finite_size:
                         fs_factor = finite_size_factor(
-                            solver, fire_x, r_ball, rlc["peak_current_A"] or 1.0)
+                            solver, fire_x, r_ball,
+                            current_peak or rlc["peak_current_A"] or 1.0)
             else:
                 state = controller.update(t * 1e6)
                 if state == FiringController.FIRED:
                     triggered, t_trigger, fire_x = True, t, x
                     if finite_size:
                         fs_factor = finite_size_factor(
-                            solver, fire_x, r_ball, rlc["peak_current_A"] or 1.0)
+                            solver, fire_x, r_ball,
+                            current_peak or rlc["peak_current_A"] or 1.0)
                 elif state == FiringController.ABORTED:
                     return {
                         "aborted": True,
@@ -338,9 +385,11 @@ def simulate_shot(profile, solver, cans, voltage, v_in_mps, on_time_us=None,
                     t_gate = window["gate_us"] * 1e-6
                     pulse_cut = True
                     t_cut = t_trigger + t_gate
-                    I_at_cut = rlc_current(t_gate, rlc)
+                    I_at_cut = (current_fn(t_gate) if current_fn
+                                else rlc_current(t_gate, rlc))
                 else:
-                    current = rlc_current(t_rel, rlc)
+                    current = (current_fn(t_rel) if current_fn
+                               else rlc_current(t_rel, rlc))
             if pulse_cut:
                 current = freewheel_current(
                     I_at_cut, t - t_cut,
@@ -555,6 +604,10 @@ def main():
     parser.add_argument("--v-in", type=float, default=None,
                         help="approach speed in m/s (default: the rig's ideal release)")
     parser.add_argument("--on-time-us", type=float, default=None)
+    parser.add_argument("--current-csv", type=Path, default=None,
+                        help="inject a measured I(t) (scope CSV: t_s,i_A,...) "
+                             "instead of the RLC model; gate tail still "
+                             "modelled, seeded from the measured cut current")
     parser.add_argument("--dt", type=float, default=DEFAULT_DT_S,
                         help="integration step in seconds (default 1e-5, "
                              "converged to 0.1%%; see DEFAULT_DT_S)")
@@ -567,6 +620,11 @@ def main():
     args = parser.parse_args()
 
     profile = load_profile(ROOT, args.rig_profile)
+    _cfn = _cpk = None
+    if args.current_csv is not None:
+        _cfn, _cpk = load_measured_current(args.current_csv)
+        print(f"injected measured current: {args.current_csv} "
+              f"(I_pk {_cpk:.1f} A; circuit model bypassed while gated)")
     if profile.sensing_mode != "stations":
         raise SystemExit(f"profile {profile.name!r} is not a station rig")
 
@@ -602,6 +660,7 @@ def main():
             fx = lo + i * step
             shot = simulate_shot(profile, solver, args.cans, voltage, v_in,
                                  args.on_time_us, fire_offset_mm=fx,
+                                 current_fn=_cfn, current_peak=_cpk,
                                  rolling_resistance=args.rolling_resistance,
                                  dt=args.dt)
             if shot["aborted"]:
@@ -625,6 +684,7 @@ def main():
         for cans in can_list:
             shot = simulate_shot(profile, solver, cans, voltage, v_in,
                                  args.on_time_us,
+                                 current_fn=_cfn, current_peak=_cpk,
                                  rolling_resistance=args.rolling_resistance,
                                  dt=args.dt)
             if shot["aborted"]:
