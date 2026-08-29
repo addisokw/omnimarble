@@ -126,6 +126,14 @@ class RigProfile:
         # 140 at 10kHz); the ring-down sits near 1/(2*pi*tau) ~ 950 Hz, so the
         # 1kHz figure is the right one here.
         freewheel_r = float(measured.get("coil_resistance_ohm", loop_r))
+        # A scope-fitted tail time constant outranks the derived R: tau is what
+        # the marble actually feels, and the 2026-09 captures showed the
+        # L/R_coil construction was wrong on BOTH inputs (see freewheel_note in
+        # the profile). Expressed as an equivalent R so freewheel_current()
+        # keeps its diode-drop term unchanged.
+        tau_us = measured.get("freewheel_tau_us")
+        if tau_us:
+            freewheel_r = float(measured["inductance_uH"]) * 1e-6                 / (float(tau_us) * 1e-6)
 
         return {
             "cans": cans,

@@ -124,7 +124,9 @@
           "inductance_uH": 17.9,
           "coil_resistance_ohm": 0.107,
           "loop_resistance_ohm": 0.164,
-          "note": "L by 4-wire LCR at 10kHz (Q~8; the 1kHz reading is soft at Q~1). loop_resistance is the whole discharge path and is what sets the pulse -- confirmed twice, by on-time sweep fit (0.164) and DC injection (0.161). Do not conflate it with coil_resistance, which is coil+leads only."
+          "note": "L by 4-wire LCR at 10kHz (Q~8; the 1kHz reading is soft at Q~1). loop_resistance is the whole discharge path and is what sets the pulse -- confirmed twice, by on-time sweep fit (0.164) and DC injection (0.161). Do not conflate it with coil_resistance, which is coil+leads only.",
+          "freewheel_tau_us": 275.0,
+          "freewheel_note": "Fitted 2026-09-05 from the three scope-injected marble points (400/700/1500 us gates): tau ~275 us is the unique tail that makes all three measured-current predictions agree with the marble data (ratios 1.03/1.01/1.04). Independently corroborated: it implies freewheel R ~65 mohm, which fits under the 10 V capture's model-free TOTAL loop R of 80 mohm -- whereas the 107 mohm 'coil+leads' figure above cannot (it exceeds the whole measured loop). That 107 figure is now considered wrong at pulse conditions; it remains recorded as the 1 kHz bench measurement it was. When present, this tau overrides L/R_coil for the freewheel decay."
         },
         "pulse_measured_by_cans": {
           "_note": "Per-configuration LARGE-SIGNAL constants from bench blank-fire fits, R pinned at the measured ESR convention (vbench firmware/config.py BANK_*_UF_PULSE / LOOP_R_MOHM_PULSE_*). Electrolytic droop makes pulse C sub-linear in can count (C_pulse/C_100Hz = 0.859/0.931/0.958 at 1/2/3), so n x can_uF understates C by 6-8% at 2-3 cans and overstates the waveform speed exactly where the marble on-time data probes it. Configs absent here fall back to the n x can_uF scaling. The 3-can C carries a caveat: no single linear C fits that discharge (rms 0.015); 5350 is the best single-number summary.",

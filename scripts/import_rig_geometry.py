@@ -219,6 +219,9 @@ def build_profile(vbench):
             "charge_voltage_V": 50.0,
             "voltage_max_V": float(fw["VBANK_MAX_V"]),
             "measured": {
+                # Scope-fitted, not a firmware constant: see freewheel_note.
+                # Kept here so regeneration does not silently drop it.
+                "freewheel_tau_us": 275.0,
                 "inductance_uH": float(fw["COIL_L_UH_NOMINAL"]),
                 "coil_resistance_ohm": float(fw["COIL_R_MOHM_NOMINAL"]) / 1000.0,
                 "loop_resistance_ohm": float(fw["LOOP_R_MOHM_MEASURED"]) / 1000.0,

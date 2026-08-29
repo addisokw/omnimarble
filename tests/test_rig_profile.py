@@ -290,3 +290,15 @@ def test_station_separation_matches_the_bench_figure(vbench):
     specs = vbench.station_specs()
     centres = [sum(s["channel_x_mm"]) / len(s["channel_x_mm"]) for s in specs.values()]
     assert abs(centres[1] - centres[0]) == pytest.approx(204.12, abs=0.5)
+
+def test_freewheel_tau_override(vbench):
+    """The scope-fitted tail tau outranks the L/R_coil construction.
+
+    tau ~275 us was fitted from three measured-current marble points and is
+    corroborated by the 10 V capture's total loop R (80 mohm) -- which the
+    107 mohm 'coil' figure cannot fit under. bank() must express it as the
+    equivalent freewheel resistance so the diode-drop term keeps working.
+    """
+    b = vbench.bank(3)
+    tau_us = b["inductance_uH"] * 1e-6 / b["freewheel_resistance_ohm"] * 1e6
+    assert tau_us == pytest.approx(275.0, rel=0.01)
