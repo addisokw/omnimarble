@@ -1245,11 +1245,22 @@ class MarbleCoasterExtension(omni.ext.IExt):
         if self._firing_ctl is not None:
             # Station sensing.
             if prev_z is not None:
+                half = 0.0
+                if self._profile is not None:
+                    half = float(
+                        self._profile.sensing.get("detect_halfwidth_mm", 0.0))
                 for station in self._stations.values():
                     for idx, ch_x in enumerate(station.channel_x_mm):
                         if station._got[idx]:
                             continue
-                        if gate_crossed(prev_z, z_along, ch_x):
+                        # The hardware channel fires on the ball's LEADING
+                        # EDGE -- centre still a half-width upstream. Tripping
+                        # at ch_x modelled a point marble and, because the
+                        # FiringController adds the half-width back into its
+                        # reach, delivered every Kit shot 5.2 mm PAST the
+                        # intended position. simulate_rig_shot had this fix;
+                        # the extension did not.
+                        if gate_crossed(prev_z, z_along, ch_x - half):
                             # Infer the crossing from SPEED, not from the step.
                             # The marble transform comes from USD and USD only
                             # syncs at the render tick, so z_along sits frozen

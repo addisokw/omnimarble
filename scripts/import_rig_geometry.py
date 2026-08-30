@@ -178,6 +178,7 @@ def build_profile(vbench):
             "trigger_station": fw["STATION_IN"],
             "required_channels": int(sensor["channels"]),
             "last_channel_to_coil_mm": float(fw["SENSOR_A_LAST_TO_COIL_MM"]),
+            "fire_offset_mm": float(fw.get("FIRE_OFFSET_DEFAULT_MM", 0.0)),
             "on_time_us": float(fw["FIRE_DEFAULT_ON_US"]),
             "on_time_max_us": float(fw["FIRE_MAX_ON_US"]),
             "on_time_overhead_us": float(fw["FIRE_ON_US_OVERHEAD"]),

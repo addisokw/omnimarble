@@ -253,8 +253,15 @@ class FiringController:
         # most of the dv.
         self.detect_halfwidth_mm = float(
             profile_firing.get("detect_halfwidth_mm", 0.0))
+        # fire_offset_mm delivers the centre PAST the coil face toward the
+        # centre: +9 is the impulse optimum measured over 20 releases
+        # (x = -13.78 against a model peak of -13.5) and is the firmware's
+        # boot default (FIRE_OFFSET_DEFAULT_MM). Zero here would model the
+        # rig as it was before that measurement, not as it operates.
+        self.fire_offset_mm = float(profile_firing.get("fire_offset_mm", 0.0))
         self.distance_mm = (float(profile_firing["last_channel_to_coil_mm"])
-                            + self.detect_halfwidth_mm)
+                            + self.detect_halfwidth_mm
+                            + self.fire_offset_mm)
         self.lead_us = float(profile_firing.get("trigger_lead_us", 0.0))
         self.slip_us = float(profile_firing.get("trigger_slip_us", 2000.0))
         self.capture_window_us = float(

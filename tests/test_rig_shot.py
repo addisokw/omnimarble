@@ -310,8 +310,14 @@ def test_finite_size_scales_dv(profile):
     falls inside the ball.
     """
     def shot(finite_size):
+        # Fire position pinned to the coil face: the profile's operating
+        # default is now the measured +9 mm optimum, which on THIS stub
+        # solver puts the field edge inside the ball and breaks the clean
+        # factor-equals-ratio identity the test exists to check. The test is
+        # about the finite-size mechanics, not the operating point.
         return simulate_shot(profile, GradientSolver(), cans=1, voltage=50.0,
-                             v_in_mps=1.006, finite_size=finite_size)
+                             v_in_mps=1.006, finite_size=finite_size,
+                             fire_offset_mm=-22.78)
 
     with_fs, without = shot(True), shot(False)
     assert without["finite_size_factor"] == 1.0
