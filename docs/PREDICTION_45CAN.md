@@ -102,3 +102,36 @@ size, expected here).
 | measured BELOW Layer B | unmodelled loss mechanism — stop and find it before trusting anything |
 | combined LCR outside Layer C band | a can or joint problem — the can-2 lesson, apply pre-solder data |
 | impulse peak moved > 1 mm | field geometry changes with can count — should be impossible; suspect the bench first |
+
+---
+
+# Addendum (preregistered 2026-09-06, before measurement): 3-can closeout tests
+
+Frozen-model predictions for the two held-out 3-can axes, committed before
+the data. These close the 3-can chapter before can 4 makes it unrepeatable.
+
+## Fire-position curve at 3 cans, 700 us, 49 V
+
+Predicted dv RELATIVE to the +9 offset point (ratios cancel the circuit
+exactly -- same I(t) at every offset -- so this is a PURE field-shape test,
+immune to every circuit issue the scope found):
+
+| offset | centre x (mm) | dv / dv(+9) |
+|---:|---:|:---:|
+| +3  | -19.78 | 0.643 |
+| +6  | -16.78 | 0.885 |
+| +9  | -13.78 | 1.000 |
+| +12 | -10.78 | 0.910 |
+| +15 |  -7.78 | 0.683 |
+
+Peak stays at x = -13.5 +/- 1 mm. Band: +/-0.06 on each ratio (n=2 pairs
+per point). A shifted or asymmetric-beyond-band curve means the interior
+field shape changed with can count -- which should be impossible and would
+indict the bench (coil moved?) before the model.
+
+## 30 V marble point at 3 cans, 700 us, offset +9
+
+Layer-A style (decisive): given a 30 V blank scope capture, the injected
+prediction must match the paired-sweep dv within +/-6%. Frozen-sim number
+for reference (known-weak circuit, expected low): dv = 66.9 mm/s at
+--voltage 30 -- scale with (v_pre/30)^2 for the actual charge reached.
