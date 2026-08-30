@@ -543,7 +543,13 @@ class MarbleCoasterExtension(omni.ext.IExt):
         p.marble_radius = self._profile.marble["radius_mm"]
         p.recompute_derived()
         p.apply_measured(inductance_uH=bank["inductance_uH"],
-                         total_resistance_ohm=bank["loop_resistance_ohm"])
+                         total_resistance_ohm=bank["loop_resistance_ohm"],
+                         coil_resistance_ohm=bank["freewheel_resistance_ohm"])
+        # ^ the third argument was missing, so the Kit tail decayed with the
+        # geometry-derived R_freewheel guess and never saw the profile's value
+        # -- including the scope-fitted tau=275us override the scripts already
+        # honour. The comment at the freewheel branch claimed the coil loop;
+        # only this line makes that claim true.
 
         # The rig's ball mass is stated upstream, not derived from radius --
         # and it is ASSUMED steel rather than weighed. dv scales directly with
