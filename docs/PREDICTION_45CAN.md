@@ -416,3 +416,47 @@ stays at -13.5 +/- 1 mm" is now expected to FAIL the same way at 4 cans
 (345 A), with a wider plateau: dv(+3)/dv(+9) >= 1.0 and dv(0)/dv(+9) >= 0.7
 at 49 V / 700 us. The +9 point, which every Layer A/B number rests on,
 has held at every gate and voltage tested and those numbers stand.
+
+## Scoring the polarity flip (2026-09-09, coil leads reversed at J1)
+
+Scope null test first: reversed-coil 49 V / 700 us blank capture is the
+baseline waveform (I_pk 296 vs 298 A, bank 49.28 -> 20.20 vs 49.15 -> 20.19,
+integral of I^2 39.02 vs 38.98 A^2 s, 12 A rms sample-by-sample). The flip
+did nothing electrical.
+
+Marble, v_in-corrected: dv(+3) = 146.5 / 124.7 (mean 135.6), dv(+9) = 186.9 /
+192.5 (mean 189.7). **Ratio 0.72** against 0.99 with the original
+polarity and the frozen 0.64. The +9 point is unchanged (190 vs 180, within
+the pair scatter). The entry excess is GONE with the field reversed, and it
+did not return between the first and second +3 shot (147 then 125).
+
+What this establishes: the excess depends on the SIGN of the coil field,
+so it involves a persistent magnetisation that the coil did not flip --
+induced-force physics is sign-blind (the null capture above is the
+electrical half of that statement). Two carriers remain:
+
+- **the ball's remanent state** (hundreds of same-polarity pulses). Against
+  it: the ball rolls ~5 turns between stations and is handled by hand between
+  shots, so a remanent moment fixed in the ball would point in a random
+  direction at each shot and the excess would be random -- it was 183/187
+  on consecutive +3 shots. Also against it: the second reversed shot did
+  not recover, though two shots may be too few for a semi-hard ball on
+  minor loops.
+- **a magnetised ferrous part fixed in the lab frame on the entry side**
+  (screw, bracket, sensor mount, former clamp). Consistent with the
+  shot-to-shot repeatability and the entry-only footprint. Still
+  unexplained by it alone: the steep current dependence (a fixed field
+  gives a cross term linear in I, which should be relatively LARGER at
+  30 V; measured smaller). A fixed field plus a nonlinear ball response
+  near its coercive point could do both; not demonstrated.
+
+## Preregistered next tests (before data)
+
+| test | ball-state predicts | fixed-hardware predicts |
+|---|---|---|
+| K: 8 conditioning shots reversed at +9, THEN +3/+9 pairs (reversed) | ratio climbs back toward 0.99 as the ball re-magnetises | stays ~0.72 |
+| L: flip leads back to original, IMMEDIATELY +3/+9 pairs | stays low (~0.7) until re-conditioned | 0.99 immediately |
+| M: static field survey at the entry face, coil OFF (compass, or the SS49E/MLX90393 when they arrive -- the flip protocol's "current off" reading, read for its own sake) | nothing above Earth's ~0.5 G | a local field of gauss at the offending part |
+
+K and L are mutually checking: they cannot both say "ball" or both say
+"hardware" unless the carrier is what they name.
