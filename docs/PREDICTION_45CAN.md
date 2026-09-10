@@ -524,3 +524,12 @@ so it is specific to the shot. Open. First measurement of the next session:
 one +9 pair set cold, before anything else. Back at ~180 = something warms
 with use; still ~197 = something changed permanently today (the reversed
 pulse train is the only candidate event).
+
+Correction: the "morning baseline" above is the 2026-08-29 capture, eleven
+days earlier -- not the same session. Restated: the pulse is unchanged
+across eleven days (-1% in the I^2 integral), and within today the
+mid-session reversed-coil capture (39.02) and the end-of-day capture
+(38.59) bracket the afternoon, over which dv(+9) rose 190 -> 197 while the
+pulse fell 1%. So the afternoon drift is not the circuit. The morning ->
+midday step (180 -> 190) has no same-day scope reference and is not
+attributed. The cold +9 pair set next session stands as the first test.
