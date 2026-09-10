@@ -193,3 +193,18 @@ Rule 2 note: nothing has been refitted. The 4/5-can Layer A/B/C numbers
 above stand exactly as frozen; any new field/force term fitted to this
 3-can curve gets its own 4/5-can predictions registered ALONGSIDE them,
 before can 4 data, never replacing them.
+
+## 30 V injected prediction (committed 2026-09-09 before run B's marble data)
+
+Scope capture `scope_3can_30v_700.csv`: V_bank 29.45 -> 12.08 V, I_pk 187 A
+at +184 us (sqrt-free voltage scaling of the 49 V capture said ~182 A;
+I_pk/V0 is 6.35 A/V here against 6.08 A/V at 49 V -- noted, not fitted).
+
+Injected-current prediction (frozen field + tau = 275 us), v_in 0.245:
+
+| offset | dv (mm/s) |
+|---:|:---:|
+| +9 | **69.6** -- must match the 3-pair mean within +/-6% (65.4-73.8) |
+| +3 | 44.7 -- frozen shape, ratio 0.64; the discriminator says whether this holds |
+
+Frozen-circuit reference at 29.45 V: 66.9 x (29.45/30)^2 = 64.5 mm/s.
