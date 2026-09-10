@@ -208,3 +208,68 @@ Injected-current prediction (frozen field + tau = 275 us), v_in 0.245:
 | +3 | 44.7 -- frozen shape, ratio 0.64; the discriminator says whether this holds |
 
 Frozen-circuit reference at 29.45 V: 66.9 x (29.45/30)^2 = 64.5 mm/s.
+
+## Scoring the discriminator (2026-09-09)
+
+Coil dv below is v_in-corrected within each pair (baseline slope
+-490 mm/s per m/s); raw values in the CSVs. The correction tightens the
+30 V +3 triple from 38/63/56 to 53/55/44 and barely moves the 49 V points.
+
+| run | condition | I_pk | dv(+3) | dv(+9) | ratio | frozen | bench | current-amp | pulse-duration |
+|---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| ref | 49 V, 700 us | 298 A | 178 | 180 | **0.99** | 0.64 | ~1.0 | -- | -- |
+| A | 49 V, 200 us | ~250 A | 47 | 49 | 0.84 raw / 0.96 corr (+/-0.15) | 0.64 | ~1.0 | 0.8-0.95 | 0.64 |
+| B | 30 V, 700 us | 187 A | 50.4 | 73.3 | **0.69** (+/-0.08) | 0.64 | ~1.0 | 0.64-0.75 | ~1.0 |
+
+**Run B decides it: the bench is exonerated.** A mis-timed shot would have
+given ~1.0 at 30 V; it gave 0.69, inside the frozen band. Pulse-duration
+physics is out (B is a long pulse and it came back to the model). The
+anomaly is tied to the STRENGTH of the shot.
+
+30 V +9 point (preregistered 69.6, band 65.4-73.8): measured 73.3 -- HIT,
+at the top of the band. So at +9 the frozen model holds at both 187 A and
+298 A (ratio 1.05 / 1.03); the +9 reference is not what moved.
+
+The entry point's excess over the frozen model, by shot:
+
+| condition | dv(+3) measured | frozen (injected where available) | excess |
+|---|:---:|:---:|:---:|
+| 30 V, 700 us (187 A, dv_9 = 73) | 50.4 | 44.7 | 1.13 |
+| 49 V, 200 us (~250 A, dv_9 = 49) | 47 | 41 | 1.14 |
+| 49 V, 700 us (298 A, dv_9 = 180) | 178 | 114 | 1.56 |
+
+Rejected mechanisms (worked, not guessed):
+- any local M(B) law (soft or hard saturation, initial-permeability rise):
+  the internal field at +3/49 V (3*Bz = 0.32 T) equals that at +9/30 V
+  (0.31 T), yet one shows a 56% excess and the other 5%. The excess is not
+  a function of the field the ball sits in.
+- freewheel tail longer than modelled: the 30 V capture shows I = 0 +/- 10 A
+  from 0.9 ms on. No long tail exists to move the ball into a better spot.
+- remanence (force linear in I): would be LARGER at low current; it is smaller.
+- ball motion during the pulse: 0.3 mm, worth ~2% on the flank.
+- fire-timing latency: current-independent, and run B is at the model.
+
+Open: the 49 V/200 us point cannot separate "peak current" from "impulse
+delivered" (it has the higher I_pk but the lower dv, and its ratio is
+ambiguous at +/-0.15). The next two runs are built to separate them.
+
+## Preregistered next runs (before data)
+
+All at 3 cans, 49 V, offsets +3 and +9, 2 pairs each, v_in-corrected ratio:
+
+| run | gate | I_pk | frozen | if PEAK-CURRENT driven | if IMPULSE/DURATION driven |
+|---|:---:|:---:|:---:|:---:|:---:|
+| C | 400 us | ~290 A (peak inside the gate) | 0.64 | ~1.0 (same as 700) | ~0.85 (dv_9 ~ 130, between B and ref) |
+| D | 1500 us | 298 A | 0.64 | ~1.0 | > 1.05 (dv_9 ~ 235; +3 overtakes +9) |
+
+Frozen absolute dv at +3/+9: 400 us 84/132, 1500 us 133/206 mm/s (fallback
+circuit; the injected 49 V captures at 400/1500 exist and give ~1.03x).
+
+Run E, entry extension at 700 us (offsets -6, -3, 0; 2 pairs each), to map
+how far the plateau reaches: frozen ratios to +9 are 0.139 / 0.232 / 0.400.
+A plateau that persists to the face (0 -> ~1.0) would mean the extra force
+acts on a ball that is mostly OUTSIDE the winding, where the model's field
+is weakest -- which would point at the coil's exterior field (leads, the
+former end, anything ferromagnetic on the entry side) rather than the ball.
+
+Unchanged: nothing refitted, 4/5-can predictions stand.
