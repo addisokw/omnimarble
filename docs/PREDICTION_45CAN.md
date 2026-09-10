@@ -273,3 +273,71 @@ is weakest -- which would point at the coil's exterior field (leads, the
 former end, anything ferromagnetic on the entry side) rather than the ball.
 
 Unchanged: nothing refitted, 4/5-can predictions stand.
+
+## Scoring runs C, D, E (2026-09-09; v_in-corrected)
+
+| run | condition | dv(+3) | dv(+9) | ratio | frozen | peak-current | impulse |
+|---|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| C | 49 V, 400 us | 111.7 | 137.3 | **0.81** | 0.64 | ~1.0 | ~0.85 |
+| D | 49 V, 1500 us | 201.2 | 227.6 | **0.88** | 0.64 | ~1.0 | > 1.05 |
+
+The IMPULSE hypothesis is falsified: D was declared to overtake (+3 > +9)
+and it did not. Peak-current survives only loosely -- both runs sit below
+the ~1.0 it called for, but far above the frozen 0.64. Taking every 49 V
+gate together (200: 0.84-0.96, 400: 0.81, 700: 0.99, 1500: 0.88) the ratio
+at 49 V is 0.89 +/- 0.04 with no clear gate trend; at 30 V it is 0.69.
+**Bank voltage (peak current) is the variable; gate length is at most a
+weak modifier.**
+
+Entry extension (run E, 49 V, 700 us), ratios to dv(+9) = 180:
+
+| offset | x | measured | frozen | verdict |
+|---:|---:|:---:|:---:|:---|
+| -6 | -28.78 | 0.15 | 0.139 | hit |
+| -3 | -25.78 | 0.31 | 0.232 | high, ~1 sigma |
+| 0 | -22.78 | 0.70 | 0.400 | MISS (+0.30) |
+
+So the full 49 V / 700 us curve, measured vs frozen:
+
+| offset | -6 | -3 | 0 | +3 | +6 | +9 | +12 | +15 |
+|---|---|---|---|---|---|---|---|---|
+| measured | 0.15 | 0.31 | 0.70 | 0.99 | 1.06 | 1.00 | 0.88 | 0.68 |
+| frozen | 0.14 | 0.23 | 0.40 | 0.64 | 0.885 | 1.00 | 0.91 | 0.68 |
+
+Far outside the coil (-6) and on the exit flank (+12, +15) the model is
+right. Between the face and the peak the measured curve is flat-topped
+where the model is peaked: half-maximum points are at about -1.6 and +17.6
+(measured) against +1.2 and +17.4 (frozen) -- the ENTRY half-maximum moved
+~3 mm outward, the exit one did not. At 30 V the +3/+9 ratio is the
+model's, so this outward growth of the entry flank is a high-current
+effect. Excess at +3 over the frozen model by run: 30 V 1.13, 49 V/400
+1.33, 49 V/700 1.56, 49 V/1500 1.52; at +9 the same runs give 1.05, 1.04,
+1.03, 1.11.
+
+Standing candidates (none confirmed):
+- a genuine nonlinear force term that acts when the ball STRADDLES the
+  winding end (half the ball outside the face) and grows faster than I^2 --
+  no local M(B) law does this (see above), so it would have to involve the
+  non-uniform magnetisation of a sphere sitting across a steep gradient;
+- something mechanical at the entry that scales with current: the radial
+  pull on a ball resting on the former's entry lip;
+- ball state (remanence / a magnetised ball) -- disfavoured by the current
+  scaling but not yet excluded by a direct swap.
+
+## Preregistered next runs (before data): voltage series, fresh ball, fast release
+
+All at 3 cans, 700 us, offsets +3 and +9, 2 pairs each, v_in-corrected ratio.
+
+| run | condition | frozen | if peak-current physics | if ball-state | if mechanical / speed-dependent |
+|---|---|:---:|:---:|:---:|:---:|
+| F | 40 V | 0.64 | ~0.85 (between 0.69 and 0.99, monotonic in V) | same as F-physics | same |
+| G | 20 V | 0.64 | <= 0.69 (at or below the model) | same | same |
+| H | 49 V, FRESH ball (same spec, never pulsed) | 0.64 | 0.99 (unchanged) | drops toward 0.64 | 0.99 |
+| J | 49 V, fast release (v_in ~0.45-0.5, the sustain height) | 0.64 | 0.99 (a magnetic force does not care about v) | 0.99 | changes (either way) |
+
+Absolute +9 checks ride along: 40 V frozen-circuit reference 66.9 x
+(40/30)^2 = 118.9 mm/s, 20 V: 29.7 mm/s (scale by (v_pre/V)^2); a scope
+capture at 40 V would give the injected number (preferred) -- optional.
+
+F+G also pin the FORM: excess(+3) - 1 against I_pk at 187 / ~250 / 298 A
+(and ~125 A) tells I^1 from I^2 from a threshold.
