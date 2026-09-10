@@ -514,3 +514,13 @@ of I^2 = 38.98 A^2 s) attributes it without a single release. Until then,
 same-session ratios are trustworthy and cross-session absolute dv carries
 a ~5-10% thermal band -- which is also the band the 4-can Layer A/B
 absolute predictions should be read with.
+
+End-of-session blank capture (49 V, 700 us) against the morning baseline:
+integral of I^2 38.59 vs 38.98 A^2 s (-1%), I_pk 294 vs 298 A, bank
+49.29 -> 20.21 vs 49.15 -> 20.19. **The circuit did not drift.** The +9%
+rise in dv(+9) is downstream of the current: ball, track, release or the
+sensing chain -- and the roll baselines did NOT drift (-44..-52 all day),
+so it is specific to the shot. Open. First measurement of the next session:
+one +9 pair set cold, before anything else. Back at ~180 = something warms
+with use; still ~197 = something changed permanently today (the reversed
+pulse train is the only candidate event).
