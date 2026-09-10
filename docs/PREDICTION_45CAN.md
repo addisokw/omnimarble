@@ -492,3 +492,25 @@ then +3/+9 pairs. Re-magnetisable part: ratio climbs back toward 0.99.
 Permanently weakened part: stays ~0.80 (the rig then simply has a smaller
 artefact). Either way the fix is the same: locate (coil-off survey at the
 entry face) and remove or demagnetise, then confirm 0.64 +/- 0.06.
+
+## N, conditioning half only (original polarity, 4 pairs at +9)
+
+dv(+9) v_in-corrected: 204 / 185 / 197 / 204, mean 197. No +3 pairs were
+taken, so N's ratio is not scored. What the free half does show is the +9
+reference drifting UP through the session at fixed 49 V / 700 us:
+
+| time | dv(+9) | context |
+|---|:---:|---|
+| morning | 180 | fire-position sweep |
+| midday | 190, 189 | reversed polarity, before/after conditioning |
+| afternoon | 196 | flip-back |
+| late | 197 | conditioning |
+
++9% monotonic in time, unaffected by polarity. Candidates: bank warming
+(electrolytic C rises and ESR falls with temperature -> more current, and
+dv goes as I^2), coil warming (opposes), track/ball. One blank scope
+capture at the end of the session against the morning baseline (integral
+of I^2 = 38.98 A^2 s) attributes it without a single release. Until then,
+same-session ratios are trustworthy and cross-session absolute dv carries
+a ~5-10% thermal band -- which is also the band the 4-can Layer A/B
+absolute predictions should be read with.
