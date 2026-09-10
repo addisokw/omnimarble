@@ -476,3 +476,19 @@ magnetised part -- not a failure of the field/force physics. Frozen
 predictions are unchanged; the 4-can "peak stays put" line reverts to a
 real prediction once the part is demagnetised or removed and the +3/+9
 ratio is re-measured at 49 V (expected 0.64 +/- 0.06 after the fix).
+
+## Scoring L (leads back to original, immediate pairs)
+
+dv(+3) = 169 / 143.5, dv(+9) = 199 / 194 (v_in-corrected). **Ratio 0.80
++/- 0.08** -- between the two declared outcomes (hardware 0.99, ball 0.7).
+First +3 shot 0.86, second 0.73. Read together with K (ball excluded), the
+carrier is fixed hardware that the ten reversed pulses PARTLY demagnetised
+or reversed: sign restored by the flip-back, magnitude reduced. That places
+it inside the coil's exterior field, i.e. within a few cm of the entry
+face, and it is semi-hard (a reversed pulse train moves it, one does not).
+
+Preregistered N: 8 conditioning shots at +9 with the ORIGINAL polarity,
+then +3/+9 pairs. Re-magnetisable part: ratio climbs back toward 0.99.
+Permanently weakened part: stays ~0.80 (the rig then simply has a smaller
+artefact). Either way the fix is the same: locate (coil-off survey at the
+entry face) and remove or demagnetise, then confirm 0.64 +/- 0.06.
