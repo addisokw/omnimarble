@@ -460,3 +460,19 @@ electrical half of that statement). Two carriers remain:
 
 K and L are mutually checking: they cannot both say "ball" or both say
 "hardware" unless the carrier is what they name.
+
+## Scoring K (reversed, after 8 conditioning shots at +9)
+
+Conditioning +9 raw dv: 201 / 178 / 185 / 206. After: dv(+3) = 132 / 128,
+dv(+9) = 199 / 178 (v_in-corrected). **Ratio 0.69** -- unchanged from the
+first reversed pairs (0.72). Eight-plus reversed pulses with the ball in the
+coil did not bring the excess back, so the ball's magnetic state is NOT the
+carrier. The carrier is fixed in the lab frame on the entry side of the
+coil. L (flip back, 0.99 expected immediately) closes it; M (coil-off field
+survey at the entry face) locates it.
+
+Consequence for the model: this is a RIG artefact -- a static field from a
+magnetised part -- not a failure of the field/force physics. Frozen
+predictions are unchanged; the 4-can "peak stays put" line reverts to a
+real prediction once the part is demagnetised or removed and the +3/+9
+ratio is re-measured at 49 V (expected 0.64 +/- 0.06 after the fix).
