@@ -135,3 +135,61 @@ Layer-A style (decisive): given a 30 V blank scope capture, the injected
 prediction must match the paired-sweep dv within +/-6%. Frozen-sim number
 for reference (known-weak circuit, expected low): dv = 66.9 mm/s at
 --voltage 30 -- scale with (v_pre/30)^2 for the actual charge reached.
+
+---
+
+# Scoring (2026-09-09): 3-can fire-position curve -- a MISS on the entry side
+
+Data: `logs/3can_firepos.csv`, 700 us, 49 V, 2 pairs per offset, v_in 0.232-0.255.
+
+| offset | x (mm) | coil dv pair (mm/s) | mean | measured ratio | predicted | verdict |
+|---:|---:|:---:|:---:|:---:|:---:|:---|
+| +3  | -19.78 | 183, 187 | 185 | **1.016** | 0.643 | MISS (+0.37) |
+| +6  | -16.78 | 203, 183 | 193 | **1.060** | 0.885 | MISS (+0.18) |
+| +9  | -13.78 | 182, 182 | 182 | 1.000 | 1.000 | reference |
+| +12 | -10.78 | 184, 136 | 160 | 0.879 | 0.910 | hit (band +/-0.06) |
+| +15 |  -7.78 | 128, 118 | 123 | 0.676 | 0.683 | hit |
+
+The exit side is exactly as predicted. The entry side is FLAT from +3 to +9
+where the model falls to 0.64: the measured curve is roughly 1.5x wider than
+the model's on the entry side, with its apparent peak near +6 (x ~ -16.8).
+The +9 point itself (182 mm/s) is where the 3-can campaign always put it,
+so nothing about the reference moved; the flank came UP to meet it.
+
+Declared meaning (above): "impulse peak moved > 1 mm -- should be
+impossible; suspect the bench first". Honoured: the bench is suspect first.
+But two facts narrow it:
+
+1. The frozen model's curve shape is independent of current and gate --
+   verified by running it at 3 can/49 V/200 us (I_pk 254 A), 3 can/30 V/
+   700 us (166 A) and 1 can/49 V/700 us (191 A): 0.64/0.88/1.00/0.91/0.68
+   every time. Its saturation cap (B_sat 1.8 T, chi_eff 3) never engages:
+   3*Bz at the fire point is 0.49 T at 272 A. Lowering B_sat to 0.35 T moves
+   the shape toward the data (0.78/1.02/1/0.80/0.55) but cannot reproduce it.
+2. The 1-can 49 V/200 us sweep (2026-08-25, same firmware sensing
+   convention as today -- the centre-timing fix f340baf predates every
+   sweep) DID show the model's entry-side steepness: offsets 0/+8 gave
+   ~18/50 = 0.36 against the model's 0.40. So the entry side was steep at
+   191 A and short pulses, and is flat at 272 A and long pulses.
+
+## Preregistered discriminator (before the data): dv(+3)/dv(+9) at 3 cans
+
+Two more pairs of points, ratio of coil dv at +3 to +9, 2-3 pairs each:
+
+| run | condition | I_pk (model) | pulse | frozen model | if BENCH position error | if CURRENT-amplitude physics (saturation-like) | if PULSE-DURATION physics (eddy / magnetisation lag) |
+|---|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| A | 49 V, 200 us | 254 A | short | 0.64 +/- 0.06 | ~1.0 (unchanged) | intermediate, ~0.8-0.95 | drops toward 0.64 |
+| B | 30 V, 700 us | 166 A | long | 0.64 +/- 0.06 | ~1.0 (unchanged) | drops toward 0.64-0.75 | stays ~1.0 |
+
+Reference already in hand: 49 V / 700 us (272 A, long) = 1.02.
+The frozen model has already lost this axis; the table is about WHICH
+replacement is true. If both A and B stay at ~1.0, the bench is guilty and
+the next step is an independent fire-position witness (station-B arrival
+time relative to the gate edge gives x_fire to ~1 mm) before any physics
+is touched. Run B also supplies the 30 V +9 point preregistered above
+(within +/-6% of the injected prediction), unchanged.
+
+Rule 2 note: nothing has been refitted. The 4/5-can Layer A/B/C numbers
+above stand exactly as frozen; any new field/force term fitted to this
+3-can curve gets its own 4/5-can predictions registered ALONGSIDE them,
+before can 4 data, never replacing them.
