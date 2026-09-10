@@ -341,3 +341,78 @@ capture at 40 V would give the injected number (preferred) -- optional.
 
 F+G also pin the FORM: excess(+3) - 1 against I_pk at 187 / ~250 / 298 A
 (and ~125 A) tells I^1 from I^2 from a threshold.
+
+## Scoring runs F, G, J (2026-09-09; H skipped -- no spare ball on hand)
+
+| run | condition | dv(+3) | dv(+9) | ratio | frozen | declared physics reading |
+|---|---|:---:|:---:|:---:|:---:|:---|
+| F | 40 V, 700 us | 101.9 | 133.2 | **0.77** (+/-0.08) | 0.64 | ~0.85 -- consistent, monotonic in V |
+| G | 20 V, 700 us | 22.2 | 29.9 | 0.74 (+/-0.35) | 0.64 | <= 0.69 -- uninformative at this dv |
+| J | 49 V, fast release (v_in 0.79!) | 158.7 | 159.7 (one pair) | **0.99** | 0.64 | 0.99 = velocity-independent |
+
+The ratio against bank voltage / peak current, 700 us, all v_in-corrected:
+
+| V | I_pk | dv(+3)/dv(+9) | excess at +3 over frozen shape |
+|---|:---:|:---:|:---:|
+| 20 | ~125 A | 0.74 +/- 0.35 | -- |
+| 30 | 187 A | 0.69 +/- 0.08 | 1.08 |
+| 40 | ~250 A | 0.77 +/- 0.08 | 1.20 |
+| 49 | 298 A | 0.99 +/- 0.05 | 1.55 |
+
+A steep onset between ~250 and 300 A, not a gentle power law; run J says it
+does not care about the ball's speed (0.245 -> 0.79 m/s, same ratio).
+
+Aside from J: dv(+9) at v_in 0.79 was 160 against 180 at 0.245 -- the rig's
+known steep speed-dependent loss (baseline -113 mm/s at 0.79 vs -50 at
+0.245), unrelated to the entry anomaly but a reminder that the pairing
+only cancels loss at the RELEASE speed, not at the exit speed.
+
+## Sim-side check: can any local M(B) law do this? (scratch, not committed code)
+
+Volume-integrated (B.grad)B over the real 12.7 mm ball with several
+magnetisation laws, ratios to +9, at 298 A:
+
+| law | -6 | -3 | 0 | +3 | +6 | +9 | +12 | +15 | F(+9) vs linear |
+|---|---|---|---|---|---|---|---|---|:---:|
+| measured 49 V | 0.15 | 0.31 | 0.70 | 0.99 | 1.06 | 1.00 | 0.88 | 0.68 | -- |
+| linear chi 3 | 0.14 | 0.23 | 0.39 | 0.64 | 0.88 | 1.00 | 0.92 | 0.69 | 1.00 |
+| hard cap 0.3 T | 0.24 | 0.40 | 0.64 | 0.90 | 1.04 | 1.00 | 0.80 | 0.55 | 0.56 |
+| soft tanh 0.4 T | 0.20 | 0.32 | 0.51 | 0.76 | 0.96 | 1.00 | 0.85 | 0.60 | 0.64 |
+| rising chi 1->3 | 0.10 | 0.18 | 0.33 | 0.58 | 0.85 | 1.00 | 0.94 | 0.72 | 0.89 |
+
+Saturation DOES move the entry side toward the data (by depressing the +9
+reference, whose whole volume sits in strong field) -- but only by cutting
+F(+9) to 0.56-0.64 of linear at 298 A against 0.81-0.87 at 187 A, i.e. the
++9 point would scale as I^1.1 between 30 V and 49 V. Measured: 73.3 -> 180
+= 2.46x against I^2 = 2.54x. **The +9 point scales quadratically to
++/-5%, so any saturation big enough to flatten the entry is excluded.**
+Saturation also drops the exit flank (0.80/0.55), which measured at the
+linear values (0.88/0.68). Rising-permeability laws go the wrong way.
+No monotone local M(B) law fits; the earlier point-field argument reached
+the same conclusion for the wrong reason, this one is the real constraint.
+
+## Where this stands
+
+Established: a current-dependent excess with a steep onset above ~250 A,
+confined to fire positions where the ball straddles the winding end
+(offsets 0 to +6), invisible at +9 and on the exit flank, independent of
+gate length and of ball speed, absent at 30 V. Excluded: fire timing,
+freewheel tail, remanence, ball motion, every local magnetisation law.
+
+Not yet excluded: ball magnetic history (run H, needs a never-pulsed
+ball); something mechanical at the former's entry lip that scales with the
+radial pull; an asymmetry of the hardware between the two coil ends
+(leads, mounting) that only shows at high current.
+
+Cheap test queued for the next dead-rig window (the resistor swap):
+**swap the coil leads at J1** and repeat +3/+9 at 49 V, 2 pairs. Reversing
+the field flips the sign of anything that depends on a fixed magnetisation
+(ball or hardware) but leaves induced-force physics untouched.
+Preregistered: ratio 0.99 unchanged = not remanence of anything; ratio
+drops toward 0.64 on the first shots and recovers = ball/hardware remanence.
+
+For the 4-can holdout this changes ONE preregistered line: "impulse peak
+stays at -13.5 +/- 1 mm" is now expected to FAIL the same way at 4 cans
+(345 A), with a wider plateau: dv(+3)/dv(+9) >= 1.0 and dv(0)/dv(+9) >= 0.7
+at 49 V / 700 us. The +9 point, which every Layer A/B number rests on,
+has held at every gate and voltage tested and those numbers stand.
