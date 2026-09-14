@@ -1120,24 +1120,12 @@ class MarbleCoasterExtension(omni.ext.IExt):
         C = p.capacitance_uF * 1e-6
         L = p.inductance_H
 
-        # Dynamic inductance coupling
-        coil_half = p.length / 2
-        marble_front = z_along + p.marble_radius
-        marble_back = z_along - p.marble_radius
-        overlap_start = max(marble_back, -coil_half)
-        overlap_end = min(marble_front, coil_half)
-        overlap = max(0.0, overlap_end - overlap_start) / (2 * p.marble_radius)
-
-        k = (p.marble_radius / p.inner_radius) ** 2 * (1 + p.chi_eff) * 0.01
-        L_eff = L * (1.0 + k * overlap)
-
-        # dL/dx (numerical)
-        dx = 0.1
-        overlap_p = max(0.0, min(z_along + dx + p.marble_radius, coil_half) -
-                        max(z_along + dx - p.marble_radius, -coil_half)) / (2 * p.marble_radius)
-        overlap_m = max(0.0, min(z_along - dx + p.marble_radius, coil_half) -
-                        max(z_along - dx - p.marble_radius, -coil_half)) / (2 * p.marble_radius)
-        dLdx = L * k * (overlap_p - overlap_m) / (2 * dx)
+        # The marble as an inductance perturbation, from the same on-axis
+        # field and susceptibility the force model uses (TWIN_AUDIT S-6). The
+        # trapezoid-overlap-times-0.01 model that lived here disagreed with the
+        # force half by 8-17x; harmless for dv, wrong for the early slope.
+        L_eff = L + p.marble_inductance_H(z_along)
+        dLdx = p.marble_dL_dx_H_per_mm(z_along)
 
         I = self._circuit_I
         Q_cap = self._circuit_Q_cap

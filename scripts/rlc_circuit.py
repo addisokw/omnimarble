@@ -352,44 +352,69 @@ def rlc_current_with_cutoff(t: float, t_cutoff: float, rlc: dict) -> float:
 # Coupled electromechanical ODE
 # ============================================================
 
-def L_effective(marble_pos_z: float, params: dict, rlc: dict) -> float:
-    """Compute effective inductance as function of marble overlap.
+def axial_field_per_amp(z_mm: float, num_turns: int, r_mean_mm: float,
+                        length_mm: float) -> float:
+    """On-axis B_z per ampere (T/A): num_turns loops of radius r_mean spread
+    evenly over length_mm, centred on z = 0.
 
-    L_eff(x) = L_0 * (1 + k * overlap_fraction(x))
+    This is exactly analytical_bfield.solenoid_field evaluated on the axis
+    (single_loop_field at r = 0 reduces to mu0 I R^2 / 2 (R^2 + z^2)^1.5), so
+    the circuit half of the twin now reads the same field as the force half,
+    without dragging scipy/matplotlib into this module.
+    """
+    if num_turns <= 1:
+        positions = [0.0]
+    else:
+        step = length_mm / (num_turns - 1)
+        positions = [-length_mm / 2 + i * step for i in range(num_turns)]
+    r2 = r_mean_mm * r_mean_mm
+    total = 0.0
+    for z_loop in positions:
+        dz = z_mm - z_loop
+        total += MU_0_MM * r2 / (2.0 * (r2 + dz * dz) ** 1.5)
+    return total
+
+
+def marble_dL_H(marble_pos_z: float, params: dict) -> float:
+    """Inductance the marble adds to the coil at axial position z (Henries).
+
+        dL(x) = chi_eff * V * (B(x)/I)^2 / mu0
+
+    which is the SAME statement as the force law F = (chi V / mu0) B dB/dx,
+    because F = 1/2 I^2 dL/dx. Until 2026-09 the coupled ODE used a
+    trapezoidal overlap fraction scaled by an ad-hoc 0.01 ("realistic
+    coupling") that disagreed with the force model by 8-17x
+    (omnimarble-vbench/docs/TWIN_AUDIT.md S-6). The dv cost was 0.2%; the
+    early-slope di/dt = V/L, which a marble-shot scope capture reads for the
+    fire position, was wrong by the full dL/L0. The bench's own number at the
+    fire point, 0.119 uH/mm from the marble's momentum balance, matches this
+    dipole form to 3% (COIL_AS_SENSOR.md section 1).
+
+    Units: V [mm^3] * (T/A)^2 / (T*mm/A) = T*mm^2/A = 1e-6 H.
+    """
+    num_turns = int(params["num_turns"])
+    r_mean = (params["inner_radius_mm"] + params["outer_radius_mm"]) / 2
+    length = params["length_mm"]
+    a = params.get("marble_radius_mm", 5.0)
+    chi_eff = params.get("chi_eff", 3.0)
+    volume = (4.0 / 3.0) * math.pi * a ** 3
+    b_per_amp = axial_field_per_amp(marble_pos_z, num_turns, r_mean, length)
+    return chi_eff * volume * b_per_amp * b_per_amp / MU_0_MM * 1e-6
+
+
+def L_effective(marble_pos_z: float, params: dict, rlc: dict) -> float:
+    """Coil inductance with the marble at axial position z: L0 + dL(z).
 
     Args:
         marble_pos_z: marble position along coil axis relative to coil center (mm)
-        params: coil config dict
+        params: coil config dict (num_turns, inner/outer_radius_mm, length_mm,
+            optional marble_radius_mm and chi_eff)
         rlc: dict from compute_rlc_params()
 
     Returns:
         Effective inductance in Henries.
     """
-    L_0 = rlc["inductance_H"]
-    coil_half_length = params["length_mm"] / 2
-    marble_radius = params.get("marble_radius_mm", 5.0)
-    inner_r = params["inner_radius_mm"]
-
-    # Overlap fraction: how much of the marble is inside the coil bore
-    marble_front = marble_pos_z + marble_radius
-    marble_back = marble_pos_z - marble_radius
-    coil_start = -coil_half_length
-    coil_end = coil_half_length
-
-    overlap_start = max(marble_back, coil_start)
-    overlap_end = min(marble_front, coil_end)
-    overlap = max(0.0, overlap_end - overlap_start)
-    marble_length = 2 * marble_radius
-    overlap_fraction = overlap / marble_length if marble_length > 0 else 0.0
-
-    # Coupling factor
-    r_marble = params.get("marble_radius_mm", 5.0)
-    r_bore = inner_r
-    chi_eff = params.get("chi_eff", 3.0)
-    mu_r_eff = 1 + chi_eff
-    k = (r_marble / r_bore) ** 2 * mu_r_eff * 0.01  # scaled down for realistic coupling
-
-    return L_0 * (1.0 + k * overlap_fraction)
+    return rlc["inductance_H"] + marble_dL_H(marble_pos_z, params)
 
 
 def dL_dx(marble_pos_z: float, params: dict, rlc: dict, dx: float = 0.1) -> float:
@@ -398,8 +423,8 @@ def dL_dx(marble_pos_z: float, params: dict, rlc: dict, dx: float = 0.1) -> floa
     Returns:
         dL/dx in H/mm.
     """
-    L_p = L_effective(marble_pos_z + dx, params, rlc)
-    L_m = L_effective(marble_pos_z - dx, params, rlc)
+    L_p = marble_dL_H(marble_pos_z + dx, params)
+    L_m = marble_dL_H(marble_pos_z - dx, params)
     return (L_p - L_m) / (2 * dx)
 
 
@@ -548,31 +573,6 @@ def saturated_force(B_external: float, dBdz: float, marble_params: dict) -> floa
     # 211 A peak) but reachable on the legacy high-voltage path.
     M_eff = min(chi_eff * abs(B_external), B_sat) / MU_0_MM   # A/mm
     return math.copysign(1.0, B_external) * M_eff * V * dBdz
-
-
-def saturation_factor(B_external: float, chi_eff: float, B_sat: float) -> float:
-    """Smooth saturation transition factor.
-
-    Returns a factor in [0, 1] that multiplies chi_eff:
-    - 1.0 when well below saturation
-    - Smoothly decreases toward M_sat/(chi_eff * H) above saturation
-
-    Args:
-        B_external: external B-field magnitude (T)
-        chi_eff: effective susceptibility
-        B_sat: saturation flux density (T)
-
-    Returns:
-        Saturation factor (dimensionless).
-    """
-    B_internal = (1 + chi_eff / 3) * abs(B_external)
-    if B_internal < 1e-12:
-        return 1.0
-    if B_internal < B_sat:
-        return 1.0
-    # Smooth transition: M_sat / (chi * H)
-    # H = B_external / mu_0, M_sat = B_sat / mu_0
-    return B_sat / B_internal
 
 
 # ============================================================
@@ -1005,6 +1005,7 @@ if __name__ == "__main__":
         "inner_radius_mm": 12.0,
         "outer_radius_mm": 18.0,
         "marble_radius_mm": 5.0,
+        "num_turns": 30,
         "chi_eff": 0.0,  # No coupling
         "has_flyback_diode": True,
     }
@@ -1036,13 +1037,13 @@ if __name__ == "__main__":
     # Test that coupling reduces peak current
     print("\n--- Test 11b: Back-EMF reduces peak current ---")
     coupled_params = no_coupling_params.copy()
-    coupled_params["chi_eff"] = 100.0  # Enable coupling
+    coupled_params["chi_eff"] = 3.0  # a real sphere; dL is ~1 uH at centre
     state_coupled = {"I": 0.0, "Q_cap": C_val * V0}
     I_peaks_coupled = 0
     t_ode = 0.0
     for i in range(500):
         state_coupled = coupled_rlc_step(state_coupled, dt_test, coupled_params, rlc,
-                                          0.0, 1000.0)  # Marble at center, moving
+                                          -13.78, 1000.0)  # Marble on the flank, moving
         I_peaks_coupled = max(I_peaks_coupled, state_coupled["I"])
         t_ode += dt_test
     print(f"  Peak current (no coupling): {rlc['peak_current_A']:.1f}A")

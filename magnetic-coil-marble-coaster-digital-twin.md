@@ -433,7 +433,9 @@ def compute_marble_force(pinn, marble_pos, marble_radius, coil_params):
     dBz_dr, dBz_dz = pinn.gradient(B_z, r, z)
 
     # Force on ferromagnetic sphere
-    chi_eff = 200.0  # steel susceptibility (tune to your marble)
+    chi_eff = 3.0  # EFFECTIVE susceptibility of a sphere: demagnetisation caps it
+                   # at 3 for any high-permeability material (a material chi of
+                   # ~200 would over-predict the force ~67x). See scripts/rlc_circuit.py.
     mu0 = 4 * np.pi * 1e-7  # T·m/A (convert to mm units in implementation)
     V = (4/3) * np.pi * marble_radius**3
 
@@ -509,13 +511,13 @@ def compute_em_force_kernel(
         )
 
         # Force on ferromagnetic sphere: F = (χV/μ₀)(B·∇)B
-        chi_eff = 200.0
+        chi_eff = 3.0  # sphere-effective value; demagnetisation-capped (see above)
         mu0 = 1.2566e-3  # μ₀ in mm-scale units (T·mm/A * conversion)
         V = 4.0 / 3.0 * 3.14159 * m.radius * m.radius * m.radius
 
         coeff = chi_eff * V / mu0
-        F_axial = coeff * (B_r * dBr_dr + B_z * dBz_dz)  # simplified
-        F_radial = coeff * (B_r * dBr_dr + B_z * dBr_dz)  # simplified
+        F_axial = coeff * (B_r * dBz_dr + B_z * dBz_dz)   # (B·∇)B_z
+        F_radial = coeff * (B_r * dBr_dr + B_z * dBr_dz)  # (B·∇)B_r
 
         # Transform back to world coordinates
         force_world = F_axial * coil.axis

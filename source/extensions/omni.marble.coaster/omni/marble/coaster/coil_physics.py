@@ -228,6 +228,35 @@ class CoilPhysics:
 
         self.stored_energy = 0.5 * C * self.charge_voltage ** 2
 
+    # -- marble as an inductance perturbation -------------------------------
+    # Same physics as scripts/rlc_circuit.marble_dL_H (kept in step by
+    # tests/test_marble_inductance.py). See TWIN_AUDIT.md S-6.
+
+    def axial_field_per_amp(self, z_along_mm: float) -> float:
+        """On-axis B_z per ampere (T/A) of the winding as the field model places
+        it: num_turns loops at R_mean spread evenly over the length."""
+        n = int(self.num_turns)
+        if n <= 1:
+            positions = [0.0]
+        else:
+            step = self.length / (n - 1)
+            positions = [-self.length / 2 + i * step for i in range(n)]
+        r2 = self.R_mean * self.R_mean
+        total = 0.0
+        for z_loop in positions:
+            dz = z_along_mm - z_loop
+            total += MU_0_MM * r2 / (2.0 * (r2 + dz * dz) ** 1.5)
+        return total
+
+    def marble_inductance_H(self, z_along_mm: float) -> float:
+        """dL(x) = chi_eff V (B/I)^2 / mu0, in Henries -- F = 1/2 I^2 dL/dx."""
+        b = self.axial_field_per_amp(z_along_mm)
+        return self.chi_eff * self.V_marble * b * b / MU_0_MM * 1e-6
+
+    def marble_dL_dx_H_per_mm(self, z_along_mm: float, dx: float = 0.1) -> float:
+        return (self.marble_inductance_H(z_along_mm + dx)
+                - self.marble_inductance_H(z_along_mm - dx)) / (2 * dx)
+
     def rlc_current(self, t_since_trigger: float) -> float:
         """Closed-form RLC discharge current with flyback diode clamp."""
         if t_since_trigger < 0:
