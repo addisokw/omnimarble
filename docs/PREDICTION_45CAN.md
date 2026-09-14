@@ -533,3 +533,14 @@ mid-session reversed-coil capture (39.02) and the end-of-day capture
 pulse fell 1%. So the afternoon drift is not the circuit. The morning ->
 midday step (180 -> 190) has no same-day scope reference and is not
 attributed. The cold +9 pair set next session stands as the first test.
+
+## Status 2026-09-13: entry-side anomaly DEFERRED
+
+Decision: no further releases on the entry flank. Every 4/5-can number
+above rests on the +9 point, which held at every gate, voltage and
+polarity; the anomaly is confined to fire positions the rig does not use.
+The entry rows in the scoring sections above stand as "artefact,
+unresolved". It resumes when the ball-tip wand (LCR dL(x) survey) or the
+Hall sensors exist, or if the 4-can +9 point misses its band. Next session
+takes only the cold +9 triple and the sham-flip control folded into the
+resistor swap: `omnimarble-vbench/docs/TEST_PLAN_3CAN_RETURN.md`.
