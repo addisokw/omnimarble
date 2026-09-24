@@ -544,3 +544,30 @@ unresolved". It resumes when the ball-tip wand (LCR dL(x) survey) or the
 Hall sensors exist, or if the 4-can +9 point misses its band. Next session
 takes only the cold +9 triple and the sham-flip control folded into the
 resistor swap: `omnimarble-vbench/docs/TEST_PLAN_3CAN_RETURN.md`.
+
+## Scoring 2026-09-24: cold reference and the untouched-rig ratio
+
+Rig untouched since 09-09 (original polarity, 100 ohm resistor, leads not
+handled). First six releases of the day, +9 / 49 V / 700 us: coil dv 212 /
+182 / 198 raw, mean **197**. Shots 7-12 (a second +9 triple) gave 194 raw
+/ 203 v_in-corrected. So the rig does NOT wake up at 180: the 09-09
+morning value was the odd session, and **197-203 is the reference** the
+4/5-can Layer A/B rows are read against, with a +/-5% band and no
+warm-up term. The 180 stays on file, unexplained.
+
+Then, still untouched, +3 triple: 155 / 142 / 147 corrected (154 / 134 /
+160 raw). Ratio dv(+3)/dv(+9) = **0.73 corrected, 0.77 raw**, against
+0.90-0.99 on 09-09 before the polarity flips and 0.80 right after the
+flip-back. The entry excess shrank with NOTHING done to the rig in
+fifteen days. This retires the sham-flip test (its 0.9 baseline is gone)
+and it is the strongest evidence yet that the excess is not physics of
+the coil-ball system: it is consistent with a semi-hard magnetised part
+that the 09-09 reversed pulse train partly demagnetised and that has
+not recovered. Deferred as before; nothing refitted.
+
+Marble-shot capture (first ever, +9, shots 7-9 window): I_pk 295 A, cut
+at 705 us, integral 38.2 A^2 s shunt-visible -- the August pulse to within
+noise after fifteen days. The ball's inductance signature (early slope
+~4% low) is inside the blank-to-blank slope spread (1.43-1.71 A/us) and
+not resolvable from one capture; I(100 us) = 148 A against 169-183 for
+every blank is the right sign at ~2 sigma. Needs a same-day blank.
