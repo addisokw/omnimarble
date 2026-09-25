@@ -141,6 +141,20 @@ through B, 2-3 /m at 0.7; through A: ~1 /m at 0.27, 2-3 /m at 0.5-0.8.
 The B-side excess grows FASTER than v^2 at low speed -- not one k. Left
 as data; a form is chosen only for a physical reason.
 
+## Forward-kick capture scored (2026-09-25, 5 cans, 1500 us, first kick at 0.85 m/s)
+
+`data/captures/scope_5can_marble_fwd_kick1_49v_1500.csv` against the
+5-can blank: peak 312 A vs 329, integral 75.9 vs 78.6 A^2 s, early
+current slope (2-40 us) 2.7% lower with the ball -> dL = +0.60 uH on the
+22 uH loop -> ball at **x ~ -17.2 mm** at the gate (model dL(x); the
+longer windows drift as the ball couples in, the earliest is the one to
+read). Predicted -16.8. HIT within the method's ~+/-3 mm (blank-to-blank
+slope scatter ~2%). First direct fire-position measurement on the rig;
+the forward kick lands ~3 mm short of the frozen map's peak on the bench
+as in the twin, so the twin's 20% forward under-prediction is the map's
+shape (peaked) against the bench's (flat-topped, the entry-side anomaly).
+Next measurement: the fire-position sweep at 5 cans / 1500 us.
+
 ## What would change the model
 
 - The bench run in (1) lands in the first bracket: keep x_from at B and

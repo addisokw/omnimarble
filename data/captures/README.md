@@ -14,5 +14,6 @@ sees the freewheel tail (TWIN_AUDIT S-9); integrals are shunt-visible only.
 | scope_4can_22ohm_blank_49v_700.csv | 2026-09-24 | 49.77 V | blank after the 22 ohm swap (inert to the pulse) |
 | scope_4can_marble_plus9_49v_700.csv | 2026-09-24 | 49.30 V | FIRST marble-shot capture, +9 offset; early slope -4.4% vs blank |
 | scope_5can_49v_{400,700,1000,1500}.csv | 2026-09-24 | 49.8 V | blanks, 22 ohm resistor, PSU 1.0 A |
+| scope_5can_marble_fwd_kick1_49v_1500.csv | 2026-09-25 | 49.73 V | marble, first forward kick of a sustain run at 0.85 m/s; early slope -2.7% -> ball at x ~ -17.2 mm |
 
 Scoring and injected predictions: `docs/PREDICTION_45CAN.md`.
