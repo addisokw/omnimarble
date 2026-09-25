@@ -52,7 +52,30 @@ FIRMWARE_CONSTANTS = (
 OPTIONAL_CONSTANTS = ("BANK_UNIT_UF_PULSE", "LOOP_R_MOHM_PULSE",
                       "BANK_2CAN_UF_PULSE", "LOOP_R_MOHM_PULSE_2CAN",
                       "BANK_3CAN_UF_PULSE", "LOOP_R_MOHM_PULSE_3CAN",
-                      "SENSOR_DETECT_HALFWIDTH_MM")
+                      "BANK_4CAN_UF_PULSE", "LOOP_R_MOHM_PULSE_4CAN",
+                      "BANK_5CAN_UF_PULSE", "LOOP_R_MOHM_PULSE_5CAN",
+                      # small-signal (100 Hz LCR at J2) bank C per config:
+                      # what the charge resistor sees, so the sustain twin's
+                      # recharge model uses these, not the pulse values
+                      "BANK_2CAN_UF_100HZ", "BANK_3CAN_UF_100HZ",
+                      "BANK_4CAN_UF_100HZ", "BANK_5CAN_UF_100HZ",
+                      "SENSOR_DETECT_HALFWIDTH_MM",
+                      # the measured impulse-curve optimum the firmware boots
+                      # with; without it here the profile silently reverted
+                      # to 0 on regeneration (2026-09-24)
+                      "FIRE_OFFSET_DEFAULT_MM")
+
+
+def _pulse_entry(fw, n, c_key, r_key):
+    """One pulse_measured_by_cans row; carries the 100 Hz C when measured."""
+    entry = {
+        "capacitance_uF": float(fw[c_key]),
+        "loop_resistance_ohm": float(fw[r_key]) / 1000.0,
+    }
+    hz_key = "BANK_UNIT_UF" if n == 1 else "BANK_%dCAN_UF_100HZ" % n
+    if hz_key in fw:
+        entry["capacitance_100hz_uF"] = float(fw[hz_key])
+    return entry
 
 
 def sha256(path):
@@ -203,16 +226,16 @@ def build_profile(vbench):
             # measured constants where they exist. See rig_profile.bank() for
             # why n x per-can cannot express the droop trend these carry.
             "pulse_measured_by_cans": {
-                str(n): {
-                    "capacitance_uF": float(fw[c_key]),
-                    "loop_resistance_ohm": float(fw[r_key]) / 1000.0,
-                }
+                "_note": 'Per-configuration LARGE-SIGNAL constants from bench blank-fire fits, R pinned at the measured ESR convention (vbench firmware/config.py BANK_*_UF_PULSE / LOOP_R_MOHM_PULSE_*). Electrolytic droop makes pulse C sub-linear in can count (C_pulse/C_100Hz = 0.859/0.931/0.958 at 1/2/3), so n x can_uF understates C by 6-8% at 2-3 cans and overstates the waveform speed exactly where the marble on-time data probes it. Configs absent here fall back to the n x can_uF scaling. The 3-can C carries a caveat: no single linear C fits that discharge (rms 0.015); 5350 is the best single-number summary.',
+                **{str(n): _pulse_entry(fw, n, c_key, r_key)
                 for n, c_key, r_key in (
                     (1, "BANK_UNIT_UF_PULSE", "LOOP_R_MOHM_PULSE"),
                     (2, "BANK_2CAN_UF_PULSE", "LOOP_R_MOHM_PULSE_2CAN"),
                     (3, "BANK_3CAN_UF_PULSE", "LOOP_R_MOHM_PULSE_3CAN"),
+                    (4, "BANK_4CAN_UF_PULSE", "LOOP_R_MOHM_PULSE_4CAN"),
+                    (5, "BANK_5CAN_UF_PULSE", "LOOP_R_MOHM_PULSE_5CAN"),
                 )
-                if c_key in fw and r_key in fw
+                if c_key in fw and r_key in fw},
             },
             "can_esr_ohm": profile_bank_esr,
             "bank_positions": int(fw["BANK_POSITIONS"]),
@@ -223,6 +246,7 @@ def build_profile(vbench):
                 # Scope-fitted, not a firmware constant: see freewheel_note.
                 # Kept here so regeneration does not silently drop it.
                 "freewheel_tau_us": 275.0,
+                "freewheel_note": "Fitted 2026-09-05 from the three scope-injected marble points (400/700/1500 us gates): tau ~275 us is the unique tail that makes all three measured-current predictions agree with the marble data (ratios 1.03/1.01/1.04). Independently corroborated: it implies freewheel R ~65 mohm, which fits under the 10 V capture's model-free TOTAL loop R of 80 mohm -- whereas the 107 mohm 'coil+leads' figure above cannot (it exceeds the whole measured loop). That 107 figure is now considered wrong at pulse conditions; it remains recorded as the 1 kHz bench measurement it was. When present, this tau overrides L/R_coil for the freewheel decay.",
                 "inductance_uH": float(fw["COIL_L_UH_NOMINAL"]),
                 "coil_resistance_ohm": float(fw["COIL_R_MOHM_NOMINAL"]) / 1000.0,
                 "loop_resistance_ohm": float(fw["LOOP_R_MOHM_MEASURED"]) / 1000.0,

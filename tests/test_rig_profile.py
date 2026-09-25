@@ -55,17 +55,18 @@ def test_vbench_describes_the_measured_rig(vbench):
 
 
 def test_bank_esr_parallels_and_loop_resistance_falls(vbench):
-    """0.178 ohm at 1 can (the pulse-fit pair) -> 0.126 at 5 (scaled fallback).
+    """0.178 ohm at 1 can (the pulse-fit pair) -> 0.133 at 5 (measured pair).
 
-    1-3 cans come from pulse_measured_by_cans -- the (C, R) pair each blank-
-    fire fit was pinned to, kept together because splitting them rebuilds the
-    inconsistency the table exists to remove. 4-5 cans fall back to the
-    ESR/n scaling from the 1-can DC loop until the bench measures them.
+    Every populated count comes from pulse_measured_by_cans -- the (C, R)
+    pair each configuration was pinned to, kept together because splitting
+    them rebuilds the inconsistency the table exists to remove. 4 and 5
+    cans (2026-09-24) use R = 116 + ESR x 1.3 like 2-3 (0.136 / 0.133).
     """
     assert vbench.bank(1)["loop_resistance_ohm"] == pytest.approx(0.178, abs=1e-9)
     assert vbench.bank(2)["loop_resistance_ohm"] == pytest.approx(0.152, abs=1e-9)
     assert vbench.bank(3)["loop_resistance_ohm"] == pytest.approx(0.141, abs=1e-9)
-    assert vbench.bank(5)["loop_resistance_ohm"] == pytest.approx(0.126, abs=0.001)
+    assert vbench.bank(4)["loop_resistance_ohm"] == pytest.approx(0.136, abs=1e-9)
+    assert vbench.bank(5)["loop_resistance_ohm"] == pytest.approx(0.133, abs=1e-9)
 
     resistances = [vbench.bank(n)["loop_resistance_ohm"] for n in range(1, 6)]
     assert resistances == sorted(resistances, reverse=True)
@@ -82,8 +83,8 @@ def test_bank_capacitance_follows_the_measured_droop(vbench):
     linearity was wrong by 6-8%: each can carries less current as cans are
     added, so each droops less, and the per-can effective capacitance RISES
     with n (1640 -> 1753.5 -> 1783.3 across 1/2/3, trending toward the
-    1883.75 uF small-signal figure). 1-3 cans read the bench table verbatim;
-    4-5 fall back to n x 1640 until measured.
+    1883.75 uF small-signal figure). Every populated count reads the bench
+    table verbatim; only counts absent from it fall back to n x 1640.
     """
     assert vbench.bank(1)["capacitance_uF"] == pytest.approx(1640.0)
     assert vbench.bank(2)["capacitance_uF"] == pytest.approx(3507.0)
@@ -91,8 +92,13 @@ def test_bank_capacitance_follows_the_measured_droop(vbench):
     per_can = [vbench.bank(n)["capacitance_uF"] / n for n in (1, 2, 3)]
     assert per_can == sorted(per_can), "droop must shrink as cans are added"
     assert all(c < 1883.75 for c in per_can), "pulse C cannot exceed small-signal"
-    for n in (4, 5):
-        assert vbench.bank(n)["capacitance_uF"] == pytest.approx(1640.0 * n)
+    # 4 and 5 cans (2026-09-24) come from the scope's charge balance at the
+    # 700 us gate rather than a linear-RLC fit, so per-can values are not
+    # comparable with 1-3 and are not chained into the droop ordering.
+    assert vbench.bank(4)["capacitance_uF"] == pytest.approx(7137.0)
+    assert vbench.bank(4)["loop_resistance_ohm"] == pytest.approx(0.136)
+    assert vbench.bank(5)["capacitance_uF"] == pytest.approx(8785.0)
+    assert vbench.bank(5)["loop_resistance_ohm"] == pytest.approx(0.133)
     assert len(vbench.bank_options()) == 5
 
 
