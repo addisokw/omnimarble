@@ -589,3 +589,45 @@ vs same-day blank: early slope -4.4% (predicted -4%), I(100 us) -9%. The
 
 Combined/sum 0.983 (0.986-0.987 before). Reference for the marble rows:
 dv(+9, 3 cans, 49 V, 700 us) = 192-199 measured today.
+
+## 4-can captures (2026-09-24) and the Layer A numbers, committed before the marble data
+
+Blanks at 49.8 V, model-free extraction (`scripts` method as at 3 cans):
+
+| gate | I_pk | cut | I(cut) | bank after | C from charge balance | L (initial slope) | R at peak |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| 400 us | 318 A @ 392 us | 408 us | 306 A | 36.8 V | 6735 uF | 26 uH | 105 mohm |
+| 700 us | 316 A @ 395 us | 712 us | 230 A | 26.7 V | 7137 uF | -- | 106 mohm |
+| 1500 us | 320 A @ 385 us | 1505 us | 92 A | 11.5 V | 7443 uF | -- | 106 mohm |
+
+Layer C peak-current line: predicted ~345 A by sqrt(C) scaling from 298 A;
+measured **318 A -- MISS by -8%**. The peak did not scale as sqrt(C): the
+loop is resistance-limited enough that adding capacitance mostly lengthens
+the pulse (peak at 390 us vs 305 us) rather than raising it. Declared
+meaning: none was assigned to this line; recorded as a plain miss of the
+scaling assumption, not of the model (the model never predicted 345 -- its
+fallback circuit said ~310, and the injected path does not care).
+
+Charge-balance C climbs 6735 -> 7443 uF with gate length, as at 3 cans
+(5229 at 700 us against a 100 Hz 5586); the 4-can pulse C at long gates
+is ~0.96-1.0 of the 100 Hz 7392 uF, continuing the sub-linear droop
+trend (0.859 / 0.931 / 0.958 / ~0.97).
+
+Layer B blanks (V(t_on)/V0 at 49 V): measured 0.960 / 0.895 / 0.813 /
+0.661 / 0.534 / 0.390 / 0.242 against frozen 0.966 / 0.891 / 0.801 /
+0.620 / 0.468 / 0.300 / 0.142. Miss in the declared direction (fallback
+circuit under-retains) but twice the "up to 0.05" allowed at long gates.
+The fallback's n x 1640 = 6560 uF against a real ~7100-7400 is the cause.
+
+**Layer A, the decisive claim -- injected-current predictions, frozen field
+and tau, v_in 0.245, from these captures:**
+
+| gate | injected dv (mm/s) | pass band (+/-5%) | frozen-circuit row (scaled to 49.8 V) |
+|---|:---:|:---:|:---:|
+| 400 us | **146.2** | 138.9-153.5 | 164 |
+| 700 us | **232.6** | 221.0-244.2 | 237 |
+| 1000 us | (no capture) | -- | 268 |
+| 1500 us | **301.4** | 286.3-316.5 | 285 |
+
+Reference from 3 cans today: 192-199 at 700 us. The 700 us prediction is a
++17-21% step from 3 to 4 cans.
