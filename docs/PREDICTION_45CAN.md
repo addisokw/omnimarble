@@ -876,3 +876,31 @@ the same peak. Both far inside the MBR60100 surge rating and the three
 IRFP4668 legs. Sustain gate LIFTED at 5 cans with the same budget
 (700 or 1500 us, <= 30 shots, <= 120 s). Bank energy 11 J at 49.6 V:
 longest discharge-stick hold yet.
+
+## Sustain at 5 cans (2026-09-24, late; 1500 us, auto trim 1.7/v - 3.2, +9)
+
+Two 30-shot runs, both ended by the budget, both 15 cycles:
+
+| run | bank_pre on kicks | cycle at A | fwd kicks raw | ret kicks raw | far ramp | entry ramp |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| 1 (bank started at 37.7 V, PSU 50 V, could not catch up) | 38-44 V | **0.251** | 0.34 | 0.20 | -0.30 | -0.22..-0.26 |
+| 2 (bank full) | 45.5-48 V | **0.246** | 0.32 | 0.165 | -0.30 | -0.17..-0.23 |
+
+4 cans at the same settings: 0.205 / 0.25 / 0.12 / -0.24 / -0.12. The
+fifth can raised the cycle 0.205 -> 0.25; the losses grew with speed and
+took ~2/3 of the extra kick.
+
+Bank voltage again made no visible difference between the runs. The
+firmware's `bank_pre` is read BEFORE the trigger wait -- up to a second
+before the pulse on the forward leg -- so the "38-44 V" run's forward
+kicks fired near full charge anyway. The next firmware logs
+`v_bank_fire` immediately before the pulse; no conclusion about V^2
+scaling is drawn from bank_pre again.
+
+Preregistered for the first run on the predictor firmware (vbench
+ff5cd87; retoffset 0; 5 cans, 1500 us, 1.0 A): slow return passes print
+"+5..+11 mm later than constant-v" with a ~ -0.15..-0.3 m/s^2; fast
+returns "+3..+6 mm"; slow return kicks >= 0.17 raw; first fast kick
+>= -0.05; cycle >= 0.245. Slow kicks clearly under 0.15 = the model's
+extra delay is wrong by an amount the logged fire_x/late_us columns give
+directly.
