@@ -86,8 +86,23 @@ been refitted to the held-out rows.
 2. **Levelling the B side** (removing the excess): cycle 0.190 -> 0.240 at
    half the excess -> 0.281 with none (4 cans, 1500 us, 1.0 A). Largest
    lever found. Dissipative reading; the conservative-slope bound is lower.
-3. **Gate sweep** and the **700 us / 0.3 A hold-out** (bench 0.16): pending
-   the 4-can 700 us map (building).
+3. **700 us / 0.3 A hold-out** (4 cans, fixed trim +12; bench: cycle 0.16
+   over 5 cycles, fwd 0.19-0.20, ret 0.07-0.08): HELD OUT, **MISS**. The
+   twin stalls the marble on cycle 3 (0.81 -> 0.242 -> 0.157 -> stall);
+   forward kick 0.144 raw (bench 0.19-0.20, 25% low), return kick 0.135
+   (bench 0.07-0.08, high). The same cancelling pair as at 1500 us, larger,
+   and at the shorter gate it no longer cancels. **Gate sweep** (4 cans,
+   auto trim): the twin has 700 us stalling at both 1.0 A and 0.3 A and
+   1500 us at 0.190 / 0.188 -- the 700 us rows are wrong by the bench's
+   own 0.16-m/s cycle, so the sweep is not a prediction until the forward
+   kick is fixed.
+
+   Both misses point at the forward kick's delivered position: the twin
+   lands it 3-4 mm short of -13.78 (flat-zone loss over the 49 mm reach);
+   the bench found +9 optimal with the same rule, so its ball arrives
+   closer. One measurement settles it: a marble-shot scope capture of a
+   forward kick (early current slope vs the same-gate blank gives x at the
+   gate to ~1 mm; COIL_AS_SENSOR 3B). Requested for the predictor check run.
 
 ## What would change the model
 
