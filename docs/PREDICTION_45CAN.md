@@ -904,3 +904,37 @@ returns "+3..+6 mm"; slow return kicks >= 0.17 raw; first fast kick
 >= -0.05; cycle >= 0.245. Slow kicks clearly under 0.15 = the model's
 extra delay is wrong by an amount the logged fire_x/late_us columns give
 directly.
+
+## Predictor check scored (2026-09-25, vbench ff5cd87, 5 cans, 1500 us, 1.0 A)
+
+Two runs, both dead on the first slow return pass. Per-pass kinematics:
+
+| pass | v_fit | v_last | a (m/s^2) | model asked | fired | result |
+|---|:---:|:---:|:---:|:---:|:---:|---|
+| fwd 1 | 0.830 | 0.751 | -1.49 | (linear rule) | -- | +0.329 |
+| ret 1 (fast) | 0.782 | 0.721 | -1.08 | +2.8 mm | +2.8 mm | -0.070 |
+| fwd 2 | 0.380 | 0.311 | -0.60 | (linear) | -- | +0.329 |
+| ret 2 (slow) | 0.371 | 0.281 | -0.76 | **+31.0 mm** | +16 (clamp) | ball stopped, never reached A |
+| run 2, ret 2 (slow, retoffset -6) | 0.352 | 0.254 | -0.79 | **+38.8 mm** (stall predicted) | +16 (clamp) | ball stopped |
+
+Preregistered outcome: bracket ONE (docs/PREDICTION_SUSTAIN.md) -- the
+slowing measured through station B does NOT continue to the coil. The
+deceleration through the station is 0.6-1.5 m/s^2 at 0.3-0.8 m/s, 2-5x
+the flat-zone loss (k 0.74 /m gives 0.07-0.5 m/s^2 at those speeds), and
+station A shows the same (a -0.6..-1.5 on forward passes, "residual >
+2000 us" warnings). The excess is local to the station region, so a
+constant-acceleration extrapolation over the last 35 mm to the coil
+over-corrects by 15-25 mm, and the 16 mm clamp was not enough.
+
+Action taken (vbench 891e59c, 2efd74b): the empirical trim (1.7/v_local
+- 0.004 x (on_us - 700) mm, the rule that gave the 0.25 m/s cycle at 5
+cans) is the default return rule again; the kinematic fit is logged on
+every shot; the predictor stays behind FIRE_PREDICT_RET (default off)
+with the clamp at 8 mm. The plan's "model it, don't trim it" was tested
+and lost on this track; the trim is now understood as the local-slowing
+correction the constant-a model gets wrong by extrapolating it.
+
+What the twin gains: its in-sample choice (B-side excess ends at station
+B) is now bench-confirmed, and the per-pass a values give the B-side loss
+directly: a = -0.76 at v_last 0.28 and -1.08 at 0.72 -> k = a/v^2 = 9.7
+and 2.1 /m -- not a single k v^2 either. Not refitted; recorded.

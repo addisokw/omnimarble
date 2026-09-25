@@ -104,6 +104,21 @@ been refitted to the held-out rows.
    forward kick (early current slope vs the same-gate blank gives x at the
    gate to ~1 mm; COIL_AS_SENSOR 3B). Requested for the predictor check run.
 
+## Bracket result (2026-09-25): ONE
+
+The predictor firmware fired the slow return kicks 16 mm late (clamped
+from a modelled +31..+39 mm) and stopped the ball in both runs -- see
+`PREDICTION_45CAN.md`, "Predictor check scored". The twin's fitted
+world (excess ends at station B) is the bench's world. The measured
+per-pass decelerations (0.6-1.5 m/s^2 through B at 0.3-0.8 m/s, and the
+same through A) are the direct measurement of the station-region loss
+the fit inferred from velocity ratios. The empirical trim is back as the
+firmware's return rule; the twin's "linear + trim" timing option is
+therefore the one to run. Still open on the twin's side: the forward
+kick lands 3-4 mm short in the twin and not on the bench (the scope
+capture of a forward kick is the measurement); the B-side loss at speed
+(a/v^2 = 9.7 /m at 0.28 m/s, 2.1 at 0.72: not one k) needs a form.
+
 ## What would change the model
 
 - The bench run in (1) lands in the first bracket: keep x_from at B and
