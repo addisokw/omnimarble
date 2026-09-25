@@ -777,3 +777,24 @@ leg's. Limit cycle 0.19-0.20 at A in every 1500 us run regardless of the
 first cycles: the losses grow steeply with speed (entry-ramp excursion
 ~100 mm/s at 0.2, ~260 at 0.54) and pin it. The levers left are the
 bank voltage on the return kick (PSU current) and the ramps themselves.
+
+### 1500 us return-trim sweep, 4 cans, 48 V, PSU 1.0 A (09-24 evening; one run per trim)
+
+| fixed trim | slow return kicks (raw) | mean | first fast kick |
+|:---:|---|:---:|:---:|
+| 0 | 0.107 / 0.074 / 0.023 (fading as the ball slows) | 0.068 | -0.027 |
+| +4 | 0.129 / 0.124 / 0.117 | **0.123** | -0.045 |
+| +8 | 0.122 / 0.133 / 0.106 | **0.120** | -0.133 |
+| +12 | 0.090 / 0.048 / 0.078 | 0.072 | -0.204 |
+| +16 | 0.040 / 0.048 / 0.079 | 0.056 | -0.355 |
+| +20 | (run died) | -- | -0.548 |
+
+Timing IS part of it: the slow kick at +4..+8 is 0.12 against 0.07-0.09
+at the +11..+12 the 2.1/v formula gave. Peak near +6 for the slow ball,
+near 0..+2 for the fast one; the 700 us sweep had +12 / +4. Refit: trim
+= 1.7 / v_local - 0.004 x (on_us - 700) mm, shipped (vbench). Prediction
+for the 30-shot check at auto: slow kicks ~0.12, first fast kick ~-0.03,
+limit cycle 0.21-0.23 m/s at A (the +4/+8 short runs sat at 0.21-0.23).
+The energy-insensitivity of the slow kick (40 -> 48 V, no change) is
+NOT explained by this and stays open: a track loss between the coil and
+A that grows with speed is the standing reading.
