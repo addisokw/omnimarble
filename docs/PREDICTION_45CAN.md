@@ -702,10 +702,10 @@ non-repetitive surge rating of this class of part is 400-600 A for
 sustain is at most ~2 shots/s for 10 shots: average dissipation under
 0.2 W, transient junction rise per pulse of order 10-15 K on a TO-247
 die. Every single-shot sweep today (dozens of shots at ~1 per 3 s) was
-already this duty. The same applies to Q1 (only one FET is fitted, not
-three as the earlier safety line assumed): 318 A peak for 0.7 ms is
-inside the IRFP4668 pulsed rating and its ~0.6 J per shot at ~1 shot/s
-is what the sweeps have been doing all day.
+already this duty. The FETs: all three (Q1-Q3) are fitted, as the
+earlier safety line assumed (a sensor-study doc claimed one; corrected).
+318 A shared three ways is ~106 A per leg for 0.7 ms, inside the
+IRFP4668 continuous rating, let alone pulsed.
 
 **Gate lifted for 4 cans**, with the same budget as at 3: 700 us
 (I(cut) 230 A rather than 306 A at 400 us), 10 shots, 60 s. Bank energy
