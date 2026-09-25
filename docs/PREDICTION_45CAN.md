@@ -972,18 +972,19 @@ still outstanding.
 | 0 | -22.78 | 240 / 215 | 0.53 / 0.50 | 0.40 | high by ~0.12 |
 | +3 | -19.78 | 319 / 324 | 0.75 / 0.72 | 0.64 | high by ~0.1 |
 | +6 | -16.78 | 443 / 425 | 1.01 / 0.99 | 0.885 | high by ~0.11 |
-| +9 | -13.78 | 429 (one pair) | 1.00 | 1.00 | reference |
-| +12 | -10.78 | 378 / 414 | 0.92 / 0.89 | 0.91 | hit |
-| +15 | -7.78 | 268 (one pair) | 0.62 / 0.58 | 0.68 | hit, low side |
+| +9 | -13.78 | 429; top-up 479 / 470 (mean 459) | 1.00 | 1.00 | reference |
+| +12 | -10.78 | 378 / 414 | 0.86 | 0.91 | hit, low side |
+| +15 | -7.78 | 268; top-up 295 / 296 (mean 286) | 0.62 | 0.68 | low by 0.06 |
 
 The "peak stays put" line, declared expected-to-fail at 4-5 cans, fails
 as declared but more mildly than the 3-can curve of 09-09 (which read
 0.70/0.99/1.06/1/0.88/0.68): entry flank +0.1 above the frozen model at
-every point, flat top +6..+9, exit flank on the model. Consistent with
+every point (with the +9 top-up: 0.50/0.70/0.95/1.00/0.86/0.62 -- entry
++0.06..+0.10, peak at +9, exit 0.05 low), exit flank near the model. Consistent with
 the deferred entry-side artefact after the 09-09 reversed-polarity train
-weakened it. Absolute level at +9: 429 raw / 453 corrected against the
-injected prediction 366.6 -- the 1500 us long-gate excess again (1.17-
-1.24; the holdout triples read 1.27).
+weakened it. Absolute level at +9: 459 raw (three pairs) against the injected
+prediction 366.6 -- ratio 1.25, the 1500 us long-gate excess again (the
+holdout triples read 1.27).
 
 Consequence for the sustain twin (PREDICTION_SUSTAIN.md): the forward
 kick lands at ~-17 mm (capture); on this curve that is the flat top
