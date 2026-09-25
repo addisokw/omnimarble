@@ -196,3 +196,27 @@ fire-position sweep inside sustain runs, with the new per-shot
 - Either way the B-side loss at speed needs a term the station fit cannot
   see; the no-kick leg and the fast-kick rows are the data for it, and
   they stay held out until a form is chosen for physical reasons.
+
+## Return-leg curve, 5 cans, 1500 us, 1.0 A (2026-09-25 late; manual offset on top of the empirical trim)
+
+| manual offset | nominal x (22.78 - 9 - offset - trim ~3) | slow return kicks raw | mean | fast first kick |
+|:---:|:---:|:---:|:---:|:---:|
+| -4 | +14.8 | 0.184 / 0.193 / 0.209 | **0.195** | +0.003 |
+| 0 | +10.8 | 0.140 / 0.199 / 0.220 | 0.186 | -0.041 |
+| +4 | +6.8 | 0.085 / 0.117 / 0.083 | 0.095 | -0.155 |
+| +8 | +2.8 | 0.012 / 0.006 / 0.013 | 0.010 | -0.211 |
+
+Preregistered "optimum at offset 0, raw ~0.19": value HIT (0.186-0.195),
+position edge (-4 marginally better; outer side not bracketed, -8 asked
+for). Against NOMINAL x the return curve is the forward curve shifted
+~4 mm outward -- i.e. the real ball is ~4 mm further from the coil than
+nominal at the gate, the station-local lag the 09-25 kinematics implied
+(second, independent measurement; the forward capture gave 3 mm). The
+return kick falls to ~0 by nominal +2.8 (real ~+7), steeper than the
+mirror of the forward flat top: the return side has NO flat top, which
+is consistent with the entry-side artefact being A-side hardware.
+
+Twin consequence: at 5 cans the twin's return kick (0.219) is within the
+bench's optimum band (0.19-0.22) -- the return over-prediction is a
+4-can-only miss (bench 0.12 vs twin 0.19), so it is not the curve shape.
+Left open with that scoping.
