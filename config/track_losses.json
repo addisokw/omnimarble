@@ -1,0 +1,91 @@
+{
+  "schema": "track_losses_v1",
+  "flat": {
+    "a0_mps2": 0.01024631775683527,
+    "k_per_m": 0.741979867053209
+  },
+  "b_side": {
+    "g_mps2": 0.10517741943221728,
+    "k_per_m": 2.7440701313560965,
+    "x_from_mm": 22.78,
+    "x_to_mm": 171.34
+  },
+  "far": {
+    "alpha": 0.8904171108008087,
+    "beta_m2ps2": 0.10521991511453778,
+    "form": "energy",
+    "c0_mps": -0.15551402485497184,
+    "c1": 0.012697199531451986
+  },
+  "entry": {
+    "alpha": 0.34480824890474604,
+    "beta_m2ps2": 0.0,
+    "form": "energy",
+    "c0_mps": 0.08321002353836911,
+    "c1": -0.5748061979620578
+  },
+  "ramp_angle_deg": 55.0,
+  "meta": {
+    "flat": {
+      "n": 3,
+      "rms_mps": 0.005056066106863107,
+      "v_range": [
+        0.206,
+        0.79
+      ],
+      "distance_m": 0.20412
+    },
+    "b_side": {
+      "n_rows": 45,
+      "nokick": [
+        0.643,
+        0.315
+      ],
+      "nokick_weight": 0.0,
+      "rms_v_local_mps": 0.009669804580724665,
+      "nokick_pred_vA_mps": 0.42446085196499544,
+      "nokick_resid_mps": 0.10946085196499544,
+      "v_fit_range": [
+        0.199,
+        0.793
+      ]
+    },
+    "far": {
+      "n": 45,
+      "rms_mps": 0.04928317496370489,
+      "beta_clamped_to_zero": false,
+      "v_out_range": [
+        0.4001229396014294,
+        1.1183726778787986
+      ],
+      "v_back_range": [
+        0.29014355468749997,
+        1.0072222900390626
+      ]
+    },
+    "entry": {
+      "n": 42,
+      "rms_mps": 0.024289784011352653,
+      "beta_clamped_to_zero": true,
+      "v_out_range": [
+        0.2806752942470556,
+        0.8579186633616014
+      ],
+      "v_back_range": [
+        0.20579331584510482,
+        0.4826575628102613
+      ]
+    },
+    "kicks_csv": {
+      "path": "../omnimarble-vbench/logs/sustain_kicks.csv",
+      "sha256": "99ecd64066ac8d1e6fd0381f64fcf561a61bc3a0eae476ac51520147116d8512"
+    },
+    "baselines_csv": {
+      "path": "C:/Users/boxga/Documents/git/omnimarble/data/roll_baselines.csv",
+      "sha256": "31a68f651c1b66d283fc8672dff66742ddd1a43c757c581784192f1768086c0e"
+    },
+    "date": "2026-09-24",
+    "profile": "vbench_v0",
+    "run_id": "2026-09-24T21:25:58.548,2026-09-24T21:50:27.596,2026-09-24T21:53:40.194"
+  }
+}

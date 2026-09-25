@@ -83,7 +83,7 @@ def load_kicks(path):
         leg = (r.get("leg") or "").strip()
         if leg not in ("fwd", "ret"):
             continue
-        idx = _num(r.get("kick_idx"))
+        idx = _num(r.get("kick_idx") if r.get("kick_idx") not in (None, "") else r.get("kick"))
         if idx is None:
             continue
         rows.append({
@@ -188,6 +188,14 @@ def fit_excursion(pairs):
     ys = [b * b for _, b in pairs]
     alpha, negbeta = _linfit(xs, ys)
     beta = -negbeta
+    clamped = False
+    if beta < 0.0:
+        # A negative beta means the excursion would hand energy back at
+        # zero speed -- unphysical, and what a narrow v_out cluster does to
+        # a two-parameter fit. Refit alpha through the origin instead.
+        beta = 0.0
+        alpha = sum(x * y for x, y in zip(xs, ys)) / sum(x * x for x in xs)
+        clamped = True
     exc = Excursion(alpha, beta)
     c1p, c0 = _linfit([a for a, _ in pairs], [b for _, b in pairs])
     exc.c0 = c0
@@ -196,7 +204,7 @@ def fit_excursion(pairs):
     for a, b in pairs:
         vb = exc.v_back(a)
         res.append((vb if vb is not None else 0.0) - b)
-    meta = {"n": n, "rms_mps": _rms(res),
+    meta = {"n": n, "rms_mps": _rms(res), "beta_clamped_to_zero": clamped,
             "v_out_range": [min(a for a, _ in pairs), max(a for a, _ in pairs)],
             "v_back_range": [min(b for _, b in pairs), max(b for _, b in pairs)]}
     return exc, meta
@@ -249,24 +257,38 @@ class ReturnPassModel:
         return (station_read(seg.trips[self.B], self.specs[self.B], -1, self.half),
                 station_read(seg.trips[self.A], self.specs[self.A], -1, self.half))
 
-    def v_edge_for_B_fit(self, losses, v_fit_target, tol=1e-4, max_iter=12):
-        """Edge speed whose return pass reads v_fit_target at B (secant)."""
-        def f(ve):
+    def v_edge_for_B_fit(self, losses, v_fit_target, tol=1e-4, max_iter=40):
+        """Edge speed whose return pass reads v_fit_target at B.
+
+        Bracketed bisection on a MONOTONE function: a faster edge speed always
+        reads faster at B, and a ball that stalls before B reads as "too slow".
+        The secant this replaced started at 1.05-1.4x the target, which for a
+        slow ball under a real B-side loss is below the stall speed, so the
+        fit scored every pass under ~0.22 m/s as a stall (2026-09-24).
+        """
+        def read(ve):
             r = self.read_B(losses, ve)
-            if r is None or not r.v_fit:
-                return -v_fit_target      # stalled: reads far too low
-            return r.v_fit - v_fit_target
-        v0, v1 = v_fit_target * 1.05, v_fit_target * 1.4
-        f0, f1 = f(v0), f(v1)
-        for _ in range(max_iter):
-            if abs(f1) < tol:
-                return v1
-            if f1 == f0:
+            return r.v_fit if (r is not None and r.v_fit) else None
+
+        lo, hi = v_fit_target, v_fit_target * 1.5
+        # grow hi until the pass reads faster than the target
+        for _ in range(12):
+            f = read(hi)
+            if f is not None and f >= v_fit_target:
                 break
-            v2 = v1 - f1 * (v1 - v0) / (f1 - f0)
-            v2 = max(0.5 * v1, min(2.0 * v1, v2))
-            v0, f0, v1, f1 = v1, f1, v2, f(v2)
-        return v1
+            lo, hi = hi, hi * 1.5
+        else:
+            return hi
+        for _ in range(max_iter):
+            mid = 0.5 * (lo + hi)
+            f = read(mid)
+            if f is None or f < v_fit_target:
+                lo = mid
+            else:
+                hi = mid
+            if hi - lo < tol:
+                break
+        return hi
 
 
 def fit_b_side(ret_rows, flat, nokick=NOKICK_LEG, weight=3.0, specs=None,
@@ -297,13 +319,15 @@ def fit_b_side(ret_rows, flat, nokick=NOKICK_LEG, weight=3.0, specs=None,
             ve = model.v_edge_for_B_fit(losses, r["v_in"])
             rd = model.read_B(losses, ve)
             out.append(((rd.v_local if rd and rd.v_local else 0.0) - r["v_local"]))
-        if nokick is not None and not ratio_only:
-            vB, vA = nokick
-            ve = model.v_edge_for_B_fit(losses, vB)
-            _, rA = model.read_B_and_A(losses, ve)
-            vA_model = rA.v_fit if rA is not None and rA.v_fit else 0.0
-            out.append(weight * (vA_model - vA))
+        if nokick is not None and not ratio_only and weight > 0.0:
+            out.append(weight * (nokick_pred(losses) - nokick[1]))
         return out
+
+    def nokick_pred(losses):
+        """Model's v_fit at A for the no-kick return leg entering at nokick[0]."""
+        ve = model.v_edge_for_B_fit(losses, nokick[0])
+        _, rA = model.read_B_and_A(losses, ve)
+        return rA.v_fit if rA is not None and rA.v_fit else 0.0
 
     if not rows and (nokick is None or ratio_only):
         raise ValueError("nothing to fit the B-side excess on")
@@ -311,10 +335,15 @@ def fit_b_side(ret_rows, flat, nokick=NOKICK_LEG, weight=3.0, specs=None,
                         diff_step=[0.05, 0.05], xtol=1e-4, ftol=1e-5)
     b = BSideExcess(sol.x[0], sol.x[1])
     res = list(sol.fun)
+    fitted = losses_for(sol.x)
+    nk_pred = nokick_pred(fitted) if nokick is not None else None
     meta = {"n_rows": len(rows), "nokick": list(nokick) if nokick else None,
             "nokick_weight": weight,
             "rms_v_local_mps": _rms(res[:len(rows)]) if rows else None,
-            "nokick_resid_mps": (res[-1] / weight) if (nokick and not ratio_only) else None,
+            # the single no-kick leg, scored against the fit (a constraint only
+            # when weight > 0): model's v_fit at A vs the observed value
+            "nokick_pred_vA_mps": nk_pred,
+            "nokick_resid_mps": (nk_pred - nokick[1]) if nokick is not None else None,
             "v_fit_range": ([min(r["v_in"] for r in rows), max(r["v_in"] for r in rows)]
                             if rows else None)}
     return b, meta
@@ -387,9 +416,14 @@ def main(argv=None):
     parser.add_argument("--nokick", default="%g,%g" % NOKICK_LEG,
                         help="v_fit at B, v_fit at A of the no-kick return leg; "
                              "'none' to drop the constraint")
-    parser.add_argument("--nokick-weight", type=float, default=3.0)
+    parser.add_argument("--nokick-weight", type=float, default=0.0,
+                        help="weight of the single no-kick leg in the B-side "
+                             "fit; 0 (default) reports it as a held-out check "
+                             "-- 15 return passes read a speed-independent "
+                             "v_local/v_fit ratio that no constant-g term "
+                             "can give, and this one leg pulled g to 1.6 m/s2")
     parser.add_argument("--run-id", default=None,
-                        help="fit only this run_id (default: every run in the csv)")
+                        help="fit only these run_ids (comma-separated; default: every run in the csv)")
     args = parser.parse_args(argv)
 
     sys.path.insert(0, str(ROOT / "source" / "extensions" / "omni.marble.coaster"
@@ -403,7 +437,8 @@ def main(argv=None):
         raise SystemExit(f"no kick table at {args.kicks} (run host/sustainlog.py first)")
     rows = load_kicks(args.kicks)
     if args.run_id:
-        rows = [r for r in rows if r["run_id"] == args.run_id]
+        wanted = set(x.strip() for x in args.run_id.split(","))
+        rows = [r for r in rows if r["run_id"] in wanted]
     baselines = load_baselines(args.baselines)
     nokick = None if args.nokick.lower() == "none" else tuple(
         float(v) for v in args.nokick.split(","))

@@ -88,6 +88,7 @@ def build_map(profile, solver, cans, gate_us, current_fn, current_peak,
     v_list = [float(v) for v in v_in_list]
     grid = []
     i_peak = 0.0
+    incomplete = []
     for v_in in v_list:
         row = []
         for x in x_grid:
@@ -99,9 +100,12 @@ def build_map(profile, solver, cans, gate_us, current_fn, current_peak,
                 raise RuntimeError(
                     f"shot aborted at x={x} v_in={v_in}: {shot['abort_reason']}")
             if shot["n_ch_out"] < 5:
-                raise RuntimeError(
-                    f"ball did not clear station B at x={x} v_in={v_in} "
-                    f"(n_ch_out {shot['n_ch_out']}); raise max_time_s")
+                # A braking kick (fire point past the coil centre, slow ball)
+                # can stop or reverse the ball before station B. dv_true is
+                # the coil-only signed gain and is settled once the pulse is
+                # over, so it is still the right map value; record the
+                # point as incomplete rather than abandoning the grid.
+                incomplete.append([float(v_in), float(x), int(shot["n_ch_out"])])
             row.append(shot["dv_true_mps"])
             i_peak = max(i_peak, shot["i_peak_model_A"])
             if progress:
@@ -109,6 +113,7 @@ def build_map(profile, solver, cans, gate_us, current_fn, current_peak,
         grid.append(row)
     return {
         "schema": SCHEMA,
+        "incomplete_points": incomplete,
         "cans": int(cans),
         "gate_us": float(gate_us),
         "capture": None,
