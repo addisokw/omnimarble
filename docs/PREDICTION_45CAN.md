@@ -575,7 +575,7 @@ every blank is the right sign at ~2 sigma. Needs a same-day blank.
 22 ohm resistor in (09-24). Blank: I_pk 299 A at 49.77 V, cut 705 us,
 integral 38.8 A^2 s normalised to 49.15 V (August 39.0) -- inert to the
 pulse. +9 triple after the swap: 183 / 209 / 204 raw (mean 199), 200 / 192
-/ 224 v_in-corrected (mean 205); predicted 197 +/- 8 -- HIT raw, edge
-corrected (the third pair has a 0.040 m/s release mismatch). Marble-shot
+/ 184 v_in-corrected (mean 192); predicted 197 +/- 8 -- HIT both ways
+(two pairs carry >0.03 m/s release mismatch, hence the raw/corrected gap). Marble-shot
 vs same-day blank: early slope -4.4% (predicted -4%), I(100 us) -9%. The
-3-can chapter is closed; can 4 next, read against 197-205.
+3-can chapter is closed; can 4 next, read against 192-199.
