@@ -292,7 +292,7 @@ class ReturnPassModel:
 
 
 def fit_b_side(ret_rows, flat, nokick=NOKICK_LEG, weight=3.0, specs=None,
-               halfwidth_mm=5.2, dt=FIT_DT_S, ratio_only=False):
+               halfwidth_mm=5.2, dt=FIT_DT_S, ratio_only=False, x_from_mm=22.78):
     """BSideExcess (g_B, k_B >= 0) from return-pass station reads.
 
     ret_rows: dicts with v_in (the B fit) and v_local; rows lacking either
@@ -310,7 +310,7 @@ def fit_b_side(ret_rows, flat, nokick=NOKICK_LEG, weight=3.0, specs=None,
     rows = [r for r in ret_rows if r.get("v_in") and r.get("v_local")]
 
     def losses_for(p):
-        return TrackLosses(flat=flat, b_side=BSideExcess(p[0], p[1]))
+        return TrackLosses(flat=flat, b_side=BSideExcess(p[0], p[1], x_from=x_from_mm))
 
     def resid(p):
         losses = losses_for(p)
@@ -333,7 +333,7 @@ def fit_b_side(ret_rows, flat, nokick=NOKICK_LEG, weight=3.0, specs=None,
         raise ValueError("nothing to fit the B-side excess on")
     sol = least_squares(resid, [0.5, 0.5], bounds=([0.0, 0.0], [20.0, 50.0]),
                         diff_step=[0.05, 0.05], xtol=1e-4, ftol=1e-5)
-    b = BSideExcess(sol.x[0], sol.x[1])
+    b = BSideExcess(sol.x[0], sol.x[1], x_from=x_from_mm)
     res = list(sol.fun)
     fitted = losses_for(sol.x)
     nk_pred = nokick_pred(fitted) if nokick is not None else None
@@ -391,17 +391,28 @@ def pairs_to_edge(pairs, side, losses, specs, halfwidth_mm=5.2, dt=FIT_DT_S):
 # main
 # ---------------------------------------------------------------------------
 def fit_all(kick_rows, baselines, specs, halfwidth_mm=5.2, dt=FIT_DT_S,
-            nokick=NOKICK_LEG, weight=3.0):
+            nokick=NOKICK_LEG, weight=3.0, b_x_from_mm=22.78, max_v_out=0.7):
     flat, m_flat = fit_flat(baselines)
     ret_rows = [r for r in kick_rows if r["leg"] == "ret"]
     b_side, m_b = fit_b_side(ret_rows, flat, nokick=nokick, weight=weight,
-                             specs=specs, halfwidth_mm=halfwidth_mm, dt=dt)
+                             specs=specs, halfwidth_mm=halfwidth_mm, dt=dt,
+                             x_from_mm=b_x_from_mm)
     partial = TrackLosses(flat=flat, b_side=b_side)
     pairs = pair_cycles(kick_rows)
     far_edge = pairs_to_edge(pairs["far"], "far", partial, specs, halfwidth_mm, dt)
     entry_edge = pairs_to_edge(pairs["entry"], "entry", partial, specs, halfwidth_mm, dt)
-    far, m_far = fit_excursion(far_edge)
-    entry, m_entry = fit_excursion(entry_edge)
+    # The limit cycle is the claim: fit the excursions on the regime the
+    # cycle lives in and hold the fast first cycles (v_out ~1 m/s) out. In
+    # v^2 space two fast points dominate a least squares and the energy
+    # form then misses the 0.45 m/s excursions by 0.05 m/s -- enough to
+    # park the simulated marble that the bench keeps going.
+    far_fit = [p for p in far_edge if p[0] <= max_v_out]
+    entry_fit = [p for p in entry_edge if p[0] <= max_v_out]
+    far, m_far = fit_excursion(far_fit)
+    entry, m_entry = fit_excursion(entry_fit)
+    for m, edge, fit in ((m_far, far_edge, far_fit), (m_entry, entry_edge, entry_fit)):
+        m["max_v_out_mps"] = max_v_out
+        m["n_held_out_fast"] = len(edge) - len(fit)
     meta = {"flat": m_flat, "b_side": m_b, "far": m_far, "entry": m_entry}
     return TrackLosses(flat=flat, b_side=b_side, far=far, entry=entry, meta=meta), meta
 
@@ -416,6 +427,18 @@ def main(argv=None):
     parser.add_argument("--nokick", default="%g,%g" % NOKICK_LEG,
                         help="v_fit at B, v_fit at A of the no-kick return leg; "
                              "'none' to drop the constraint")
+    parser.add_argument("--b-x-from", type=float, default=22.78,
+                        help="where the B-side excess ENDS on the way to the "
+                             "coil (mm from centre). The return passes only "
+                             "measure the excess across station B (57.78-"
+                             "146.34); its extent over the last 35 mm to the "
+                             "coil face is unconstrained by the fit set and "
+                             "decides where the return kick lands. Bracket it: "
+                             "22.78 (to the face), 40, 57.78 (ends at B).")
+    parser.add_argument("--max-v-out", type=float, default=0.7,
+                        help="excursion pairs with a faster edge speed are "
+                             "held out of the ramp fits (the fast first "
+                             "cycles); default 0.7 m/s")
     parser.add_argument("--nokick-weight", type=float, default=0.0,
                         help="weight of the single no-kick leg in the B-side "
                              "fit; 0 (default) reports it as a held-out check "
@@ -445,7 +468,8 @@ def main(argv=None):
     print(f"{len(rows)} kick rows, {len(baselines)} roll baselines")
 
     losses, meta = fit_all(rows, baselines, specs, half, args.dt, nokick,
-                           args.nokick_weight)
+                           args.nokick_weight, b_x_from_mm=args.b_x_from,
+                           max_v_out=args.max_v_out)
     losses.ramp_angle_deg = float(profile.track.get("ramp_angle_deg", 55.0))
     losses.meta.update({
         "kicks_csv": {"path": str(args.kicks).replace("\\", "/"),
