@@ -744,3 +744,24 @@ limit 0.3 -> 1.0 A (still under the 1.5 A ceiling; fault case 22 W in a
 50 W shell on metal) so the bank recovers ~27 -> 48 V in ~0.5 s and the
 return kick gets a full bank. Prediction: return kicks ~+0.10-0.13,
 limit cycle 0.21-0.24 m/s at A.
+
+### Return-trim runs at 1500 us, 4 cans, 300 mA (09-24, one release each)
+
+| trim | first return kick (fast, ~0.6-0.7 m/s) | slow return kicks | cycle at A |
+|:---:|:---:|:---:|---|
+| +12 fixed | -0.307 | +0.04 to +0.11 | steady 0.19-0.20, 15 cycles |
+| 0 fixed | -0.134 | +0.09 decaying to +0.02 | falling 0.20 -> 0.15, rescue at the end |
+| auto 2.1/v (+3.6 fast, +10.4..+12.2 slow) | -0.121 | +0.08 to +0.12, mean ~0.10 | steady 0.19-0.21, 15 cycles, ends 0.200 |
+
+Prediction scored: "fast first kick no worse than -0.05": MISS (-0.12);
+"cycle unchanged or slightly higher": HIT (0.200 vs 0.195, within noise).
+The speed-dependent trim serves the slow ball as well as +12 and the fast
+ball as well as 0 -- it is the right form -- but the fast return kick at
+its best trim still reads -0.12 raw, the same as the 3-can sweep's best
+(-0.09 at +4). Whether that is "no coil dv minus the return-leg baseline"
+or "negative" is unknowable from raw dv: the return leg has no `roll`
+baseline. The decisive test is cycle 2's v_in at A with the fast kick
+WITHHELD (SUSTAIN_RET_MAX_V_MPS = 0.40): with the kick it has been
+0.267-0.281 in three runs. Preregistered: > 0.29 without it means the
+fast kick costs momentum and the skip stays on; < 0.25 means the kick
+helps despite the raw number and the skip goes back off.
