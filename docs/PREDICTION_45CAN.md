@@ -765,3 +765,15 @@ WITHHELD (SUSTAIN_RET_MAX_V_MPS = 0.40): with the kick it has been
 0.267-0.281 in three runs. Preregistered: > 0.29 without it means the
 fast kick costs momentum and the skip stays on; < 0.25 means the kick
 helps despite the raw number and the skip goes back off.
+
+Withheld-kick test scored: cycle-2 v_in at A = **0.201** without the fast
+return kick against 0.267-0.281 with it -> the kick HELPS; skip back off.
+The log also gave the first return-leg baseline: B inbound 0.643 ->
+A outbound 0.315 with no kick (-0.33 m/s), against -0.10 with the kick,
+so the fast return kick delivers ~+0.22 m/s of coil dv -- larger than
+the forward kick -- and the raw -0.12 was the B-side loss, not the coil.
+The return leg's ramp/slope loss at 0.64 m/s is three times the forward
+leg's. Limit cycle 0.19-0.20 at A in every 1500 us run regardless of the
+first cycles: the losses grow steeply with speed (entry-ramp excursion
+~100 mm/s at 0.2, ~260 at 0.54) and pin it. The levers left are the
+bank voltage on the return kick (PSU current) and the ramps themselves.
