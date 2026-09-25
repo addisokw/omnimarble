@@ -718,3 +718,29 @@ trim ~0.08 (vs 0.06); the far-ramp and entry-ramp losses do not change.
 Expect 3 full cycles, maybe 4, before the marble parks -- one more than
 at 3 cans, not indefinite. Indefinite needs the return kick fixed or the
 losses cut, not more cans.
+
+## Sustain at 4 cans (2026-09-24): the first steady state
+
+`sustain 700 10 30`, offset +9, return trim +12: five cycles, v_in at A
+0.802 / 0.245 / 0.161 / 0.163 / 0.165 -- a limit cycle at 0.16 m/s,
+ended by the shot budget with the marble still going. Forward kicks
++0.19-0.20 raw, return kicks +0.07-0.08 (predicted 0.23 / 0.08 coil dv:
+hit); "three cycles, maybe four" was wrong -- the losses fall faster
+than the kicks as the marble slows, and it does not stop.
+
+`sustain 1500 30 120`: **fifteen cycles in 46 s, v_in at A steady at
+0.19-0.20 m/s from cycle 3 to 15**, ended by the 30-shot ceiling.
+Forward kicks +0.24-0.28 raw at 45-48 V; return kicks +0.04-0.11 at
+39-41 V (recharge-limited: the 1500 us gate drains the bank to 12.5 V
+and the marble outranks the 0.96 threshold on every return leg). Far
+ramp -0.24, entry ramp -0.10 per cycle. Predicted "above 0.25 m/s at
+A": MISS -- 0.195. The return kick fired on ~64% of full bank energy,
+and the far-ramp loss rose from 0.195 to 0.24 with the faster excursion.
+
+The rig oscillates. What limits the limit cycle now is the return leg:
+its kick is a third of the forward one (B-side slope + timing) and it
+fires on a two-thirds bank at 1500 us. Cheapest next step: PSU current
+limit 0.3 -> 1.0 A (still under the 1.5 A ceiling; fault case 22 W in a
+50 W shell on metal) so the bank recovers ~27 -> 48 V in ~0.5 s and the
+return kick gets a full bank. Prediction: return kicks ~+0.10-0.13,
+limit cycle 0.21-0.24 m/s at A.
