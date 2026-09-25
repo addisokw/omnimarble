@@ -1,0 +1,4 @@
+v_in_mps,dv_mps,distance_mm,date,source
+0.206,-0.034,204.12,2026-09-24,4can_9_1500b.csv row 1 (no-kick forward roll A->B)
+0.245,-0.050,204.12,2026-09-09,3-can roll baseline average
+0.79,-0.113,204.12,2026-09-09,3can_fast.csv fast roll
