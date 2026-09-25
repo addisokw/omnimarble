@@ -222,3 +222,32 @@ Twin consequence: at 5 cans the twin's return kick (0.219) is within the
 bench's optimum band (0.19-0.22) -- the return over-prediction is a
 4-can-only miss (bench 0.12 vs twin 0.19), so it is not the curve shape.
 Left open with that scoping.
+
+## Overfitting audit (2026-09-25, raised by the user) -- OPEN, revisit after the Kit run
+
+What scales and what does not:
+
+1. **Tested out of sample, scales**: field, force law, kick from a
+   measured current (frozen on 1-3 cans, predicted 4 and 5 cans to 1-3%
+   at 400/700 us). Valid for any bank/voltage with a captured waveform.
+2. **Fitted, valid only on this track at 0.2-0.7 m/s**: flat drag, B-side
+   excess, ramp transfers. Named data, held-out checks, but a track change
+   (levelling B, a ramp) needs a refit. The twin's levelling number
+   (+0.09 m/s) is a hypothesis at +/-30%, not a prediction.
+3. **Corrections that are effectively curve fits -- treat as FITTED for
+   scaling**: `--kick-scale` 1.09 / 1.25 (taken from the same can counts
+   it is scored at, so the 5-can cycle agreement 0.28 vs 0.25-0.27 is
+   in-sample and is NOT evidence); `--shape-csv` (one can count, one
+   gate, stands in for missing entry-flank physics); the empirical return
+   trim. They patch two physics gaps -- the late-pulse excess that GROWS
+   with can count, and the flat-topped entry flank -- so they will not
+   transfer to another can count or gate.
+
+Actions agreed to take up next:
+- Replace `--kick-scale` with physics: the ball's magnetisation-lag /
+  eddy response measured by the LCR ball-on-a-stick survey
+  (COIL_AS_SENSOR 3A). Pass = it reproduces 1.09 at 4 cans and 1.25 at 5
+  UNFITTED.
+- One whole-twin holdout: freeze a sustain prediction at 1000 us (no
+  shape/scale data exists there), commit, then run it.
+- Any track change (levelling B) gets a frozen prediction first.
