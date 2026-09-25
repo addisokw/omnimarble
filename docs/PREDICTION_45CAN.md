@@ -938,3 +938,29 @@ What the twin gains: its in-sample choice (B-side excess ends at station
 B) is now bench-confirmed, and the per-pass a values give the B-side loss
 directly: a = -0.76 at v_last 0.28 and -1.08 at 0.72 -> k = a/v^2 = 9.7
 and 2.1 /m -- not a single k v^2 either. Not refitted; recorded.
+
+## Restored-rule rerun (2026-09-25, vbench 2efd74b, 5 cans, 1500 us, 1.0 A)
+
+30 shots, 15 cycles, budget-limited. Cycle at A **0.253-0.292 (mean
+~0.27)** from cycle 3 -- above last night's 0.246-0.251. Forward kicks
++0.29..+0.40 raw (mean 0.36), return kicks +0.17..+0.25 (mean 0.20),
+far ramp -0.29..-0.36, entry ramp -0.20..-0.26. Preregistered: cycle
+>= 0.245 HIT; slow return kicks 0.15-0.20 HIT (0.17-0.25); slow trims
++2.6..+4.2 (predicted +4..+6, slightly under); fast first trim -0.6
+(the prediction of "+3" was an arithmetic slip -- the formula gives -0.6
+at 0.66 m/s).
+
+The kinematics columns are the new information. Per-pass constant-a fit
+at the limit cycle: station A (forward, ~0.27 m/s) a = -0.02..-0.14
+m/s^2 -- the flat-zone loss and nothing else (k v^2 = 0.05 at that
+speed); station B (return, 0.21-0.26 m/s) a = -0.31..-0.75. The B side
+is 5-10x lossier than the A side in the station region; the first fast
+passes read -1.2..-1.4 through BOTH stations at 0.5-0.8 m/s. Twin input:
+the forward kick should land ~on target (no A-side excess), and the
+B-side excess is confined to the station region and grows faster than
+v^2 (a/v^2 = 5-9 /m at 0.24 m/s, 2-3 /m at 0.7 m/s).
+
+The scope capture armed with this run was a false trigger during the
+recharge (bank 44 V, 94 A glitch); scope.py now waits for the bank to be
+at rest before arming (vbench 131ae26). Forward-kick position capture
+still outstanding.
