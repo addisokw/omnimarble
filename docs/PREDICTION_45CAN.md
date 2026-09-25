@@ -964,3 +964,30 @@ The scope capture armed with this run was a false trigger during the
 recharge (bank 44 V, 94 A glitch); scope.py now waits for the bank to be
 at rest before arming (vbench 131ae26). Forward-kick position capture
 still outstanding.
+
+## 5-can fire-position curve, 1500 us, 49.6 V (2026-09-25; `5can_firepos_1500.csv`)
+
+| offset | x | pairs (coil dv raw) | ratio to +9 (raw / v_in-corr) | frozen | verdict |
+|---:|---:|---|:---:|:---:|---|
+| 0 | -22.78 | 240 / 215 | 0.53 / 0.50 | 0.40 | high by ~0.12 |
+| +3 | -19.78 | 319 / 324 | 0.75 / 0.72 | 0.64 | high by ~0.1 |
+| +6 | -16.78 | 443 / 425 | 1.01 / 0.99 | 0.885 | high by ~0.11 |
+| +9 | -13.78 | 429 (one pair) | 1.00 | 1.00 | reference |
+| +12 | -10.78 | 378 / 414 | 0.92 / 0.89 | 0.91 | hit |
+| +15 | -7.78 | 268 (one pair) | 0.62 / 0.58 | 0.68 | hit, low side |
+
+The "peak stays put" line, declared expected-to-fail at 4-5 cans, fails
+as declared but more mildly than the 3-can curve of 09-09 (which read
+0.70/0.99/1.06/1/0.88/0.68): entry flank +0.1 above the frozen model at
+every point, flat top +6..+9, exit flank on the model. Consistent with
+the deferred entry-side artefact after the 09-09 reversed-polarity train
+weakened it. Absolute level at +9: 429 raw / 453 corrected against the
+injected prediction 366.6 -- the 1500 us long-gate excess again (1.17-
+1.24; the holdout triples read 1.27).
+
+Consequence for the sustain twin (PREDICTION_SUSTAIN.md): the forward
+kick lands at ~-17 mm (capture); on this curve that is the flat top
+(ratio 1.0), on the frozen map it costs 11%. The twin's forward-kick
+miss decomposes into ~11% curve shape + ~20% long-gate level. Both are
+now measured numbers to carry as declared corrections, not fits. +9 and
++15 have one pair each (the sweep lost one at each); top-up requested.
