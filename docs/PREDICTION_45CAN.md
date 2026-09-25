@@ -670,3 +670,22 @@ against 146 predicted at +9, ~100 expected at offset 0) says the shots
 went at +9 and the echo was stale. The second run overwrote
 `logs/4can_9.csv` (same --out); the first run's 11 pairs survive only in
 the terminal transcript recorded here.
+
+Re-run and v_in-corrected (the correction slope, -490 mm/s per m/s, was
+measured at 3 cans / 700 us and is carried over unverified at 4 cans):
+
+| gate | pairs raw | corrected | injected | ratio raw / corrected | verdict |
+|---|---|:---:|:---:|:---:|---|
+| 1000 | 292 / 273 / 279 | 291 / 285 / 288, mean 288 | 272.5 | 1.03 / 1.06 | edge |
+| 1500 repeat | 311 / 337 / 287 | 342 / 329 / 296, mean 322 | 301.4 | 1.03 / 1.07 | edge/miss |
+| 1500 all six raw | 314 326 364 311 337 287 | -- | 301.4 | 1.07 | miss |
+
+Final Layer A tally at 4 cans: 400 and 700 us hits (1.03, 0.97); 1000
+and 1500 us sit +3 to +7% high depending on the correction, straddling
+the +5% edge. The long-gate excess is real but small and is not the
+"tail does not transfer" signature (that was declared for SHORT gates).
+Nothing fitted. Note for 5 cans: expect the same +5% at 1000/1500 us;
+if it grows with n it is current-dependent physics (the entry-side
+artefact reaching +9, or the ball's eddy response, both on the books);
+if it stays at +5% it is a constant to look for in the timing or the
+correction slope.
