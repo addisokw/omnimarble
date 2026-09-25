@@ -30,7 +30,7 @@ from pathlib import Path
 
 import numpy as np
 import trimesh
-from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
+from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "source" / "extensions" / "omni.marble.coaster"
@@ -178,11 +178,26 @@ def build_scene_usd(profile, track_parts, coil_pos):
         # meshSimplification would round the channel out and let it escape.
         mesh_col.CreateApproximationAttr("none")
 
+    # One physics material for the track and the ball, BOUND to both. It was
+    # defined here and bound to nothing until the sustain port (2026-09-25),
+    # so every Kit run rolled on PhysX's default material (friction 0.5/0.5,
+    # restitution 0.0, unlogged). The pattern is scripts/apply_physics.py:
+    # a UsdShade.Material carrying the MaterialAPI, bound for the physics
+    # purpose. Values are the profile's if it carries them, else these.
+    mat_cfg = (profile.track.get("losses", {}) or {}).get("physx_material", {})
     mat_path = "/World/PhysicsMaterial"
-    mat = UsdPhysics.MaterialAPI.Apply(stage.DefinePrim(mat_path))
-    mat.CreateStaticFrictionAttr(0.3)      # steel on PLA, unmeasured
-    mat.CreateDynamicFrictionAttr(0.25)
-    mat.CreateRestitutionAttr(0.2)         # a bore, not a bouncy track
+    mat_prim = UsdShade.Material.Define(stage, mat_path)
+    mat = UsdPhysics.MaterialAPI.Apply(mat_prim.GetPrim())
+    mat.CreateStaticFrictionAttr(float(mat_cfg.get("static_friction", 0.3)))   # steel on PLA, unmeasured
+    mat.CreateDynamicFrictionAttr(float(mat_cfg.get("dynamic_friction", 0.25)))
+    mat.CreateRestitutionAttr(float(mat_cfg.get("restitution", 0.2)))        # a bore, not a bouncy track
+    for name in track_parts:
+        prim = stage.OverridePrim(f"/World/Track/{name}")
+        UsdShade.MaterialBindingAPI.Apply(prim).Bind(
+            mat_prim, materialPurpose="physics")
+    UsdShade.MaterialBindingAPI.Apply(
+        stage.OverridePrim("/World/Marble/Geom")).Bind(
+            mat_prim, materialPurpose="physics")
 
     # Lighting. The legacy scene inherits this from visual_config.usda; without
     # it the viewport renders black and the rig looks broken when it is not.

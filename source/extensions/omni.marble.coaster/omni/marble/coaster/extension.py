@@ -41,10 +41,14 @@ from .coil_sensing import (
     interpolate_crossing_us,
 )
 from .rig_profile import ProfileError, load_profile
+from .sustain_loop import SustainLoop, SustainSettings, write_records_csv
 
 # Late-bound after pipapi install in on_startup()
 torch = None
 pinn_loader = None
+# scripts/sustain_model.py (pure Python): the fitted track-loss laws and the
+# bank recharge model the 1-D twin runs on. Bound once scripts/ is on sys.path.
+sustain_model = None
 
 # CUDA build installed into Kit's Python. Kept in step with the project's
 # own .venv (pyproject/uv.lock) so Kit and the headless scripts run the
@@ -91,6 +95,45 @@ TRAJ_COLUMNS = (
     "current_A", "V_cap_V", "F_z_mN", "F_r_mN", "Bz_T",
     "wire_temp_C", "triggered", "pulse_cut",
 )
+
+SETTINGS_BASE = "/exts/omni.marble.coaster"
+
+
+def _import_sustain_model():
+    """Bind scripts/sustain_model.py (pure Python, no torch) lazily."""
+    global sustain_model
+    if sustain_model is None:
+        if str(SCRIPTS_DIR) not in sys.path:
+            sys.path.insert(0, str(SCRIPTS_DIR))
+        import sustain_model as _sm
+        sustain_model = _sm
+    return sustain_model
+
+
+def _setting_flag(settings, key):
+    """True/False/None for a boolean setting, read as a STRING.
+
+    carb's get_as_bool returns False for a missing key, so "unset" and
+    "explicitly false" are indistinguishable through it; get_as_string gives
+    "" when unset, which is the distinction needed for defaults.
+    """
+    raw = (settings.get_as_string(f"{SETTINGS_BASE}/{key}") or "").strip().lower()
+    if raw in ("true", "1", "yes"):
+        return True
+    if raw in ("false", "0", "no"):
+        return False
+    return None
+
+
+def _setting_float(settings, key, default):
+    """A float setting, or `default` when unset (0 reads as unset in carb)."""
+    val = settings.get_as_float(f"{SETTINGS_BASE}/{key}")
+    return float(val) if val else default
+
+
+def _setting_str(settings, key, default):
+    val = (settings.get_as_string(f"{SETTINGS_BASE}/{key}") or "").strip()
+    return val or default
 
 
 class CoilParams(CoilPhysics):
@@ -314,6 +357,28 @@ class MarbleCoasterExtension(omni.ext.IExt):
         if is_rig:
             self._apply_rig_circuit()
 
+        # Sustain mode (off by default: single-shot behaviour is unchanged)
+        # and the track-loss model. Both come from the rig profile and can be
+        # overridden per run:
+        #   --/exts/omni.marble.coaster/sustain=true
+        #   --/exts/omni.marble.coaster/sustainOnTimeUs=1500
+        #   --/exts/omni.marble.coaster/sustainMaxShots=30
+        #   --/exts/omni.marble.coaster/sustainMaxSeconds=120
+        #   --/exts/omni.marble.coaster/sustainPsuAmps=1.0
+        #   --/exts/omni.marble.coaster/sustainPsuVolts=49.6
+        #   --/exts/omni.marble.coaster/sustainChargeROhm=22
+        #   --/exts/omni.marble.coaster/sustainRetOffsetMm=0   (manual, on top of the trim)
+        #   --/exts/omni.marble.coaster/trackLossMode=fitted|physx
+        #   --/exts/omni.marble.coaster/trackRampMode=physx|fitted
+        self._sustain_cfg = None
+        self._losses = None
+        self._loss_mode = "physx"
+        self._ramp_mode = "physx"
+        self._rolling_factor = 1.0
+        if is_rig:
+            self._read_loss_settings(settings_now)
+            self._sustain_cfg = self._read_sustain_settings(settings_now)
+
         # Load PINN model (required — fail loudly if missing)
         self._pinn_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self._pinn_model = self._load_pinn()
@@ -363,8 +428,12 @@ class MarbleCoasterExtension(omni.ext.IExt):
         if settings.get_as_bool("/exts/omni.marble.coaster/autorun"):
             self._autorun_voltage = settings.get_as_float(
                 "/exts/omni.marble.coaster/autorunVoltage") or 0.0
+            # A sustain run is bounded by its own clock; the sim-time cap is
+            # only a backstop above it.
+            default_max_s = (self._sustain_cfg.max_seconds + 5.0
+                             if self._sustain_cfg is not None else 12.0)
             self._autorun_max_sim_s = settings.get_as_float(
-                "/exts/omni.marble.coaster/autorunMaxSimSeconds") or 12.0
+                "/exts/omni.marble.coaster/autorunMaxSimSeconds") or default_max_s
             self._autorun_quit = settings.get_as_bool(
                 "/exts/omni.marble.coaster/autorunKeepOpen") is not True
             self._autorun_state = "warmup"
@@ -440,6 +509,9 @@ class MarbleCoasterExtension(omni.ext.IExt):
             # captures the measured exit velocity plus some coast
             t_out2 = self._gate_times.get("vel_out_2")
             if t_out2 is not None and self._sim_time > t_out2 + 0.5:
+                done = True
+            # Sustain: the loop's own shot budget / clock / death ends it.
+            if self._sustain is not None and self._sustain.finished:
                 done = True
             if done:
                 carb.log_warn(f"[AUTORUN] Stopping at sim_time={self._sim_time:.2f}s")
@@ -575,6 +647,76 @@ class MarbleCoasterExtension(omni.ext.IExt):
             + (" (ASSUMED steel, not weighed)"
                if self._profile.marble.get("mass_is_assumed") else ""))
 
+    def _read_loss_settings(self, settings):
+        """The fitted loss table from the profile, and which mode carries it."""
+        losses_doc = self._profile.track_losses
+        if losses_doc:
+            sm = _import_sustain_model()
+            self._losses = sm.TrackLosses.from_dict(losses_doc)
+            self._rolling_factor = float(losses_doc.get("rolling_inertia_factor", 1.4))
+        self._loss_mode = _setting_str(settings, "trackLossMode", self._profile.loss_mode)
+        self._ramp_mode = _setting_str(settings, "trackRampMode", self._profile.ramp_mode)
+        if self._loss_mode not in ("fitted", "physx") or self._ramp_mode not in ("fitted", "physx"):
+            carb.log_error(f"[LOSS] unknown mode {self._loss_mode!r}/{self._ramp_mode!r}; "
+                           f"using physx/physx")
+            self._loss_mode = self._ramp_mode = "physx"
+        if self._losses is None and "fitted" in (self._loss_mode, self._ramp_mode):
+            carb.log_error("[LOSS] profile carries no track.losses table -- regenerate "
+                           "it with scripts/import_rig_geometry.py; falling back to physx")
+            self._loss_mode = self._ramp_mode = "physx"
+        if self._losses is not None:
+            f = self._losses.flat
+            b = self._losses.b_side
+            src = losses_doc.get("source", {})
+            carb.log_warn(
+                f"[LOSS] flat {self._loss_mode}: a0={f.a0:.4f} m/s2 k={f.k:.3f}/m; "
+                f"B-side excess g={b.g:.3f} k={b.k:.2f} on [{b.x_from:.1f},{b.x_to:.1f}] "
+                f"toward -x; ramps {self._ramp_mode} (far alpha {self._losses.far.alpha:.3f}, "
+                f"entry alpha {self._losses.entry.alpha:.3f}); "
+                f"table {src.get('path', '?')} sha {str(src.get('sha256', '?'))[:12]}")
+
+    def _read_sustain_settings(self, settings):
+        """SustainSettings from the run's settings, or None when sustain is off."""
+        if _setting_flag(settings, "sustain") is not True:
+            return None
+        fr = self._profile.firing_return
+        if not fr:
+            carb.log_error("[SUSTAIN] profile has no firing_return section -- regenerate "
+                           "it with scripts/import_rig_geometry.py; sustain OFF")
+            return None
+        pol = fr.get("sustain", {})
+        cans = int(settings.get_as_int(f"{SETTINGS_BASE}/rigCans") or 0) \
+            or int(self._profile.circuit.get("cans_populated", 1))
+        ret_offset = settings.get_as_float(f"{SETTINGS_BASE}/sustainRetOffsetMm")
+        cfg = SustainSettings(
+            cans=cans,
+            on_time_us=_setting_float(settings, "sustainOnTimeUs",
+                                      float(self._profile.firing.get("on_time_us", 200.0))),
+            max_shots=int(_setting_float(settings, "sustainMaxShots",
+                                         float(pol.get("max_shots", 30)))),
+            max_seconds=_setting_float(settings, "sustainMaxSeconds",
+                                       float(pol.get("max_seconds", 120.0))),
+            psu_amps=_setting_float(settings, "sustainPsuAmps", 1.0),
+            psu_volts=_setting_float(settings, "sustainPsuVolts", self._params.charge_voltage),
+            charge_r_ohm=_setting_float(settings, "sustainChargeROhm", 22.0),
+            recharge_frac=float(pol.get("recharge_frac", 0.96)),
+            floor_frac=float(pol.get("floor_frac", 0.60)),
+            recharge_timeout_s=float(pol.get("recharge_timeout_s", 30.0)),
+            pass_timeout_ms=float(pol.get("pass_timeout_ms", 20000.0)),
+            manual_offset_mm=(float(ret_offset) if ret_offset else None),
+        )
+        v_max = self._profile.circuit.get("voltage_max_V")
+        if v_max and cfg.psu_volts > v_max:
+            carb.log_error(f"[SUSTAIN] PSU {cfg.psu_volts}V exceeds the {v_max}V board invariant")
+        carb.log_warn(
+            f"[SUSTAIN] ON: {cfg.max_shots} shots max | {cfg.max_seconds:.0f} s max | "
+            f"on={cfg.on_time_us:.0f} us | {cfg.cans} can(s) | PSU {cfg.psu_volts:.1f} V / "
+            f"{cfg.psu_amps:.2f} A through {cfg.charge_r_ohm:.0f} ohm | refiring at "
+            f"{cfg.recharge_frac * cfg.psu_volts:.2f} V, floor {cfg.floor_frac * cfg.psu_volts:.2f} V")
+        carb.log_warn("[SUSTAIN] Kicks: A-forward AND B-return (mirrored). Wrong-way "
+                      "passes never fire; both kicks count against the shot budget.")
+        return cfg
+
     def _init_gate_state(self):
         """Initialize / reset all IR sensing state, for either sensing mode."""
         self._prev_z_along = None
@@ -593,6 +735,13 @@ class MarbleCoasterExtension(omni.ext.IExt):
         self._stations = {}
         self._firing_ctl = None
         self._gate_window = None
+        # Sustain: the leg state machine that owns the firing decision, and
+        # the pulse-level bookkeeping it needs from this side.
+        self._sustain = None
+        self._shot_dv_mm_s = 0.0
+        self._ramp_exit = None        # (t_s, v_out_mps, side) while beyond the flat edge
+        self._ramp_transfers = []
+        sustain_cfg = getattr(self, "_sustain_cfg", None)
         if self._profile is not None and self._profile.sensing_mode == "stations":
             for name, spec in self._profile.station_specs().items():
                 self._stations[name] = VirtualStation(
@@ -601,13 +750,29 @@ class MarbleCoasterExtension(omni.ext.IExt):
             self._firing_ctl = FiringController(
                 self._profile.firing,
                 self._stations[self._profile.sensing["station_in"]])
-            self._gate_window = self._profile.gate_window_us()
+            on_us = sustain_cfg.on_time_us if sustain_cfg is not None else None
+            self._gate_window = self._profile.gate_window_us(on_us)
             carb.log_warn(
                 f"[RIG] Profile '{self._profile.name}': 2x"
                 f"{self._profile.sensing['n_channels']}-channel stations, "
                 f"pitch {self._profile.sensing['pitch_mm']}mm, "
                 f"gate {self._gate_window['on_time_us']:.0f}us requested -> "
                 f"{self._gate_window['gate_us']:.0f}us physical")
+            if sustain_cfg is not None:
+                sm = _import_sustain_model()
+                bank = sm.BankModel(
+                    sm.bank_capacitance_F(self._profile, sustain_cfg.cans),
+                    sustain_cfg.charge_r_ohm, sustain_cfg.psu_volts,
+                    sustain_cfg.psu_amps)
+                # V_start is the bank at the start of the run: the PSU's
+                # setpoint, as the firmware reads it before the first shot.
+                self._sustain = SustainLoop(
+                    self._profile, self._stations, sustain_cfg, bank,
+                    v_start=sustain_cfg.psu_volts, t0_us=0.0)
+                carb.log_warn(
+                    f"[SUSTAIN] bank C={bank.C * 1e6:.0f}uF (100 Hz), "
+                    f"RC={bank.tau:.3f}s, CC knee {bank.v_knee:.1f}V; "
+                    f"leg fwd armed at station {self._sustain.trigger_station()}")
 
     def on_shutdown(self):
         carb.log_info("[omni.marble.coaster] Shutting down")
@@ -807,8 +972,18 @@ class MarbleCoasterExtension(omni.ext.IExt):
         if marble_prim:
             physx_rb = PhysxSchema.PhysxRigidBodyAPI.Apply(marble_prim)
             physx_rb.CreateEnableCCDAttr(True)
-            physx_rb.CreateLinearDampingAttr(0.01)
-            physx_rb.CreateAngularDampingAttr(0.05)
+            # Damping is profile-driven on the rig: zero in the "fitted" loss
+            # mode (the fitted forces carry the whole loss) and the matched
+            # equivalent in "physx" mode. The legacy profile keeps the values
+            # its reference trajectory was captured with.
+            if self._profile is not None and self._profile.sensing_mode == "stations":
+                lin, ang = self._profile.physx_damping(self._loss_mode)
+            else:
+                lin, ang = 0.01, 0.05
+            physx_rb.CreateLinearDampingAttr(float(lin))
+            physx_rb.CreateAngularDampingAttr(float(ang))
+            carb.log_warn(f"[PHYSX] marble damping linear={lin:g}/s angular={ang:g}/s "
+                          f"(loss mode {self._loss_mode})")
 
         marble_geom = stage.GetPrimAtPath("/World/Marble/Geom")
         if marble_geom:
@@ -871,6 +1046,16 @@ class MarbleCoasterExtension(omni.ext.IExt):
         self._circuit_Q_cap = p.capacitance_uF * 1e-6 * p.charge_voltage
         self._wire_temp = p.ambient_temp
         self._prev_B = 0.0
+        self._shot_dv_mm_s = 0.0
+        self._ramp_exit = None
+        self._ramp_transfers = []
+        self._prev_marble_pos = None
+        if self._sustain is not None:
+            # The bank starts at V_start (the PSU setpoint), not the profile's
+            # nominal charge voltage; every later shot fires at whatever the
+            # closed-form recharge has reached.
+            self._circuit_Q_cap = p.capacitance_uF * 1e-6 * self._sustain.v_start
+            carb.log_warn(f"[SUSTAIN] bank {self._sustain.v_start:.2f} V at start")
 
         # Cache PhysX integer IDs for apply_force_at_pos
         stage = omni.usd.get_context().get_stage()
@@ -982,6 +1167,60 @@ class MarbleCoasterExtension(omni.ext.IExt):
             self._status_label.text = f"Simulation stopped — trajectory: {traj_path.name}"
         else:
             self._status_label.text = "Simulation stopped"
+        self._write_sustain_records()
+
+    def _write_sustain_records(self):
+        """Per-shot records to results/trajectories/kit_sustain_<stamp>.csv and
+        the run summary, in the firmware's format, to the console."""
+        loop = self._sustain
+        if loop is None or (not loop.records and loop.n_shots == 0):
+            return None
+        if not loop.finished:
+            loop.finish(self._sim_time * 1e6, "stopped")
+        cfg = loop.settings
+        TRAJECTORY_DIR.mkdir(parents=True, exist_ok=True)
+        stamp = time.strftime("%Y%m%d_%H%M%S")
+        path = TRAJECTORY_DIR / f"kit_sustain_{stamp}.csv"
+        lc = loop.limit_cycle()
+        far, entry = loop.excursion_losses()
+        meta = {
+            "source": "omni.marble.coaster Kit extension sustain (PhysX + PINN)",
+            "profile": self._profile.name,
+            "cans": cfg.cans,
+            "on_time_us": cfg.on_time_us,
+            "gate_us": self._gate_window["gate_us"],
+            "psu_volts": cfg.psu_volts,
+            "psu_amps": cfg.psu_amps,
+            "charge_r_ohm": cfg.charge_r_ohm,
+            "v_start": loop.v_start,
+            "recharge_frac": cfg.recharge_frac,
+            "floor_frac": cfg.floor_frac,
+            "fire_offset_mm": self._profile.firing.get("fire_offset_mm", 0.0),
+            "ret_manual_offset_mm": (cfg.manual_offset_mm if cfg.manual_offset_mm is not None
+                                     else self._profile.firing_return.get("manual_offset_mm", 0.0)),
+            "loss_mode": self._loss_mode,
+            "ramp_mode": self._ramp_mode,
+            "losses_sha256": self._profile.track_losses.get("source", {}).get("sha256", ""),
+            "pinn_checkpoint": PINN_CHECKPOINT.name,
+            "reason": loop.reason,
+            "n_shots": loop.n_shots,
+            "t_end_s": round((loop.t_end_us or 0.0) * 1e-6, 3),
+            "limit_cycle_v_in": round(lc["v_in"], 4) if lc["v_in"] else "",
+            "limit_cycle_trend": lc["trend"],
+            "far_ramp_loss_mps": "/".join("%.3f" % d for d in far),
+            "entry_ramp_loss_mps": "/".join("%.3f" % d for d in entry),
+            "ramp_transfers": len(self._ramp_transfers),
+        }
+        write_records_csv(path, loop.records, meta)
+        carb.log_warn("  " + "=" * 58)
+        carb.log_warn(f"  SUSTAIN (Kit) -- {cfg.cans} can(s) | on={cfg.on_time_us:.0f} us | "
+                      f"losses {self._loss_mode}/{self._ramp_mode}")
+        for t_s, text in loop.events:
+            carb.log_warn(f"  [{t_s:6.2f}s] {text}")
+        for line in loop.summary_lines():
+            carb.log_warn(line)
+        carb.log_warn(f"[SUSTAIN] Wrote {len(loop.records)} kick records to {path}")
+        return path
 
     def _write_trajectory(self):
         """Write recorded per-step rows to results/trajectories/kit_launch_*.csv.
@@ -1150,6 +1389,118 @@ class MarbleCoasterExtension(omni.ext.IExt):
         if p.has_flyback_diode and self._circuit_I < 0:
             self._circuit_I = 0.0
 
+    def _sustain_poll(self, z_along, vel_axial_now):
+        """Advance the leg state machine one step and act on its event."""
+        loop = self._sustain
+        if loop.finished:
+            return
+        ev = loop.poll(self._sim_time * 1e6)
+        if ev is None:
+            return
+        kind = ev["event"]
+        t = self._sim_time
+        if kind == "fire":
+            p = self._params
+            rec = ev["record"]
+            self._triggered = True
+            self._trigger_time = t
+            self._approach_velocity = (rec["v_in_fit"] or 0.0) * 1000.0
+            self._exit_velocity = None
+            self._pulse_cut = False
+            self._I_at_cut = 0.0
+            self._circuit_I = 0.0
+            self._prev_B = 0.0
+            self._shot_dv_mm_s = 0.0
+            # The bank is wherever the recharge model says it is at the pulse.
+            self._circuit_Q_cap = p.capacitance_uF * 1e-6 * ev["v_bank"]
+            loop.note_delivery(z_along, vel_axial_now / 1000.0)
+            tag = "A>" if ev["leg"] == "fwd" else "<B"
+            carb.log_warn(
+                f"[EM] COIL FIRED [{tag} kick {loop.n_shots}/{loop.settings.max_shots}] "
+                f"at z_along={z_along:+.2f}mm (target {rec['x_target']:+.2f}) t={t:.4f}s, "
+                f"v_in={rec['v_in_fit']:.3f} m/s local "
+                f"{rec['v_local'] if rec['v_local'] is None else round(rec['v_local'], 3)}"
+                f"{' trim %+.1f mm' % rec['trim_mm'] if ev['leg'] == 'ret' else ''}, "
+                f"bank {ev['v_bank']:.1f} V, true v {vel_axial_now / 1000.0:.3f} m/s")
+        elif kind == "armed":
+            rec = ev["record"]
+            carb.log_warn(
+                f"[SUSTAIN] {loop.leg} pass captured at {loop.trigger_station()}: "
+                f"v_in {rec['v_in_fit']:.3f} m/s, firing at t={ev['t_fire_us'] * 1e-6:.4f}s "
+                f"(bank {rec['v_bank_at_release']:.1f} V at release)")
+        elif kind in ("skip", "rearm"):
+            reason = ev.get("reason") or ev.get("record", {}).get("skip_reason")
+            carb.log_warn(f"[SUSTAIN] {loop.leg} pass {kind} at t={t:.3f}s: {reason}")
+        elif kind == "leg":
+            rec = ev["record"]
+            v_out = rec["v_out_fit"]
+            carb.log_warn(
+                f"[IR] {rec['leg']} kick {rec['kick_idx']}: v_out "
+                f"{'--' if v_out is None else '%.3f' % v_out} m/s "
+                f"(raw dv {'--' if rec['dv_raw'] is None else '%+.3f' % rec['dv_raw']}); "
+                f"leg {ev['leg']} armed at station {loop.trigger_station()}")
+        elif kind == "done":
+            carb.log_warn(f"[SUSTAIN] run over at t={t:.2f}s: {ev['reason']}")
+
+    def _apply_track_losses(self, dt, z_along, vel_axial, prev_z, marble_pos,
+                            coil_axis_n):
+        """The fitted track losses as PhysX forces (loss mode "fitted") and the
+        fitted ramp transfer at the flat edge (ramp mode "fitted").
+
+        Forces are applied at the ball's centre. A ball rolling without slip
+        accelerates at (5/7) F/m under a centre force, so the fitted linear-
+        speed deceleration needs rolling_inertia_factor (7/5) times m a --
+        the same factor for the one-step impulse that sets the re-entry speed.
+        """
+        sm = sustain_model
+        p = self._params
+        losses = self._losses
+        edge = abs(float(self._profile.track.get("flat_zone_x_mm", [-sm.FLAT_ZONE_X_MM])[0]))
+        v_mps = vel_axial / 1000.0
+        F_mN = 0.0
+
+        if self._loss_mode == "fitted" and abs(z_along) <= edge and abs(v_mps) > 1e-4:
+            direction = 1 if v_mps > 0 else -1
+            d = sm.decel_mps2(losses, z_along, abs(v_mps), direction)
+            # One step may not reverse the ball.
+            d = min(d, abs(v_mps) / dt)
+            F_mN = -direction * self._rolling_factor * p.marble_mass_kg * d * 1000.0
+
+        if self._ramp_mode == "fitted" and prev_z is not None:
+            out_now = abs(z_along) > edge
+            out_prev = abs(prev_z) > edge
+            if out_now and not out_prev:
+                side = "far" if z_along > 0 else "entry"
+                self._ramp_exit = (self._sim_time, abs(v_mps), side)
+                carb.log_warn(f"[LOSS] left the flat onto the {side} ramp at "
+                              f"{abs(v_mps):.3f} m/s (t={self._sim_time:.3f}s)")
+            elif out_prev and not out_now and self._ramp_exit is not None:
+                t_out, v_out, side = self._ramp_exit
+                self._ramp_exit = None
+                v_back = sm.excursion_return(losses, side, v_out)
+                v_now = abs(v_mps)
+                inward = -1 if side == "far" else +1
+                if v_back is None:
+                    carb.log_warn(f"[LOSS] {side} ramp: the fitted transfer parks a ball "
+                                  f"leaving at {v_out:.3f} m/s; PhysX returned it at "
+                                  f"{v_now:.3f} -- left as PhysX has it")
+                else:
+                    dv = v_back - v_now
+                    F_mN += inward * self._rolling_factor * p.marble_mass_kg * dv / dt * 1000.0
+                    self._ramp_transfers.append({
+                        "t_out_s": t_out, "t_back_s": self._sim_time, "side": side,
+                        "v_out_mps": v_out, "v_physx_back_mps": v_now, "v_back_mps": v_back})
+                    carb.log_warn(
+                        f"[LOSS] {side} ramp excursion {self._sim_time - t_out:.3f}s: "
+                        f"out {v_out:.3f} m/s, PhysX back {v_now:.3f}, fitted "
+                        f"{v_back:.3f} -> impulse {dv:+.3f} m/s applied at the edge")
+
+        if F_mN != 0.0:
+            force_vec = carb._carb.Float3(*(float(F_mN * coil_axis_n[i]) for i in range(3)))
+            pos_vec = carb._carb.Float3(marble_pos[0], marble_pos[1], marble_pos[2])
+            self._physx_sim.apply_force_at_pos(self._stage_id, self._marble_prim_id,
+                                               force_vec, pos_vec)
+
     def _on_physics_step(self, dt):
         """Called each PhysX timestep — compute and apply EM force via PhysX API."""
         self._sim_time += dt
@@ -1276,9 +1627,36 @@ class MarbleCoasterExtension(omni.ext.IExt):
                     carb.log_warn(f"[IR] Gate '{gate_name}' crossed at z_along={z_along:.1f}mm "
                                   f"t={self._sim_time:.4f}s")
 
+        # Sustain: a shot is over once the freewheel current has reached zero
+        # (the diode drop brings it there in finite time). Hand the bank's
+        # post-shot voltage to the loop, which recharges it in closed form,
+        # and clear the pulse state so the next leg can fire.
+        if (self._sustain is not None and self._triggered and self._pulse_cut):
+            p_ = self._params
+            tail_s = 10.0 * p_.inductance_H / max(getattr(p_, "R_freewheel", p_.R_total), 1e-6)
+            if (self._circuit_I <= 0.0
+                    or (self._sim_time - self._pulse_cut_time) > tail_s):
+                v_post = self._circuit_Q_cap / (p_.capacitance_uF * 1e-6)
+                self._sustain.note_impulse(self._shot_dv_mm_s / 1000.0)
+                self._sustain.shot_done(self._sim_time * 1e6, v_post)
+                carb.log_warn(
+                    f"[SUSTAIN] shot {self._sustain.n_shots} done at t={self._sim_time:.4f}s: "
+                    f"bank {v_post:.1f} V, coil dv {self._shot_dv_mm_s:.0f} mm/s; "
+                    f"reading v_out at station {self._sustain.out_station()}")
+                self._triggered = False
+                self._pulse_cut = False
+                self._pulse_cut_time = 0.0
+                self._I_at_cut = 0.0
+                self._circuit_I = 0.0
+                self._prev_B = 0.0
+                self._shot_dv_mm_s = 0.0
+
         # Station firing: fit v_in from the full pass, then time the pulse to
-        # land at the coil's entry face.
-        if self._firing_ctl is not None and not self._triggered:
+        # land at the coil's entry face. In sustain the leg state machine
+        # owns the decision (fwd at A, ret at B, bank release, budget).
+        if self._sustain is not None:
+            self._sustain_poll(z_along, vel_axial_now)
+        elif self._firing_ctl is not None and not self._triggered:
             state = self._firing_ctl.update(self._sim_time * 1e6)
             if state == FiringController.FIRED:
                 self._triggered = True
@@ -1306,7 +1684,7 @@ class MarbleCoasterExtension(omni.ext.IExt):
         # v_in, so there is no dv to quote -- the rig discards such shots
         # entirely rather than logging a record. Reporting v_out alone here
         # would put a number next to the word "boost" that means nothing.
-        if (self._firing_ctl is not None and self._triggered
+        if (self._firing_ctl is not None and self._sustain is None and self._triggered
                 and self._approach_velocity and self._exit_velocity is None):
             st_out = self._stations[self._profile.sensing["station_out"]]
             if st_out.complete():
@@ -1350,6 +1728,12 @@ class MarbleCoasterExtension(omni.ext.IExt):
         vel_axial = 0.0
         if cur_vel is not None:
             vel_axial = sum(cur_vel[i] * coil_axis_n[i] for i in range(3))
+
+        # Track losses on the rig: the fitted laws as explicit forces, and the
+        # fitted ramp transfer at the flat edge when so configured.
+        if self._losses is not None and self._physx_sim is not None:
+            self._apply_track_losses(dt, z_along, vel_axial, prev_z, marble_pos,
+                                     coil_axis_n)
 
         # Defaults recorded on coasting steps (coil idle)
         current = 0.0
@@ -1458,9 +1842,13 @@ class MarbleCoasterExtension(omni.ext.IExt):
             force_N = F_z_mN * 1e-3
             accel_ms2 = force_N / p.marble_mass_kg
             dv_mm_s = accel_ms2 * 1000.0 * dt
+            # The coil's impulse over the whole shot, for the sustain record
+            # (dv_coil in the twin's terms: the kick before the track takes
+            # its share back).
+            self._shot_dv_mm_s += dv_mm_s
 
             # Compute exit velocity directly from impulse (gates can't catch sub-step motion)
-            if self._exit_velocity is None and abs(dv_mm_s) > 1.0:
+            if self._sustain is None and self._exit_velocity is None and abs(dv_mm_s) > 1.0:
                 v_approach = self._approach_velocity or 0.0
                 self._exit_velocity = v_approach + abs(dv_mm_s)
                 boost = self._exit_velocity / v_approach if v_approach > 0 else float('inf')

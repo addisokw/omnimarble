@@ -42,10 +42,45 @@ class RigProfile:
         self.description = data.get("description", "")
         self.sensing = data.get("sensing", {})
         self.firing = data.get("firing", {})
+        # The return leg's constants (sustain): SENSOR_B_FIRST_TO_COIL_MM and
+        # the empirical trim. Absent on the legacy profile.
+        self.firing_return = data.get("firing_return", {})
         self.coil = data.get("coil", {})
         self.circuit = data.get("circuit", {})
         self.marble = data.get("marble", {})
         self.track = data.get("track", {})
+
+    # -- track losses ----------------------------------------------------
+    @property
+    def track_losses(self):
+        """The embedded config/track_losses.json table (sustain_model
+        TrackLosses.from_dict reads it directly), or {} on a profile without one."""
+        return self.track.get("losses", {})
+
+    @property
+    def loss_mode(self):
+        """"fitted": the fitted flat/B-side laws as explicit forces, PhysX
+        damping zero; "physx": PhysX damping only."""
+        return self.track_losses.get("mode", "physx")
+
+    @property
+    def ramp_mode(self):
+        """"physx": the collidable STL ramps do the excursions; "fitted": the
+        fitted energy-form transfer is applied at the flat edge instead."""
+        return self.track_losses.get("ramps", "physx")
+
+    def physx_damping(self, mode=None):
+        """(linear, angular) PhysX damping for the loss mode, per second."""
+        mode = mode or self.loss_mode
+        table = self.track_losses.get("physx_damping", {})
+        entry = table.get(mode, {})
+        if mode == "fitted":
+            return (float(entry.get("linear_per_s", 0.0)),
+                    float(entry.get("angular_per_s", 0.0)))
+        # The pre-sustain hardcoded values are the fallback: they were what
+        # every committed Kit run used.
+        return (float(entry.get("linear_per_s", 0.01)),
+                float(entry.get("angular_per_s", 0.05)))
 
     # -- shape -----------------------------------------------------------
     @property

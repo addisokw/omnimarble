@@ -19,61 +19,78 @@ def Xform "World"
     over "Track"
     {
         over "MainTrack" (
-            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI", "MaterialBindingAPI"]
         )
         {
+            rel material:binding:physics = </World/PhysicsMaterial>
             uniform token physics:approximation = "none"
             color3f[] primvars:displayColor = [(0.62, 0.64, 0.68)]
         }
 
         over "Part_1" (
-            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI", "MaterialBindingAPI"]
         )
         {
+            rel material:binding:physics = </World/PhysicsMaterial>
             uniform token physics:approximation = "none"
             color3f[] primvars:displayColor = [(0.62, 0.64, 0.68)]
         }
 
         over "Part_2" (
-            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI", "MaterialBindingAPI"]
         )
         {
+            rel material:binding:physics = </World/PhysicsMaterial>
             uniform token physics:approximation = "none"
             color3f[] primvars:displayColor = [(0.62, 0.64, 0.68)]
         }
 
         over "Part_3" (
-            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI", "MaterialBindingAPI"]
         )
         {
+            rel material:binding:physics = </World/PhysicsMaterial>
             uniform token physics:approximation = "none"
             color3f[] primvars:displayColor = [(0.62, 0.64, 0.68)]
         }
 
         over "Part_4" (
-            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI", "MaterialBindingAPI"]
         )
         {
+            rel material:binding:physics = </World/PhysicsMaterial>
             uniform token physics:approximation = "none"
             color3f[] primvars:displayColor = [(0.62, 0.64, 0.68)]
         }
 
         over "Part_5" (
-            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI", "MaterialBindingAPI"]
         )
         {
+            rel material:binding:physics = </World/PhysicsMaterial>
             uniform token physics:approximation = "none"
             color3f[] primvars:displayColor = [(0.62, 0.64, 0.68)]
         }
     }
 
-    def "PhysicsMaterial" (
+    def Material "PhysicsMaterial" (
         prepend apiSchemas = ["PhysicsMaterialAPI"]
     )
     {
         float physics:dynamicFriction = 0.25
         float physics:restitution = 0.2
         float physics:staticFriction = 0.3
+    }
+
+    over "Marble"
+    {
+        over "Geom" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding:physics = </World/PhysicsMaterial>
+            color3f[] primvars:displayColor = [(0.8, 0.82, 0.85)]
+        }
     }
 
     def Xform "Lights"
@@ -101,14 +118,6 @@ def Xform "World"
             float inputs:intensity = 700
             float3 xformOp:rotateXYZ = (-20, 0, -140)
             uniform token[] xformOpOrder = ["xformOp:rotateXYZ"]
-        }
-    }
-
-    over "Marble"
-    {
-        over "Geom"
-        {
-            color3f[] primvars:displayColor = [(0.8, 0.82, 0.85)]
         }
     }
 

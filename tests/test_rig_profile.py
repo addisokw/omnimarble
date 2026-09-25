@@ -308,3 +308,80 @@ def test_freewheel_tau_override(vbench):
     b = vbench.bank(3)
     tau_us = b["inductance_uH"] * 1e-6 / b["freewheel_resistance_ohm"] * 1e6
     assert tau_us == pytest.approx(275.0, rel=0.01)
+
+
+# -- sustain: return leg and track losses -----------------------------------------
+
+def test_firing_return_carries_the_firmware_return_constants(vbench):
+    """SENSOR_B_FIRST_TO_COIL_MM, the empirical trim (the predictor was
+    falsified 2026-09-25), the manual offset and the bank release policy --
+    all imported from firmware/config.py, never typed here."""
+    fr = vbench.firing_return
+    assert fr["trigger_station"] == vbench.sensing["station_out"] == "B"
+    assert fr["last_channel_to_coil_mm"] == pytest.approx(35.0)
+    assert fr["coil_face_x_mm"] == pytest.approx(22.78)
+    assert fr["trim_k_mm_mps"] == pytest.approx(1.7)
+    assert fr["trim_gate_mm_per_us"] == pytest.approx(-0.004)
+    assert fr["trim_gate_ref_us"] == pytest.approx(700.0)
+    assert fr["trim_max_mm"] == pytest.approx(16.0)
+    assert fr["manual_offset_mm"] == pytest.approx(0.0)
+    pol = fr["sustain"]
+    assert pol["recharge_frac"] == pytest.approx(0.96)
+    assert pol["floor_frac"] == pytest.approx(0.60)
+    assert pol["max_shots"] == 30 and pol["max_seconds"] == pytest.approx(120.0)
+    # B's coil-nearest channel to the B-side face agrees with the geometry,
+    # as A's does on the forward leg
+    specs = vbench.station_specs()
+    nearest = min(specs["B"]["channel_x_mm"])
+    assert nearest - vbench.coil["face_out_x_mm"] == pytest.approx(
+        fr["last_channel_to_coil_mm"], abs=1e-9)
+
+
+def test_track_losses_embed_the_fitted_table_with_its_hash(vbench):
+    import hashlib
+    losses = vbench.track_losses
+    assert losses["schema"] == "track_losses_v1"
+    src = ROOT / losses["source"]["path"]
+    assert src.exists()
+    assert hashlib.sha256(src.read_bytes()).hexdigest() == losses["source"]["sha256"]
+    table = json.loads(src.read_text(encoding="utf-8"))
+    for key in ("flat", "b_side", "far", "entry", "ramp_angle_deg", "meta"):
+        assert losses[key] == table[key], key
+    # and the twin reads the embedded section directly
+    from sustain_model import TrackLosses
+    embedded = TrackLosses.from_dict(losses)
+    on_disk = TrackLosses.load(src)
+    assert embedded.to_dict() == on_disk.to_dict()
+    assert embedded.b_side.x_from == pytest.approx(57.78)     # station B, not the coil face
+    assert embedded.flat.k == pytest.approx(0.742, abs=0.001)
+
+
+def test_loss_modes_and_physx_damping_defaults(vbench):
+    assert vbench.loss_mode == "fitted"
+    assert vbench.ramp_mode == "physx"
+    assert vbench.physx_damping("fitted") == (0.0, 0.0)
+    lin, ang = vbench.physx_damping("physx")
+    # matched to a0 + k v^2 at the cycle speed 0.2 m/s
+    flat = vbench.track_losses["flat"]
+    v = vbench.track_losses["physx_damping"]["physx"]["matched_at_mps"]
+    assert lin == pytest.approx((flat["a0_mps2"] + flat["k_per_m"] * v * v) / v, abs=1e-3)
+    assert ang == 0.0
+    assert vbench.track_losses["rolling_inertia_factor"] == pytest.approx(1.4)
+
+
+def test_legacy_profile_has_no_sustain_sections(legacy):
+    assert legacy.firing_return == {}
+    assert legacy.track_losses == {}
+    assert legacy.loss_mode == "physx" and legacy.ramp_mode == "physx"
+    assert legacy.physx_damping() == (0.01, 0.05)     # the pre-sustain hardcoded values
+
+
+def test_importer_regenerates_the_shipped_profile_exactly():
+    """The profile is generated, never hand-edited: build_profile must
+    reproduce what is committed (import_rig_geometry.py --check)."""
+    import importlib
+    vbench_dir = ROOT.parent / "omnimarble-vbench"
+    if not (vbench_dir / "firmware" / "config.py").exists():
+        pytest.skip("sibling omnimarble-vbench checkout not present")
+    importer = importlib.import_module("import_rig_geometry")
+    assert importer.build_profile(vbench_dir) == _vbench_data()

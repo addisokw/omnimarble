@@ -97,6 +97,75 @@ class VirtualStation:
                 best_i, best_t = i, self._ts[i]
         return None if best_i is None else self.channel_x_mm[best_i]
 
+    def raw_ticks(self):
+        """[(index, t_us)] of the captured channels in TIME order.
+
+        The firmware's Station.raw_ticks(): what pass_direction() and
+        velocity_local_mps() read, so those two are ports of the same code.
+        """
+        got = [(i, self._ts[i]) for i in range(self.n) if self._got[i]]
+        got.sort(key=lambda p: p[1])
+        return got
+
+    def first_tick(self):
+        """Timestamp of the earliest crossing, or None."""
+        got = self.raw_ticks()
+        return got[0][1] if got else None
+
+    def pass_direction(self):
+        """+1 / -1 / 0: the SPATIAL order of the crossings in TIME order.
+
+        +1 means strictly increasing index (the ball ran index-up through the
+        array), -1 strictly decreasing, 0 anything else -- and zero is a
+        finding, not a failure: crossings that are not monotonic cannot be
+        one transit, whatever a fitted slope says. A port of the firmware's
+        Station.pass_direction(); which sign is "toward the coil" depends on
+        the station's channel order, so the caller (FiringController) turns
+        this into a travel direction with channel_x_mm.
+        """
+        got = self.raw_ticks()
+        if len(got) < 2:
+            return 0
+        if all(got[k + 1][0] > got[k][0] for k in range(len(got) - 1)):
+            return 1
+        if all(got[k + 1][0] < got[k][0] for k in range(len(got) - 1)):
+            return -1
+        return 0
+
+    def travel_direction(self):
+        """+1 if the pass moved toward +x, -1 toward -x, 0 if incoherent.
+
+        pass_direction() in index space, mapped through the channel layout:
+        with channel_x_mm increasing with index the two agree; on a station
+        whose indices run against x they are opposite.
+        """
+        order = self.pass_direction()
+        if order == 0 or self.n < 2:
+            return 0
+        layout = 1 if self.channel_x_mm[-1] > self.channel_x_mm[0] else -1
+        return order * layout
+
+    def velocity_local_mps(self):
+        """Speed over the LAST inter-crossing interval, or None.
+
+        The firmware's Station.velocity_local_mps(): the ball's speed at the
+        station's most recently crossed end -- on a triggering pass the end
+        nearest the coil. This is what the return leg times its transit on:
+        the full-station fit reads high on the decelerating B-side approach
+        (it averages in the fast outer channels), and the bench found the
+        last interval closer to the speed that governs the remaining travel.
+        Noisier than the fit (one interval instead of five points), so the
+        forward leg keeps the fit.
+        """
+        got = self.raw_ticks()
+        if len(got) < 2:
+            return None
+        (i1, t1), (i2, t2) = got[-2], got[-1]
+        g = t2 - t1
+        if g <= 0 or i1 == i2:
+            return None
+        return abs(i2 - i1) * (self.pitch_mm / 1000.0) / (g / 1e6)
+
     def _fit(self):
         """LS (slope, intercept, m, xs, ys) of position[m] vs time[s], or None."""
         got = [(i, self._ts[i]) for i in range(self.n) if self._got[i]]
@@ -210,6 +279,37 @@ def fit_is_suspect(residual_us_value):
     return residual_us_value is not None and residual_us_value > RESID_WARN_US
 
 
+# The coil's faces, mm from its centre (rig_geometry.json face_in_x = -22.78;
+# the coil is symmetric). The fire offsets are measured from the face on each
+# leg's own side, so this turns an offset into an absolute delivered x.
+COIL_FACE_X_MM = 22.78
+
+# The firmware's empirical return trim (vbench firmware/config.py
+# SUSTAIN_RET_TRIM_*): mm on top of the mirrored fire offset, K / v_local plus
+# a per-us gate term beyond the reference on-time, clamped. Kept as a local
+# copy rather than imported from scripts/sustain_model.py, which imports THIS
+# module; tests/test_coil_sensing.py pins the two against each other.
+RET_TRIM_K_MM_MPS = 1.7
+RET_TRIM_GATE_MM_PER_US = -0.004
+RET_TRIM_GATE_REF_US = 700.0
+RET_TRIM_MAX_MM = 16.0
+
+
+def return_trim_mm(v_local, on_us, K=RET_TRIM_K_MM_MPS,
+                   gate_mm_per_us=RET_TRIM_GATE_MM_PER_US,
+                   ref_us=RET_TRIM_GATE_REF_US, max_mm=RET_TRIM_MAX_MM):
+    """The return leg's trim, exactly as firmware/main.py _wait_trigger_once.
+
+    The constant-acceleration predictor that was to replace this was
+    falsified on the bench (2026-09-25): the deceleration measured through
+    station B is local to the station and does not continue to the coil, so
+    the return leg is back to constant velocity over the last channel pair
+    plus this trim.
+    """
+    gate_mm = gate_mm_per_us * ((on_us or ref_us) - ref_us)
+    return min(max_mm, K / max(v_local, 0.02) + gate_mm)
+
+
 class FiringController:
     """Decides when to fire, from the trigger station alone.
 
@@ -235,10 +335,30 @@ class FiringController:
     ARMED = "armed"           # fire time computed, counting down
     FIRED = "fired"
     ABORTED = "aborted"
+    REARMED = "rearmed"       # a pass was rejected and the station cleared;
+                              # back to WAITING on the next poll (sustain only)
 
-    def __init__(self, profile_firing, station):
+    def __init__(self, profile_firing, station, leg="fwd", profile_return=None,
+                 on_us=None, manual_offset_mm=None, rearm_on_reject=False,
+                 incomplete_retries=1, coil_face_x_mm=COIL_FACE_X_MM):
+        """leg="fwd" is the shot the rig has always taken: station A, travel
+        toward +x, reach `last_channel_to_coil_mm` (+ half-width + offset).
+        leg="ret" is its mirror on the return: station B, travel toward -x,
+        reach from `profile_return` (SENSOR_B_FIRST_TO_COIL_MM) plus the
+        empirical trim and the manual offset (firmware/main.py
+        _wait_trigger_once, the `elif leg == "ret":` branch).
+
+        rearm_on_reject=True (sustain) clears the station and keeps waiting
+        on a wrong-way or incomplete pass instead of aborting, as the
+        firmware's sustain mode does; a single shot still aborts.
+        """
         self.firing = profile_firing
         self.station = station
+        self.leg = leg
+        self.profile_return = dict(profile_return or {})
+        self.rearm_on_reject = bool(rearm_on_reject)
+        self.incomplete_retries = int(incomplete_retries)
+        self.coil_face_x_mm = float(coil_face_x_mm)
         self.required = int(profile_firing.get("required_channels", REQUIRED_CHANNELS))
         # The channel fired on the ball's LEADING EDGE, so its CENTRE was still
         # a half-width upstream of the sensor -- the centre has that much
@@ -259,9 +379,33 @@ class FiringController:
         # boot default (FIRE_OFFSET_DEFAULT_MM). Zero here would model the
         # rig as it was before that measurement, not as it operates.
         self.fire_offset_mm = float(profile_firing.get("fire_offset_mm", 0.0))
-        self.distance_mm = (float(profile_firing["last_channel_to_coil_mm"])
-                            + self.detect_halfwidth_mm
-                            + self.fire_offset_mm)
+        # Reach BASE per leg: the coil-nearest channel of the leg's own
+        # trigger station to the coil face on that side. The return side's is
+        # a separate constant (SENSOR_B_FIRST_TO_COIL_MM), assumed symmetric
+        # rather than measured, so it is carried separately in the profile.
+        if leg == "ret":
+            base_mm = float(self.profile_return.get(
+                "last_channel_to_coil_mm",
+                profile_firing["last_channel_to_coil_mm"]))
+            self.required_direction = -1
+        else:
+            base_mm = float(profile_firing["last_channel_to_coil_mm"])
+            self.required_direction = +1
+        self.base_mm = base_mm
+        # The forward reach is fixed; the return reach also carries the
+        # per-pass trim, so it is only known once v_local is.
+        self.distance_mm = base_mm + self.detect_halfwidth_mm + self.fire_offset_mm
+        self.on_us = (float(on_us) if on_us is not None
+                      else float(profile_firing.get("on_time_us", 0.0)) or None)
+        self.manual_offset_mm = (
+            float(manual_offset_mm) if manual_offset_mm is not None
+            else float(self.profile_return.get("manual_offset_mm", 0.0)))
+        self.trim_k = float(self.profile_return.get("trim_k_mm_mps", RET_TRIM_K_MM_MPS))
+        self.trim_gate = float(self.profile_return.get(
+            "trim_gate_mm_per_us", RET_TRIM_GATE_MM_PER_US))
+        self.trim_ref_us = float(self.profile_return.get(
+            "trim_gate_ref_us", RET_TRIM_GATE_REF_US))
+        self.trim_max_mm = float(self.profile_return.get("trim_max_mm", RET_TRIM_MAX_MM))
         self.lead_us = float(profile_firing.get("trigger_lead_us", 0.0))
         self.slip_us = float(profile_firing.get("trigger_slip_us", 2000.0))
         self.capture_window_us = float(
@@ -269,24 +413,70 @@ class FiringController:
         self.timeout_us = float(
             profile_firing.get("trigger_timeout_ms", 3000.0)) * 1000.0
 
+        self.rearm_count = 0
+        self.wrong_way_count = 0
+        self.reject_reason = None      # why the last pass was rejected
+        self._retries_left = self.incomplete_retries
+        self._clear()
+
+    def _clear(self):
         self.state = self.WAITING
         self.abort_reason = None
         self.fire_at_us = None
         self.v_in_mps = None
+        self.v_local_mps = None
+        self.v_transit_mps = None
+        self.trim_mm = 0.0
+        self.reach_mm = None
+        self.transit_us = None
         self.residual_us = None
         self.slack_us = None          # how much margin the shot had
+        self.pass_direction = 0
         self._first_seen_us = None
         self._start_us = None
+
+    def reset(self):
+        """Back to WAITING with the station cleared: a fresh pass."""
+        self.station.reset()
+        self._retries_left = self.incomplete_retries
+        self.rearm_count = 0
+        self.wrong_way_count = 0
+        self.reject_reason = None
+        self._clear()
+
+    def rearm(self, reason):
+        """Reject the captured pass, clear the station and keep waiting."""
+        self.station.reset()
+        self.rearm_count += 1
+        self.reject_reason = reason
+        self._clear()
+        self.state = self.REARMED
+        return self.REARMED
 
     def _abort(self, reason):
         self.state = self.ABORTED
         self.abort_reason = reason
         return self.ABORTED
 
+    def _reject(self, reason, retry_ok=True):
+        if self.rearm_on_reject and retry_ok:
+            return self.rearm(reason)
+        return self._abort(reason)
+
+    @property
+    def x_target_mm(self):
+        """Where the pulse is timed to put the ball's centre, coil-centred x."""
+        if self.leg == "ret":
+            return (self.coil_face_x_mm - self.fire_offset_mm - self.trim_mm
+                    - self.manual_offset_mm)
+        return -self.coil_face_x_mm + self.fire_offset_mm
+
     def update(self, now_us):
         """Advance the state machine. Returns the state after this poll."""
         if self.state in (self.FIRED, self.ABORTED):
             return self.state
+        if self.state == self.REARMED:
+            self.state = self.WAITING
 
         if self._start_us is None:
             self._start_us = now_us
@@ -307,23 +497,60 @@ class FiringController:
                     # A partial capture cannot time a shot: with a channel
                     # missing, the last crossing is not necessarily the one
                     # nearest the coil, so the transit distance would be wrong
-                    # by a whole pitch or more.
-                    return self._abort(
-                        f"only {captured}/{self.required} channels at the "
-                        f"trigger station")
+                    # by a whole pitch or more. Sustain re-arms (bounded, as
+                    # the firmware's SUSTAIN_INCOMPLETE_RETRIES); a single
+                    # shot is abandoned.
+                    reason = (f"only {captured}/{self.required} channels at the "
+                              f"trigger station")
+                    if self._retries_left > 0:
+                        self._retries_left -= 1
+                        return self._reject(reason)
+                    return self._abort(reason)
                 return self.state
+
+            # Direction, read off the crossing pattern. On a wrong-way pass
+            # the marble reached the coil BEFORE this station, so it is past
+            # the coil and receding: the last crossing is the channel
+            # furthest from the coil and a pulse would brake it. There is no
+            # wrong-way shot to time better; sustain waits for the next pass.
+            self.pass_direction = self.station.travel_direction()
+            if self.pass_direction == 0:
+                return self._reject("incoherent capture: crossings are not one "
+                                    "monotonic transit")
+            if self.pass_direction != self.required_direction:
+                self.wrong_way_count += 1
+                v = self.station.velocity_mps() or 0.0
+                return self._reject(f"wrong-way pass ({v:.3f} m/s, receding "
+                                    f"from the coil)")
 
             self.v_in_mps = self.station.velocity_mps()
             if not self.v_in_mps:
                 return self._abort("no velocity from the trigger station")
             self.residual_us = self.station.residual_us()
+            self.v_local_mps = self.station.velocity_local_mps()
 
-            transit_us = transit_us_to(self.distance_mm, self.v_in_mps)
+            if self.leg == "ret":
+                # The bench-validated rule: constant velocity over the last
+                # channel pair plus the empirical trim, on top of the
+                # mirrored fire offset and the manual offset.
+                self.v_transit_mps = self.v_local_mps or self.v_in_mps
+                self.trim_mm = return_trim_mm(
+                    self.v_transit_mps, self.on_us, self.trim_k, self.trim_gate,
+                    self.trim_ref_us, self.trim_max_mm)
+                self.reach_mm = (self.base_mm + self.detect_halfwidth_mm
+                                 + self.fire_offset_mm + self.trim_mm
+                                 + self.manual_offset_mm)
+            else:
+                self.v_transit_mps = self.v_in_mps
+                self.reach_mm = self.distance_mm
+
+            transit_us = transit_us_to(self.reach_mm, self.v_transit_mps)
+            self.transit_us = transit_us
             elapsed_us = now_us - self.station.last_tick()
             remain = transit_us - self.lead_us - elapsed_us
             self.slack_us = remain
             if remain < -self.slip_us:
-                return self._abort(
+                return self._reject(
                     f"missed the window by {-remain:.0f}us; the marble is "
                     f"already past the coil")
             self.fire_at_us = now_us + max(remain, 0.0)

@@ -10,7 +10,7 @@ def Xform "World"
         prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
     )
     {
-        float physics:mass = 8.42
+        float physics:mass = 8.5
         double3 xformOp:translate = (-244.93820190429688, 13.0159, 83.36033330418812)
         uniform token[] xformOpOrder = ["xformOp:translate"]
 

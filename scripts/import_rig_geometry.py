@@ -63,7 +63,28 @@ OPTIONAL_CONSTANTS = ("BANK_UNIT_UF_PULSE", "LOOP_R_MOHM_PULSE",
                       # the measured impulse-curve optimum the firmware boots
                       # with; without it here the profile silently reverted
                       # to 0 on regeneration (2026-09-24)
-                      "FIRE_OFFSET_DEFAULT_MM")
+                      "FIRE_OFFSET_DEFAULT_MM",
+                      # return leg (sustain): B's coil-nearest channel to the
+                      # coil face, the empirical trim the bench validated
+                      # after the kinematic predictor was falsified (09-25),
+                      # the manual offset, and the bank release policy
+                      "SENSOR_B_FIRST_TO_COIL_MM", "COIL_FACE_X_MM",
+                      "SUSTAIN_RET_TRIM_K_MM_MPS", "SUSTAIN_RET_TRIM_GATE_MM_PER_US",
+                      "SUSTAIN_RET_TRIM_GATE_REF_US", "SUSTAIN_RET_TRIM_MAX_MM",
+                      "RET_OFFSET_DEFAULT_MM",
+                      "SUSTAIN_RECHARGE_FRAC", "SUSTAIN_FIRE_FLOOR_FRAC",
+                      "SUSTAIN_MAX_SHOTS", "SUSTAIN_MAX_SECONDS",
+                      "SUSTAIN_PASS_TIMEOUT_MS", "SUSTAIN_RECHARGE_TIMEOUT_S")
+
+# The fitted track-loss table (scripts/fit_track_losses.py) is embedded in the
+# profile so the Kit extension carries the SAME numbers the 1-D twin runs on,
+# with the file's hash so drift between the two is visible.
+LOSSES_PATH = ROOT / "config" / "track_losses.json"
+
+# Speed at which the PhysX-damping fallback is matched to the fitted flat law.
+# PhysX linear damping is dv/dt = -d v; the fitted law is a0 + k v^2, so no
+# single d reproduces it -- the equivalent is taken at the sustain cycle speed.
+DAMPING_MATCH_V_MPS = 0.2
 
 
 def _pulse_entry(fw, n, c_key, r_key):
@@ -80,6 +101,94 @@ def _pulse_entry(fw, n, c_key, r_key):
 
 def sha256(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _firing_return(fw, sensor):
+    """The return leg's constants and the sustain release policy."""
+    return {
+        "_note": (
+            "Return leg (sustain): B's coil-nearest channel to the B-side coil "
+            "face, assumed symmetric with A's (SENSOR_B_FIRST_TO_COIL_MM). The "
+            "fire time is constant velocity over the last channel pair plus the "
+            "EMPIRICAL trim min(trim_max, K / v_local + gate * (on_us - ref)) on "
+            "top of the mirrored fire offset and the manual offset. The "
+            "constant-acceleration predictor was falsified on the bench "
+            "2026-09-25: the slowing through station B is local to the station "
+            "and does not continue to the coil."),
+        "trigger_station": fw["STATION_OUT"],
+        "required_channels": int(sensor["channels"]),
+        "last_channel_to_coil_mm": float(
+            fw.get("SENSOR_B_FIRST_TO_COIL_MM", fw["SENSOR_A_LAST_TO_COIL_MM"])),
+        "coil_face_x_mm": float(fw.get("COIL_FACE_X_MM", 22.78)),
+        "trim_k_mm_mps": float(fw.get("SUSTAIN_RET_TRIM_K_MM_MPS", 0.0)),
+        "trim_gate_mm_per_us": float(fw.get("SUSTAIN_RET_TRIM_GATE_MM_PER_US", 0.0)),
+        "trim_gate_ref_us": float(fw.get("SUSTAIN_RET_TRIM_GATE_REF_US", 700)),
+        "trim_max_mm": float(fw.get("SUSTAIN_RET_TRIM_MAX_MM", 16.0)),
+        "manual_offset_mm": float(fw.get("RET_OFFSET_DEFAULT_MM", 0.0)),
+        "sustain": {
+            "recharge_frac": float(fw.get("SUSTAIN_RECHARGE_FRAC", 0.96)),
+            "floor_frac": float(fw.get("SUSTAIN_FIRE_FLOOR_FRAC", 0.60)),
+            "max_shots": int(fw.get("SUSTAIN_MAX_SHOTS", 30)),
+            "max_seconds": float(fw.get("SUSTAIN_MAX_SECONDS", 120)),
+            "pass_timeout_ms": float(fw.get("SUSTAIN_PASS_TIMEOUT_MS", 20000)),
+            "recharge_timeout_s": float(fw.get("SUSTAIN_RECHARGE_TIMEOUT_S", 30)),
+        },
+    }
+
+
+def _track_losses():
+    """config/track_losses.json embedded verbatim, plus the PhysX modes."""
+    if not LOSSES_PATH.exists():
+        return None
+    table = json.loads(LOSSES_PATH.read_text(encoding="utf-8"))
+    flat = table.get("flat", {})
+    a0 = float(flat.get("a0_mps2", 0.0))
+    k = float(flat.get("k_per_m", 0.0))
+    v = DAMPING_MATCH_V_MPS
+    d_equiv = (a0 + k * v * v) / v if v > 0 else 0.0
+    return {
+        "_note": (
+            "The fitted loss table (scripts/fit_track_losses.py) the 1-D sustain "
+            "twin runs on, embedded so the Kit extension carries the same numbers. "
+            "mode 'fitted': the flat-zone drag and the B-side excess are applied as "
+            "an explicit axial force in the physics step and PhysX damping is zero; "
+            "'physx': PhysX damping only (the pre-sustain behaviour). ramps "
+            "'physx': the collidable STL ramps do the excursions; 'fitted': the "
+            "energy-form transfer v_back^2 = alpha v_out^2 - beta is applied at "
+            "the flat edge instead, to reproduce the twin exactly."),
+        "mode": "fitted",
+        "ramps": "physx",
+        "source": {
+            "path": str(LOSSES_PATH.relative_to(ROOT)).replace("\\", "/"),
+            "sha256": sha256(LOSSES_PATH),
+        },
+        "schema": table.get("schema", "track_losses_v1"),
+        "flat": table.get("flat", {}),
+        "b_side": table.get("b_side", {}),
+        "far": table.get("far", {}),
+        "entry": table.get("entry", {}),
+        "ramp_angle_deg": table.get("ramp_angle_deg", 55.0),
+        "meta": table.get("meta", {}),
+        "physx_damping": {
+            "_note": (
+                "PhysxRigidBodyAPI linear/angular damping per loss mode, 1/s. "
+                "'fitted' is zero: the forces carry the loss. 'physx' matches "
+                "dv/dt = -d v to the fitted a0 + k v^2 at %.2f m/s (the cycle "
+                "speed); it is wrong everywhere else, which is why 'fitted' is "
+                "the default. Angular damping is zero in both: on a rolling ball "
+                "it brakes through the contact by an amount PhysX does not "
+                "document, so it would be a second unfitted loss."
+                % DAMPING_MATCH_V_MPS),
+            "fitted": {"linear_per_s": 0.0, "angular_per_s": 0.0},
+            "physx": {"linear_per_s": round(d_equiv, 4), "angular_per_s": 0.0,
+                      "matched_at_mps": DAMPING_MATCH_V_MPS},
+        },
+        # Rolling coupling: a force at the centre of a ball rolling without
+        # slip accelerates it at F / (m + I / r^2) = (5/7) F / m, so the
+        # fitted (linear-speed) deceleration needs 7/5 of m a. Verified only
+        # against the twin's numbers in a Kit run, not derived from PhysX.
+        "rolling_inertia_factor": 1.4,
+    }
 
 
 def parse_firmware_config(path):
@@ -147,6 +256,7 @@ def build_profile(vbench):
     coil = geom["coil"]
     ball = geom["ball"]
     profile_bank_esr = float(fw["BANK_UNIT_ESR_MOHM"]) / 1000.0
+    losses = _track_losses()
 
     return {
         "description": (
@@ -210,6 +320,7 @@ def build_profile(vbench):
             "capture_window_ms": float(fw["CAPTURE_WINDOW_MS"]),
             "trigger_timeout_ms": float(fw["SHOT_TRIGGER_TIMEOUT_MS"]),
         },
+        "firing_return": _firing_return(fw, sensor),
         "coil": {
             "num_turns": int(fw["COIL_N_TURNS"]),
             "loop_center_radius_mm": 15.0,
@@ -275,6 +386,7 @@ def build_profile(vbench):
             "overall_length_mm": geom["overall_length_mm"],
             "ball_centre_z_mm": geom["datums"]["ball_centre_z"],
             "track_bore_mm": geom["bores"]["track_mm"],
+            **({"losses": losses} if losses else {}),
         },
     }
 
