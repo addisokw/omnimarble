@@ -798,3 +798,17 @@ limit cycle 0.21-0.23 m/s at A (the +4/+8 short runs sat at 0.21-0.23).
 The energy-insensitivity of the slow kick (40 -> 48 V, no change) is
 NOT explained by this and stays open: a track loss between the coil and
 A that grows with speed is the standing reading.
+
+30-shot check at the refit auto trim (1.7/v - 3.2 mm at 1500 us), 1.0 A:
+slow return kicks 0.096-0.146, **mean 0.120** (predicted ~0.12: HIT);
+first fast kick -0.072 at 0.75 m/s (predicted ~-0.03: edge); limit cycle
+0.192-0.213, mean 0.205 (predicted 0.21-0.23: edge, just under). The
+return kick gained 40% over the morning's formula and the cycle moved
++5%: the entry-ramp loss rose from ~100 to ~125 mm/s per excursion with
+the extra speed and ate most of it. The kicks are now at their timing
+optimum on both legs; the losses set the cycle. Next lever is the track
+(B-side slope, ramp profiles), not the coil.
+
+End of 2026-09-24. Sustain runs at 4 cans today: 12, all budget-limited,
+none parked after the first 700 us runs. Steady state on record at
+0.20-0.21 m/s.
