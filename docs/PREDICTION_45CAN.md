@@ -579,3 +579,13 @@ pulse. +9 triple after the swap: 183 / 209 / 204 raw (mean 199), 200 / 192
 (two pairs carry >0.03 m/s release mismatch, hence the raw/corrected gap). Marble-shot
 vs same-day blank: early slope -4.4% (predicted -4%), I(100 us) -9%. The
 3-can chapter is closed; can 4 next, read against 192-199.
+
+## Layer C scoring, can 4 (2026-09-24)
+
+| item | predicted | measured | verdict |
+|---|:---:|:---:|---|
+| can 4 standalone, 100 Hz | 1880-1920 uF / 45-60 mohm | 1930.7 uF / 44.9 mohm | miss on both by 0.6% / 0.1 mohm, healthy direction; soldered |
+| combined at J2 | 7360-7470 uF / 15 +/- 2 mohm | 7392.0 uF / 15.5 mohm | HIT / HIT |
+
+Combined/sum 0.983 (0.986-0.987 before). Reference for the marble rows:
+dv(+9, 3 cans, 49 V, 700 us) = 192-199 measured today.
