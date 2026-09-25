@@ -119,6 +119,28 @@ kick lands 3-4 mm short in the twin and not on the bench (the scope
 capture of a forward kick is the measurement); the B-side loss at speed
 (a/v^2 = 9.7 /m at 0.28 m/s, 2.1 at 0.72: not one k) needs a form.
 
+## The forward-kick miss, diagnosed (2026-09-25)
+
+Twin kick records at the 4-can limit cycle: v_in_fit 0.228 -> v at the
+gate 0.209 (-8%), delivered x = -16.8 mm against the -13.78 target. The
+fitted flat drag (k 0.74 /m) over the ~137 mm from station A's centre to
+the fire point costs that 8%, and a constant-velocity rule lands 3 mm
+short. The bench's station A kinematics on 09-25 read a = -0.02..-0.14
+m/s^2 at the same speed, i.e. the same drag -- the REAL kick lands ~3 mm
+short of the model's peak too. The difference is the curve: the frozen
+impulse map is peaked at -14.0 and pays ~10% at -16.8; the bench's
+measured 3-can curve (PREDICTION_45CAN.md, 09-09) is flat-topped from
+-20 to -14 and pays nothing there. So the twin's 20% forward under-
+prediction IS the deferred entry-side anomaly, seen through sustain.
+Not fitted. PREDICTED for the pending forward-kick scope capture: ball
+position at the gate ~ -16.8 mm (early-slope dL ~0.65 uH, -3% of the
+22 uH loop, against ~0.93 uH / -4.2% if it were at -13.78).
+
+Bench kinematics for the B-side term (09-25): a/v^2 = 5-9 /m at 0.24 m/s
+through B, 2-3 /m at 0.7; through A: ~1 /m at 0.27, 2-3 /m at 0.5-0.8.
+The B-side excess grows FASTER than v^2 at low speed -- not one k. Left
+as data; a form is chosen only for a physical reason.
+
 ## What would change the model
 
 - The bench run in (1) lands in the first bracket: keep x_from at B and
