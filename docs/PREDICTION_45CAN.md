@@ -812,3 +812,67 @@ optimum on both legs; the losses set the cycle. Next lever is the track
 End of 2026-09-24. Sustain runs at 4 cans today: 12, all budget-limited,
 none parked after the first 700 us runs. Steady state on record at
 0.20-0.21 m/s.
+
+---
+
+# 5 cans (2026-09-24, same session as the 4-can holdout)
+
+## Layer C
+
+| item | predicted | measured | verdict |
+|---|:---:|:---:|---|
+| can 5 standalone, 100 Hz | 1880-1920 uF / 45-60 mohm | 1940.8 uF / 45.8 mohm | C 1% over the gate (healthy, as can 4); ESR in |
+| combined at J2 | 9230-9340 uF / 13 +/- 2 mohm | 9140 uF / 13.2 mohm | C 1% UNDER the band; ESR hit. combined/sum 0.979 (0.983 at 4, 0.986 at 3) |
+| I_pk (sqrt-C scaling from 298 A) | ~385 A | 325-331 A | MISS, as at 4 cans: the loop is R-limited; adding C lengthens the pulse (peak at 380-500 us) |
+| monotonicity in n | dv increasing | 152/258/356/464 vs 4-can 151/225/275/335 | HIT |
+
+Blanks at 49.6 V (V(t_on)/V0), measured vs frozen:
+0.969/0.915/0.852/0.720/0.608/0.469/0.314 vs 0.973/0.912/0.837/0.684/
+0.548/0.389/0.218 -- the fallback circuit under-retains as at 4 cans,
+by up to 0.10 at 1500 us. At 10 V: 0.968/0.911/0.842/0.710/0.596/0.457/
+0.300 (49 V above 10 V by 0.001-0.014, same sign as before).
+
+Captures at 49.8 V: I_pk 325/327/331/329 A at 380/500/410/442 us; cut at
+410/708/1005/1510 us with I(cut) 314/272/197/125 A; bank after 39.2/30.3/
+23.4/15.4 V; shunt-visible integral of I^2 25.8/50.4/65.9/78.6 A^2 s;
+charge-balance C 8414/8785/9028/9270 uF (rising with gate as always;
+~0.95-1.0 of the 100 Hz 9140 at long gates).
+
+## Layer A (decisive), injected current, v_in 0.25, +9
+
+| gate | pairs (raw coil dv) | mean | injected | ratio | verdict |
+|---|---|:---:|:---:|:---:|---|
+| 400 | 157 / 158 / 143 | 152.7 | 159.5 | 0.96 | HIT |
+| 700 | 289 / 244 / 242 | 258.3 | 260.2 | 0.99 | HIT |
+| 1000 | 369 / 340 / 358 | 355.7 | 317.2 | 1.12 | MISS |
+| 1500 | 472 / 459 / 461 | 464.0 | 366.6 | **1.27** | MISS |
+
+The long-gate excess GREW with the fifth can (4 cans: 1.03-1.06 at 1000,
+1.06-1.11 at 1500; 3 cans: 1.04 at 1500). Per the reading declared after
+the 4-can scoring, growth with n means current/pulse-dependent physics,
+not timing. Read per pulse: the impulse in the last 500 us (1000 -> 1500)
+is +19% of the integral of I^2 and the model adds +16% dv, but the bench
+adds +30% (5 cans) and +22% (4 cans). The late pulse delivers ~2x what
+the field-times-current model says, and only at 4-5 cans. Note the
+pairing under-corrects at large dv (the shot's A->B loss at 0.7 m/s exit
+exceeds the roll's at 0.25), so the true excess is LARGER than shown.
+
+Candidate with this signature: the ball's magnetisation lag / the
+transformer-type eddy term (TWIN_AUDIT S-7: "repulsive on the rise,
+attractive in the tail", carried as a -8% band, never modelled). A moment
+that lags the current under-delivers while I rises and over-delivers
+after the peak, and the fraction of the pulse spent after the peak grows
+with can count (peak at 305 us at 3 cans, 390 at 4, 380-500 at 5). The
+direct measurement is the LCR ball-on-a-stick survey (COIL_AS_SENSOR 3A:
+m~(f) from L and R at 1/10/100 kHz), which is now the highest-value
+measurement on the list. Nothing fitted; the 1500 us rows stand as a
+miss with this candidate named.
+
+## Duty case at 5 cans
+
+I(cut) 314/272/197/125 A and I_pk 331 A against the 4-can envelope
+already worked (306/230/170/92 A, 318 A): +30% cut current at long gates,
+the same peak. Both far inside the MBR60100 surge rating and the three
+IRFP4668 legs. Sustain gate LIFTED at 5 cans with the same budget
+(700 or 1500 us, <= 30 shots, <= 120 s). Bank energy 11 J at 49.6 V:
+longest discharge-stick hold yet.
