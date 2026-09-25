@@ -1611,7 +1611,11 @@ class MarbleCoasterExtension(omni.ext.IExt):
                         # reach, delivered every Kit shot 5.2 mm PAST the
                         # intended position. simulate_rig_shot had this fix;
                         # the extension did not.
-                        if gate_crossed(prev_z, z_along, ch_x - half):
+                        # The leading edge is on the side the ball comes
+                        # FROM: ch_x - half travelling +x, ch_x + half
+                        # travelling -x (the return pass through B).
+                        trip_x = ch_x - half if vel_axial_now >= 0 else ch_x + half
+                        if gate_crossed(prev_z, z_along, trip_x):
                             # Infer the crossing from SPEED, not from the step.
                             # The marble transform comes from USD and USD only
                             # syncs at the render tick, so z_along sits frozen
@@ -1620,12 +1624,21 @@ class MarbleCoasterExtension(omni.ext.IExt):
                             # Velocity stays current, so it locates the
                             # crossing far better than subdividing a step the
                             # motion did not actually happen in.
+                            #
+                            # Stamp the crossing at the TRIP position. Until
+                            # 2026-09-25 this used ch_x -- the moment the
+                            # centre reached the sensor, a half-width after
+                            # the leading edge tripped it -- and since the
+                            # controller adds the half-width to its reach,
+                            # every Kit kick landed ~5 mm past target on
+                            # both legs (the first live sustain run: -9.2 mm
+                            # for a -13.78 target, +8.4 for +13.3).
                             t_cross = crossing_from_velocity_us(
-                                z_along, ch_x, vel_axial_now,
+                                z_along, trip_x, vel_axial_now,
                                 self._sim_time * 1e6)
                             if t_cross is None:
                                 t_cross = interpolate_crossing_us(
-                                    prev_z, z_along, ch_x,
+                                    prev_z, z_along, trip_x,
                                     self._sim_time * 1e6, dt * 1e6)
                             if t_cross is not None:
                                 station.record(idx, t_cross)

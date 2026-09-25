@@ -201,14 +201,16 @@ fire-position sweep inside sustain runs, with the new per-shot
 
 | manual offset | nominal x (22.78 - 9 - offset - trim ~3) | slow return kicks raw | mean | fast first kick |
 |:---:|:---:|:---:|:---:|:---:|
+| -8 | +18.8 | 0.093 / 0.132 / 0.128 | 0.118 | -0.065 |
 | -4 | +14.8 | 0.184 / 0.193 / 0.209 | **0.195** | +0.003 |
 | 0 | +10.8 | 0.140 / 0.199 / 0.220 | 0.186 | -0.041 |
 | +4 | +6.8 | 0.085 / 0.117 / 0.083 | 0.095 | -0.155 |
 | +8 | +2.8 | 0.012 / 0.006 / 0.013 | 0.010 | -0.211 |
 
 Preregistered "optimum at offset 0, raw ~0.19": value HIT (0.186-0.195),
-position edge (-4 marginally better; outer side not bracketed, -8 asked
-for). Against NOMINAL x the return curve is the forward curve shifted
+position HIT (-4 and 0 equal within scatter; -8 falls to 0.12, so the
+peak is bracketed at -4..0 = real x ~ +15..+19 with the 4 mm lag, the
+mirror of the forward peak at -14..-17). Against NOMINAL x the return curve is the forward curve shifted
 ~4 mm outward -- i.e. the real ball is ~4 mm further from the coil than
 nominal at the gate, the station-local lag the 09-25 kinematics implied
 (second, independent measurement; the forward capture gave 3 mm). The
