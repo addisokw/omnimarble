@@ -631,3 +631,42 @@ and tau, v_in 0.245, from these captures:**
 
 Reference from 3 cans today: 192-199 at 700 us. The 700 us prediction is a
 +17-21% step from 3 to 4 cans.
+
+## Layer A and B SCORED, 4 cans, 2026-09-24 (raw coil dv; v_in not logged by the sweep printout)
+
+The 1000 us capture arrived after the table above: injected prediction
+**272.5 mm/s** (band 258.9-286.1; I_pk 319 A, C 7235 uF).
+
+| gate | pairs (coil dv, mm/s) | mean | injected | ratio | Layer A (+/-5%) | frozen circuit | vs frozen |
+|---|---|:---:|:---:|:---:|---|:---:|:---:|
+| 400 | 172 / 133 / 147 | 150.7 | 146.2 | 1.03 | **HIT** | 164 | 0.92 |
+| 700 | 229 / 225 / 222 | 225.3 | 232.6 | 0.97 | **HIT** | 237 | 0.95 |
+| 1000 | 287 / 242 / (lost) + 292 / 273 / 279 | 274.6 | 272.5 | 1.01 | **HIT** | 268 | 1.02 |
+| 1500 | 314 / 326 / 364 | 334.7 | 301.4 | 1.11 | **MISS** (+11%; 1.06 without the 364 pair) | 285 | 1.17 |
+
+Layer A: three hits and one miss, at the LONGEST gate. The declared-miss
+table only covered "all gates" and "short gates"; a long-gate-only miss
+was not anticipated. At 3 cans the 1500 us ratio was 1.04, so this is
+new with the fourth can. The 1500 us triple is also the noisiest (spread
+21; the third pair's baseline was -63 against -46/-53) -- with the
+outlier dropped the ratio is 1.06, one point past the band. Recorded as
+a miss; not explained. Candidates to test, not fit: a v_in effect (the
+sweep's v_in column is in the CSV -- 3 of 6 rows survive the overwrite),
+the entry-side artefact now reaching +9 at the longer pulse, or the tail
+after a 1500 us gate at 4 cans (I(cut) = 92 A -- small, unlikely).
+
+Layer B: the frozen-circuit rows were declared to under-predict by
+15-30%. Measured/frozen = 0.92 / 0.95 / 1.02 / 1.17 -- the fallback
+circuit is CLOSER than declared at short gates and only reaches the
+declared excess at 1500 us. Not a hit on the declaration either way;
+the fallback circuit is retired in favour of the injected path.
+
+Monotonicity (Layer C): dv strictly increasing with n at every gate
+(3-can 400/700/1000/1500 ~ 141/197/214/239 -> 151/225/275/335). HIT.
+
+Bookkeeping: the first sweep run printed "board confirms +0.00 mm" for
+the 400 us block while the second printed "+9.00"; the 400 us dv (151
+against 146 predicted at +9, ~100 expected at offset 0) says the shots
+went at +9 and the echo was stale. The second run overwrote
+`logs/4can_9.csv` (same --out); the first run's 11 pairs survive only in
+the terminal transcript recorded here.
