@@ -36,7 +36,10 @@ import csv
 import math
 from pathlib import Path
 
-from coil_sensing import FiringController
+try:
+    from .coil_sensing import FiringController      # inside the Kit package
+except ImportError:                                  # tests / scripts: on sys.path
+    from coil_sensing import FiringController
 
 
 class SustainSettings:

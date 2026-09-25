@@ -105,6 +105,12 @@ def _import_sustain_model():
     if sustain_model is None:
         if str(SCRIPTS_DIR) not in sys.path:
             sys.path.insert(0, str(SCRIPTS_DIR))
+        # sustain_model imports coil_sensing by its bare name (it is shared
+        # with the scripts, which see this package directory on sys.path
+        # through tests/conftest.py); give Kit the same view.
+        _pkg_dir = str(Path(__file__).resolve().parent)
+        if _pkg_dir not in sys.path:
+            sys.path.insert(0, _pkg_dir)
         import sustain_model as _sm
         sustain_model = _sm
     return sustain_model
@@ -569,6 +575,12 @@ class MarbleCoasterExtension(omni.ext.IExt):
         # of truth for checkpoint I/O across Kit and headless pipelines)
         if str(SCRIPTS_DIR) not in sys.path:
             sys.path.insert(0, str(SCRIPTS_DIR))
+        # sustain_model imports coil_sensing by its bare name (it is shared
+        # with the scripts, which see this package directory on sys.path
+        # through tests/conftest.py); give Kit the same view.
+        _pkg_dir = str(Path(__file__).resolve().parent)
+        if _pkg_dir not in sys.path:
+            sys.path.insert(0, _pkg_dir)
         import pinn_loader as _pinn_loader
         pinn_loader = _pinn_loader
 

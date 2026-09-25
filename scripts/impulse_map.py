@@ -206,6 +206,52 @@ class ImpulseMap:
     def rescale_factor(self, v_bank):
         return (float(v_bank) / self.basis_V) ** self.exponent
 
+    def with_measured_shape(self, points, ref_x_mm=-13.78):
+        """A copy whose x-shape on the ENTRY side follows a measured curve.
+
+        `points` are (x_mm, ratio_to_ref) from a bench fire-position sweep
+        (e.g. the 5-can 1500 us curve, 2026-09-25). The map's own value at
+        ref_x is kept (that is the injected-current absolute); at every x
+        inside the measured span the map value is replaced by ratio(x) x
+        map(ref_x), linearly interpolated between sweep points; outside
+        the span the map's own shape carries on, scaled at the boundary so
+        there is no step. This is the bench's flat-topped entry flank
+        (the deferred entry-side artefact) carried as a declared shape
+        correction -- not a fit to any sustain data. The return leg looks
+        up -x through the same table, which means the correction is applied
+        to the return side too; the return side has never been measured,
+        so that is an assumption, stated here.
+        """
+        pts = sorted(points)
+        xs = [p[0] for p in pts]
+        lo, hi = xs[0], xs[-1]
+        out = ImpulseMap.__new__(ImpulseMap)
+        out.__dict__.update(self.__dict__)
+        new = []
+        for row_j, v in enumerate(self.v):
+            ref = self.dv_at(ref_x_mm, v)
+            row = []
+            for x in self.x:
+                if lo <= x <= hi:
+                    for (xa, ra), (xb, rb) in zip(pts, pts[1:]):
+                        if xa <= x <= xb:
+                            f = 0.0 if xb == xa else (x - xa) / (xb - xa)
+                            row.append(ref * (ra + f * (rb - ra)))
+                            break
+                    else:
+                        row.append(ref * pts[-1][1])
+                else:
+                    # continue the map's own shape, matched at the boundary
+                    edge = lo if x < lo else hi
+                    r_edge = pts[0][1] if x < lo else pts[-1][1]
+                    own_edge = self.dv_at(edge, v)
+                    scale = (ref * r_edge / own_edge) if own_edge else 1.0
+                    row.append(self.dv[row_j][self.x.index(x)] * scale)
+            new.append(row)
+        out.dv = new
+        out.shape_source = list(pts)
+        return out
+
     def v_in_spread(self, x_mm):
         """(max - min)/max of dv across the v_in axis at one x."""
         vals = [self.dv_at(x_mm, v) for v in self.v]

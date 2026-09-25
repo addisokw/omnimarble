@@ -155,7 +155,37 @@ as in the twin, so the twin's 20% forward under-prediction is the map's
 shape (peaked) against the bench's (flat-topped, the entry-side anomaly).
 Next measurement: the fire-position sweep at 5 cans / 1500 us.
 
-## What would change the model
+## Declared corrections applied (2026-09-25 evening) -- the scoring table, revised
+
+Two measured numbers, carried as declared corrections (not fitted to any
+sustain data): (1) the FORWARD entry-side shape from the 5-can 1500 us
+fire-position sweep (`data/firepos_5can_1500us.csv`, ratios 0.50/0.70/
+0.95/1.00/0.86/0.62 at offsets 0..15) replaces the frozen map's peaked
+shape on the forward leg (`--shape-csv`); (2) the 1500 us long-gate level
+from the Layer A holdouts as `--kick-scale` (1.09 at 4 cans, 1.25 at 5).
+The return leg keeps the frozen mirror untouched (`corrections_forward_only`):
+neither number was measured on the return side.
+
+| case | bench | twin before | twin now | verdict |
+|---|:---:|:---:|:---:|---|
+| 4 cans 1500 us 1.0 A: cycle | 0.205 | 0.190 | **0.210** | hit |
+| same: forward kick raw | 0.25 | 0.20 | **0.241** | hit |
+| same: return kick raw | 0.12 | 0.19 | 0.189 | MISS, +55% |
+| 4 cans 1500 us 0.3 A: cycle (held out) | 0.195-0.200 | 0.188 | 0.208 | edge |
+| 5 cans 1500 us 1.0 A: cycle | 0.25-0.27 | 0.259 | 0.282 | edge, high |
+| same: forward / return raw | 0.32-0.36 / 0.17-0.20 | 0.256 / 0.240 | **0.344** / 0.219 | fwd hit; ret high |
+| 4 cans 700 us 0.3 A: cycle (held out) | 0.16 | stalls | stalls | MISS (unchanged; 700 us has no shape/scale data) |
+
+The forward kick is now right at both can counts. The twin's one
+remaining systematic miss is the RETURN kick, 30-55% high. Candidates,
+all measurable: the return side's own impulse curve (never swept -- the
+mirror is an assumption), the B-side loss at speed between B and the
+coil (the no-kick leg said the twin under-loses there by 0.11 m/s), and
+the delivered return position (the twin lands the return kick ~on
+target; the bench's return kick may land further out). A return-leg
+fire-position sweep inside sustain runs, with the new per-shot
+`fire_x_mm`/`late_us` columns, is the measurement.
+
 
 - The bench run in (1) lands in the first bracket: keep x_from at B and
   add the predictor's over-correction to the firmware's known behaviour

@@ -90,6 +90,8 @@ class SustainConfig:
     max_shots: int = 30
     max_seconds: float = 120.0
     kick_scale: float = 1.0
+    shape_csv: str = ""               # measured fire-position curve overriding the map's entry-side shape
+    corrections_forward_only: bool = True   # shape/kick_scale were measured on the FORWARD leg; the return leg keeps the frozen mirror
     arm_latency_ms: float = 100.0
     loss_form: str = "energy"          # energy | linear (overrides the table's form)
     dt: float = 5e-4
@@ -163,7 +165,8 @@ def _apply_loss_form(losses, form):
     return losses
 
 
-def run_sustain(profile, imap, losses, cfg):
+def run_sustain(profile, imap, losses, cfg, imap_ret=None):
+    imap_ret = imap_ret if imap_ret is not None else imap
     """Run the cycle loop. Returns a RunResult."""
     losses = _apply_loss_form(losses, cfg.loss_form)
     specs = profile.station_specs()
@@ -304,7 +307,10 @@ def run_sustain(profile, imap, losses, cfg):
                     res.kicks.append({**rec, "skipped": True, "skip_reason": reason})
                     break
                 v_fire = bank_v(t_fire_actual)
-                dv, clamped = kick_dv(imap, x, v, v_fire, pass_leg, cfg.kick_scale)
+                if pass_leg == "ret" and cfg.corrections_forward_only:
+                    dv, clamped = kick_dv(imap_ret, x, v, v_fire, pass_leg, 1.0)
+                else:
+                    dv, clamped = kick_dv(imap, x, v, v_fire, pass_leg, cfg.kick_scale)
                 rec.update({"x_delivered": x, "v_true_at_fire": v,
                             "v_bank_at_fire": v_fire, "dv_coil": dv,
                             "map_clamped": clamped, "t_fire_s": t_fire_actual * 1e-6})
@@ -450,6 +456,11 @@ def build_parser():
     parser.add_argument("--max-shots", type=int, default=d.max_shots)
     parser.add_argument("--max-seconds", type=float, default=d.max_seconds)
     parser.add_argument("--kick-scale", type=float, default=d.kick_scale)
+    parser.add_argument("--shape-csv", default=d.shape_csv,
+                        help="sweep_firepos CSV (offset_mm, coil_dv_mm_s) whose "
+                             "normalised curve replaces the map's entry-side "
+                             "shape (declared correction, see impulse_map."
+                             "with_measured_shape)")
     parser.add_argument("--arm-latency-ms", type=float, default=d.arm_latency_ms)
     parser.add_argument("--loss-form", choices=("energy", "linear"), default=d.loss_form)
     parser.add_argument("--dt", type=float, default=d.dt)
@@ -474,8 +485,22 @@ def config_from_args(args, gate_us=None):
         b_conservative=args.b_conservative, release_v=args.release_v,
         recharge_frac=args.recharge_frac, floor_frac=args.floor_frac,
         cycles=args.cycles, max_shots=args.max_shots, max_seconds=args.max_seconds,
-        kick_scale=args.kick_scale, arm_latency_ms=args.arm_latency_ms,
+        kick_scale=args.kick_scale, shape_csv=args.shape_csv,
+        arm_latency_ms=args.arm_latency_ms,
         loss_form=args.loss_form, dt=args.dt)
+
+
+
+def load_shape_points(path, ref_offset=9.0, face_x=-22.78):
+    """(x_mm, ratio_to_ref) from a sweep_firepos CSV, pairs averaged per offset."""
+    import csv as _csv
+    by = {}
+    with open(path, newline="") as f:
+        for r in _csv.DictReader(f):
+            by.setdefault(float(r["offset_mm"]), []).append(float(r["coil_dv_mm_s"]))
+    means = {o: sum(v) / len(v) for o, v in by.items()}
+    ref = means[ref_offset]
+    return [(face_x + o, means[o] / ref) for o in sorted(means)]
 
 
 def main(argv=None):
@@ -494,11 +519,15 @@ def main(argv=None):
         if not map_path.exists():
             raise SystemExit(f"no impulse map at {map_path} (run impulse_map.py)")
         imap = load_map(map_path)
+        imap_base = imap
+        if args.shape_csv:
+            imap = imap.with_measured_shape(load_shape_points(args.shape_csv))
+            print(f"entry-side shape from {args.shape_csv} ({len(imap.shape_source)} points)")
         if imap.cans != args.cans:
             print(f"WARNING: map {map_path} is for {imap.cans} cans, run is {args.cans}")
         cfg = config_from_args(args, gate)
         losses = TrackLosses.from_dict(losses_doc.to_dict())
-        res = run_sustain(profile, imap, losses, cfg)
+        res = run_sustain(profile, imap, losses, cfg, imap_ret=imap_base)
         if not args.quiet:
             print_summary(res, cfg)
         results.append((gate, map_path, res))
