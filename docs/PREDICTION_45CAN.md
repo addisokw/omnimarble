@@ -689,3 +689,32 @@ if it grows with n it is current-dependent physics (the entry-side
 artefact reaching +9, or the ball's eddy response, both on the books);
 if it stays at +5% it is a constant to look for in the timing or the
 correction slope.
+
+## D1 duty case at 4 cans (2026-09-24) -- the gate for `sustain`
+
+From the 4-can captures, not the pre-solder guesses: the freewheel current
+D1 (MBR60100, 60 A average, 100 V Schottky) must carry is I(cut) = 306 A
+at a 400 us gate, 230 A at 700 us, 170 A at 1000 us, 92 A at 1500 us,
+decaying with tau ~275 us. Per shot at 700 us: charge ~0.063 C, energy
+in the diode ~V_f x Q ~ 0.05-0.08 J, pulse width ~0.3 ms. The
+non-repetitive surge rating of this class of part is 400-600 A for
+8.3 ms; a 230-306 A pulse of 0.3 ms is far inside it. Repetitive duty in
+sustain is at most ~2 shots/s for 10 shots: average dissipation under
+0.2 W, transient junction rise per pulse of order 10-15 K on a TO-247
+die. Every single-shot sweep today (dozens of shots at ~1 per 3 s) was
+already this duty. The same applies to Q1 (only one FET is fitted, not
+three as the earlier safety line assumed): 318 A peak for 0.7 ms is
+inside the IRFP4668 pulsed rating and its ~0.6 J per shot at ~1 shot/s
+is what the sweeps have been doing all day.
+
+**Gate lifted for 4 cans**, with the same budget as at 3: 700 us
+(I(cut) 230 A rather than 306 A at 400 us), 10 shots, 60 s. Bank energy
+9.1 J at 49.6 V -- the discharge stick needs proportionally longer.
+5 cans re-does this case from its own captures.
+
+Prediction for the first 4-can sustain run, same release height as at
+3 cans: forward kick coil dv ~0.23 m/s (vs 0.20), return kick at the +12
+trim ~0.08 (vs 0.06); the far-ramp and entry-ramp losses do not change.
+Expect 3 full cycles, maybe 4, before the marble parks -- one more than
+at 3 cans, not indefinite. Indefinite needs the return kick fixed or the
+losses cut, not more cans.
